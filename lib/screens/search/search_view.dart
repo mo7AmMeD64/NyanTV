@@ -125,6 +125,15 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
     }
   }
 
+  KeyEventResult _handleArrowDown() {
+    if (_searchState == SearchState.initial && _searchedTerms.isNotEmpty) {
+      _clearAllHistoryFocusNode.requestFocus();
+    } else if (_searchState == SearchState.success) {
+      _gridModeFocusNode.requestFocus();
+    }
+    return KeyEventResult.handled;
+  }
+
   void _scrollToIndex(int index) {
     if (!_scrollController.hasClients) return;
 
@@ -476,14 +485,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             _filterButtonFocusNode.requestFocus();
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            // Navigate to history if visible, otherwise to view mode toggle or results
-            if (_searchState == SearchState.initial &&
-                _searchedTerms.isNotEmpty) {
-              _clearAllHistoryFocusNode.requestFocus();
-            } else if (_searchState == SearchState.success) {
-              _gridModeFocusNode.requestFocus();
-            }
-            return KeyEventResult.handled;
+            return _handleArrowDown();
           }
         }
         return KeyEventResult.ignored;
@@ -586,14 +588,7 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             }
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            // Navigate to history if visible, otherwise to view mode toggle or results
-            if (_searchState == SearchState.initial &&
-                _searchedTerms.isNotEmpty) {
-              _clearAllHistoryFocusNode.requestFocus();
-            } else if (_searchState == SearchState.success) {
-              _gridModeFocusNode.requestFocus();
-            }
-            return KeyEventResult.handled;
+            return _handleArrowDown();
           }
         }
         return KeyEventResult.ignored;
