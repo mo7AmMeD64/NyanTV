@@ -870,7 +870,13 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildStateMessage({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    Widget? action,
+  }) {
     return Expanded(
       child: Center(
         child: Column(
@@ -879,25 +885,21 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                color: iconColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Iconsax.warning_2,
-                size: 48,
-                color: Theme.of(context).colorScheme.error,
-              ),
+              child: Icon(icon, size: 48, color: iconColor),
             ),
             const SizedBox(height: 24),
             Text(
-              'Oops! Something went wrong',
+              title,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 8),
             Text(
-              _errorMessage ?? 'Please try again later',
+              subtitle,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context)
                         .colorScheme
@@ -906,72 +908,42 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
                   ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => _performSearch(),
-              icon: Icon(Iconsax.refresh,
-                  color: Theme.of(context).colorScheme.onPrimary),
-              label: const Text('Try Again'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
+            if (action != null) ...[
+              const SizedBox(height: 24),
+              action,
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
-    return Expanded(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceVariant
-                    .withOpacity(0.5),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Iconsax.search_normal,
-                size: 48,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No results found',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Try adjusting your search terms or filters',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.7),
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+  Widget _buildErrorState() => _buildStateMessage(
+        icon: Iconsax.warning_2,
+        iconColor: Theme.of(context).colorScheme.error,
+        title: 'Oops! Something went wrong',
+        subtitle: _errorMessage ?? 'Please try again later',
+        action: ElevatedButton.icon(
+          onPressed: () => _performSearch(),
+          icon: Icon(Iconsax.refresh,
+              color: Theme.of(context).colorScheme.onPrimary),
+          label: const Text('Try Again'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
-      ),
-    );
-  }
+      );
+
+  Widget _buildEmptyState() => _buildStateMessage(
+        icon: Iconsax.search_normal,
+        iconColor: Theme.of(context).colorScheme.onSurfaceVariant,
+        title: 'No results found',
+        subtitle: 'Try adjusting your search terms or filters',
+      );
 
   Widget _buildSuccessState() {
     return Expanded(
