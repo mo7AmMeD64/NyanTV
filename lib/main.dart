@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'package:device_info_plus/device_info_plus.dart'; 
+import 'package:device_info_plus/device_info_plus.dart';
 
 import 'package:nyantv/controllers/cacher/cache_controller.dart';
 import 'package:nyantv/controllers/discord/discord_rpc.dart';
@@ -62,9 +62,34 @@ bool isAndroidTV = false;
 
 final _isInExcludedScreen = false.obs;
 final _isInDVDMode = false.obs;
+final RxBool isWelcomeDialogOpen = false.obs;
 Timer? _autoIdleTimer;
 
 bool get isInDVDMode => _isInDVDMode.value;
+
+DateTime? _lastBackPress;
+
+void handleAppBack() {
+  if (isWelcomeDialogOpen.value) return;
+
+  if (!Get.key.currentState!.canPop()) {
+    final now = DateTime.now();
+    if (_lastBackPress == null ||
+        now.difference(_lastBackPress!) > const Duration(milliseconds: 900)) {
+      _lastBackPress = now;
+      snackBar('Press back again to exit', duration: 900);
+    } else {
+      _lastBackPress = null;
+      if (Platform.isAndroid) {
+        const MethodChannel('app/back').invokeMethod('exitApp');
+      } else {
+        SystemNavigator.pop();
+      }
+    }
+  } else {
+    Get.back();
+  }
+}
 
 void setExcludedScreen(bool excluded) {
   _isInExcludedScreen.value = excluded;
@@ -76,22 +101,22 @@ void setDVDMode(bool enabled) {
 
 void _resetAutoIdleTimer() {
   _autoIdleTimer?.cancel();
-  
+
   try {
     final settings = Get.find<Settings>();
     final idleMinutes = settings.autoIdleMinutes;
-    
+
     if (idleMinutes <= 0) return;
     if (_isInExcludedScreen.value) return;
-    
+
     _autoIdleTimer = Timer(Duration(minutes: idleMinutes), () {
       Logger.i('Auto-idle timer triggered! Going to DVD mode...');
       if (!_isInExcludedScreen.value) {
         setDVDMode(true);
         Get.to(() => const InitialisingScreen(
-          dvdMode: true,
-          child: FilterScreen(),
-        ));
+              dvdMode: true,
+              child: FilterScreen(),
+            ));
       }
     });
   } catch (e) {
@@ -126,17 +151,19 @@ void main(List<String> args) async {
 
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
-      isAndroidTV = androidInfo.systemFeatures.contains('android.software.leanback');
+      isAndroidTV =
+          androidInfo.systemFeatures.contains('android.software.leanback');
     }
 
     if (Platform.isWindows) {
-      ['dar', 'nyantv', 'sugoireads', 'mangayomi'].forEach(registerProtocolHandler);
+      ['dar', 'nyantv', 'sugoireads', 'mangayomi']
+          .forEach(registerProtocolHandler);
     }
 
     HttpOverrides.global = MyHttpoverrides();
     await initializeHive();
-    _initializeGetxController();   // ← zuerst Controller
-    initDeepLinkListener();        // ← dann Deep Link (Get.find ist jetzt sicher)
+    _initializeGetxController(); // ← zuerst Controller
+    initDeepLinkListener(); // ← dann Deep Link (Get.find ist jetzt sicher)
     initializeDateFormatting();
 
     if (!Platform.isAndroid && !Platform.isIOS) {
@@ -176,6 +203,7 @@ void main(List<String> args) async {
     },
   ));
 }
+
 void initDeepLinkListener() async {
   final appLinks = AppLinks();
   if (Platform.isLinux) return;
@@ -225,12 +253,15 @@ void _initializeGetxController() async {
   Get.lazyPut(() => CacheController());
   if (Platform.isAndroid && isAndroidTV) {
     Get.put(TvWatchNextService());
+    const MethodChannel('app/back').setMethodCallHandler((call) async {
+      if (call.method == 'onBack') handleAppBack();
+    });
   }
 }
 
 class UIScaleBypass extends InheritedWidget {
   final bool bypassScale;
-  
+
   const UIScaleBypass({
     super.key,
     required this.bypassScale,
@@ -266,17 +297,20 @@ class MainApp extends StatelessWidget {
           focusNode: FocusNode(),
           onKeyEvent: (KeyEvent event) async {
             _resetAutoIdleTimer();
-            
+
             if (event is KeyDownEvent) {
               if (event.logicalKey == LogicalKeyboardKey.escape) {
-                Get.back();
-              } else if (!Platform.isAndroid && !Platform.isIOS &&
-                          event.logicalKey == LogicalKeyboardKey.f11) {
-              bool isFullScreen = await windowManager.isFullScreen();
+                handleAppBack();
+              } else if (!Platform.isAndroid &&
+                  !Platform.isIOS &&
+                  event.logicalKey == LogicalKeyboardKey.f11) {
+                bool isFullScreen = await windowManager.isFullScreen();
                 NyantvTitleBar.setFullScreen(!isFullScreen);
-              } else if (!Platform.isAndroid && !Platform.isIOS &&
-                          event.logicalKey == LogicalKeyboardKey.enter) {
-                final isAltPressed = HardwareKeyboard.instance.logicalKeysPressed
+              } else if (!Platform.isAndroid &&
+                  !Platform.isIOS &&
+                  event.logicalKey == LogicalKeyboardKey.enter) {
+                final isAltPressed = HardwareKeyboard
+                        .instance.logicalKeysPressed
                         .contains(LogicalKeyboardKey.altLeft) ||
                     HardwareKeyboard.instance.logicalKeysPressed
                         .contains(LogicalKeyboardKey.altRight);
@@ -387,7 +421,6 @@ class _FilterScreenState extends State<FilterScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _resetAutoIdleTimer();
     });
-
   }
 
   void _onItemTapped(int index) {
@@ -429,13 +462,19 @@ class _FilterScreenState extends State<FilterScreen> {
   Widget build(BuildContext context) {
     final authService = Get.find<ServiceHandler>();
     const isSimkl = false;
-    return Glow(
-      child: PlatformBuilder(
-        strictMode: false,
-        desktopBuilder: _buildDesktopLayout(context, authService, isSimkl),
-        androidBuilder: isAndroidTV 
-            ? _buildDesktopLayout(context, authService, isSimkl) 
-            : _buildAndroidLayout(isSimkl),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) handleAppBack();
+      },
+      child: Glow(
+        child: PlatformBuilder(
+          strictMode: false,
+          desktopBuilder: _buildDesktopLayout(context, authService, isSimkl),
+          androidBuilder: isAndroidTV
+              ? _buildDesktopLayout(context, authService, isSimkl)
+              : _buildAndroidLayout(isSimkl),
+        ),
       ),
     );
   }
@@ -457,11 +496,11 @@ class _FilterScreenState extends State<FilterScreen> {
           ),
           Expanded(
             child: _firstLoad
-              ? routes[_selectedIndex]
-              : SmoothPageEntrance(
-                  style: PageEntranceStyle.slideUpGentle,
-                  key: Key(_selectedIndex.toString()),
-                  child: routes[_selectedIndex]),
+                ? routes[_selectedIndex]
+                : SmoothPageEntrance(
+                    style: PageEntranceStyle.slideUpGentle,
+                    key: Key(_selectedIndex.toString()),
+                    child: routes[_selectedIndex]),
           ),
         ],
       ),
@@ -471,11 +510,11 @@ class _FilterScreenState extends State<FilterScreen> {
   Scaffold _buildAndroidLayout(bool isSimkl) {
     return Scaffold(
         body: _firstLoad
-          ? mobileRoutes[_mobileSelectedIndex]
-          : SmoothPageEntrance(
-            style: PageEntranceStyle.slideUpGentle,
-            key: Key(_mobileSelectedIndex.toString()),
-            child: mobileRoutes[_mobileSelectedIndex]),
+            ? mobileRoutes[_mobileSelectedIndex]
+            : SmoothPageEntrance(
+                style: PageEntranceStyle.slideUpGentle,
+                key: Key(_mobileSelectedIndex.toString()),
+                child: mobileRoutes[_mobileSelectedIndex]),
         extendBody: true,
         bottomNavigationBar: ResponsiveNavBar(
           isDesktop: false,
@@ -534,23 +573,45 @@ class _Sidebar extends StatelessWidget {
                 label: 'Profile',
                 altIcon: CircleAvatar(
                   radius: 24,
-                  backgroundColor: Theme.of(context).colorScheme.surfaceContainer.withValues(alpha: 0.3),
+                  backgroundColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainer
+                      .withValues(alpha: 0.3),
                   child: Obx(() => authService.isLoggedIn.value
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(59),
-                        child: CachedNetworkImage(
-                          width: 40, height: 40,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => const Icon(IconlyBold.profile),
-                          imageUrl: authService.profileData.value.avatar ?? ''),
-                      )
-                    : const Icon(IconlyBold.profile)),
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(59),
+                          child: CachedNetworkImage(
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) =>
+                                  const Icon(IconlyBold.profile),
+                              imageUrl:
+                                  authService.profileData.value.avatar ?? ''),
+                        )
+                      : const Icon(IconlyBold.profile)),
                 ),
               ),
-              NavItem(unselectedIcon: IconlyLight.home, selectedIcon: IconlyBold.home, onTap: onItemTapped, label: 'Home'),
-              NavItem(unselectedIcon: Icons.movie_filter_outlined, selectedIcon: Icons.movie_filter_rounded, onTap: onItemTapped, label: 'Anime'),
-              NavItem(unselectedIcon: HugeIcons.strokeRoundedLibrary, selectedIcon: HugeIcons.strokeRoundedLibrary, onTap: onItemTapped, label: 'Library'),
-              NavItem(unselectedIcon: Icons.extension_outlined, selectedIcon: Icons.extension_rounded, onTap: onItemTapped, label: "Extensions"),
+              NavItem(
+                  unselectedIcon: IconlyLight.home,
+                  selectedIcon: IconlyBold.home,
+                  onTap: onItemTapped,
+                  label: 'Home'),
+              NavItem(
+                  unselectedIcon: Icons.movie_filter_outlined,
+                  selectedIcon: Icons.movie_filter_rounded,
+                  onTap: onItemTapped,
+                  label: 'Anime'),
+              NavItem(
+                  unselectedIcon: HugeIcons.strokeRoundedLibrary,
+                  selectedIcon: HugeIcons.strokeRoundedLibrary,
+                  onTap: onItemTapped,
+                  label: 'Library'),
+              NavItem(
+                  unselectedIcon: Icons.extension_outlined,
+                  selectedIcon: Icons.extension_rounded,
+                  onTap: onItemTapped,
+                  label: "Extensions"),
             ],
           ),
         ],

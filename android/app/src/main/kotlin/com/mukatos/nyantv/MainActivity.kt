@@ -2,17 +2,19 @@
 package com.mukatos.nyantv
 
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
 import android.os.Build
+import androidx.activity.addCallback
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "app/architecture"
     private val PLATFORM_CHANNEL = "app.nyantv/platform"
     private val WATCH_NEXT_CHANNEL = "com.nyantv/tv_watch_next"
@@ -37,6 +39,21 @@ class MainActivity : FlutterActivity() {
         watchNextHelper = TvWatchNextHelper(this)
 
         watchNextHelper = TvWatchNextHelper(this)
+
+        onBackPressedDispatcher.addCallback(this) {
+            MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app/back")
+                .invokeMethod("onBack", null)
+        }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app/back").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "exitApp" -> {
+                    moveTaskToBack(true)
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {

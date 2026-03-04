@@ -1,4 +1,5 @@
 import 'package:nyantv/utils/logger.dart';
+import 'package:nyantv/main.dart';
 import 'dart:io';
 
 import 'package:nyantv/controllers/settings/settings.dart';
@@ -73,14 +74,17 @@ Future<bool> _requestStoragePermissions() async {
 }
 
 void showWelcomeDialogg(BuildContext context) {
+  isWelcomeDialogOpen.value = true;
   showGeneralDialog(
     context: context,
-    barrierDismissible: true,
+    barrierDismissible: false,
     barrierLabel: "Welcome To NyanTV",
     pageBuilder: (context, animation1, animation2) {
       final settings = Get.find<Settings>();
       final RxBool storagePermissionGranted = false.obs;
       final RxBool installPermissionGranted = false.obs;
+      final RxBool performanceMode = (!settings.enableAnimation).obs;
+      final RxBool disableGradient = settings.disableGradient.obs;
       final serviceHandler = Get.find<ServiceHandler>();
       serviceHandler.changeService(ServicesType.anilist);
 
@@ -100,136 +104,175 @@ void showWelcomeDialogg(BuildContext context) {
         }
       }
 
-      return Material(
-        color: Theme.of(context).colorScheme.surface,
-        child: Center(
-          child: Container(
-            width: getResponsiveSize(context,
-                mobileSize: MediaQuery.of(context).size.width - 20,
-                desktopSize: MediaQuery.of(context).size.width * 0.4),
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.8,
-            ),
-            decoration: BoxDecoration(
-              color: Theme.of(context).dialogBackgroundColor,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black54,
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  height: 50,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(24),
-                        topRight: Radius.circular(24)),
-                    color: Theme.of(context).colorScheme.surfaceContainer,
+      return PopScope(
+        canPop: false,
+        child: Material(
+          color: Theme.of(context).colorScheme.surface,
+          child: Center(
+            child: Container(
+              width: getResponsiveSize(context,
+                  mobileSize: MediaQuery.of(context).size.width - 20,
+                  desktopSize: MediaQuery.of(context).size.width * 0.4),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).dialogBackgroundColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
                   ),
-                  child: const Center(
-                    child: Text(
-                      'Welcome To NyanTV',
-                      style: TextStyle(fontFamily: 'Poppins-SemiBold'),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 50,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24)),
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Welcome To NyanTV',
+                        style: TextStyle(fontFamily: 'Poppins-SemiBold'),
+                      ),
                     ),
                   ),
-                ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(6.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CustomSwitchTile(
-                          icon: HugeIcons.strokeRoundedCpu,
-                          title: "Performance Mode",
-                          description:
-                              "Disable Animations to get smoother experience",
-                          switchValue: !settings.enableAnimation,
-                          onChanged: (val) {
-                            settings.enableAnimation = !val;
-                          },
-                        ),
-                        CustomSwitchTile(
-                          icon: HugeIcons.strokeRoundedBounceRight,
-                          title: "Disable Gradient",
-                          description:
-                              "Disable Gradient, might give you smoother experience",
-                          switchValue: settings.disableGradient,
-                          onChanged: (val) {
-                            settings.disableGradient = val;
-                          },
-                        ),
-                        if (Platform.isAndroid) ...[
-                          Obx(() => CustomSwitchTile(
-                                icon: HugeIcons.strokeRoundedFolderSecurity,
-                                title: "Storage Permission",
-                                description:
-                                    "Allow storage access to download updates",
-                                switchValue: storagePermissionGranted.value,
-                                onChanged: (val) {
-                                  if (val) requestStoragePermission();
-                                },
-                              )),
-                          Obx(() => CustomSwitchTile(
-                                icon: HugeIcons.strokeRoundedDownload01,
-                                title: "Install Permission",
-                                description:
-                                    "Allow installing updates for the app",
-                                switchValue: installPermissionGranted.value,
-                                onChanged: (val) {
-                                  if (val) requestInstallPermission();
-                                },
-                              )),
-                        ],
-                        CustomTile(
-                          description:
-                              'Change Service to whichever you prefer! like AL or MAL',
-                          icon: HugeIcons.strokeRoundedAiSetting,
-                          title: 'Change Service',
-                          onTap: () {
-                            SettingsSheet().showServiceSelector(context);
-                          },
-                        ),
-                        Container(
-                          height: 50,
-                          padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerLowest,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Obx(() => Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainer,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                  ),
-                                  onPressed: () {
-                                    Hive.box('themeData')
-                                        .put('isFirstTime', false);
-                                    Navigator.of(context).pop();
-                                    navigate(() => const SettingsAccounts());
+                              CustomSwitchTile(
+                                icon: HugeIcons.strokeRoundedCpu,
+                                title: "Performance Mode",
+                                description:
+                                    "Disable Animations to get smoother experience",
+                                switchValue: performanceMode.value,
+                                onChanged: (val) {
+                                  performanceMode.value = val;
+                                  settings.enableAnimation = !val;
+                                },
+                              ),
+                              CustomSwitchTile(
+                                icon: HugeIcons.strokeRoundedBounceRight,
+                                title: "Disable Gradient",
+                                description:
+                                    "Disable Gradient, might give you smoother experience",
+                                switchValue: disableGradient.value,
+                                onChanged: (val) {
+                                  disableGradient.value = val;
+                                  settings.disableGradient = val;
+                                },
+                              ),
+                              if (Platform.isAndroid) ...[
+                                CustomSwitchTile(
+                                  icon: HugeIcons.strokeRoundedFolderSecurity,
+                                  title: "Storage Permission",
+                                  description:
+                                      "Allow storage access to download updates",
+                                  switchValue: storagePermissionGranted.value,
+                                  onChanged: (val) {
+                                    if (val) requestStoragePermission();
                                   },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Login',
+                                ),
+                                CustomSwitchTile(
+                                  icon: HugeIcons.strokeRoundedDownload01,
+                                  title: "Install Permission",
+                                  description:
+                                      "Allow installing updates for the app",
+                                  switchValue: installPermissionGranted.value,
+                                  onChanged: (val) {
+                                    if (val) requestInstallPermission();
+                                  },
+                                ),
+                              ],
+                              CustomTile(
+                                description:
+                                    'Change Service to whichever you prefer! like AL or MAL',
+                                icon: HugeIcons.strokeRoundedAiSetting,
+                                title: 'Change Service',
+                                onTap: () {
+                                  SettingsSheet().showServiceSelector(context);
+                                },
+                              ),
+                              Container(
+                                height: 50,
+                                padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surfaceContainerLowest,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context)
+                                              .colorScheme
+                                              .surfaceContainer,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                        onPressed: () {
+                                          isWelcomeDialogOpen.value = false;
+                                          Hive.box('themeData')
+                                              .put('isFirstTime', false);
+                                          Navigator.of(context).pop();
+                                          navigate(
+                                              () => const SettingsAccounts());
+                                        },
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'Login',
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins-SemiBold',
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .inverseSurface,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            _buildIcon(
+                                                context, 'anilist-icon.png'),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(context)
+                                            .colorScheme
+                                            .surfaceContainer,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12)),
+                                      ),
+                                      onPressed: () {
+                                        isWelcomeDialogOpen.value = false;
+                                        Hive.box('themeData')
+                                            .put('isFirstTime', false);
+                                        Get.back();
+                                      },
+                                      label: Text(
+                                        'Skip',
                                         style: TextStyle(
                                           fontFamily: 'Poppins-SemiBold',
                                           color: Theme.of(context)
@@ -237,57 +280,29 @@ void showWelcomeDialogg(BuildContext context) {
                                               .inverseSurface,
                                         ),
                                       ),
-                                      const Spacer(),
-                                      _buildIcon(context, 'anilist-icon.png'),
-                                    ],
-                                  ),
+                                      icon: Icon(
+                                        IconlyBold.arrow_right,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .inverseSurface,
+                                      ),
+                                      iconAlignment: IconAlignment.end,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainer,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
-                                ),
-                                onPressed: () {
-                                  Hive.box('themeData')
-                                      .put('isFirstTime', false);
-                                  Get.back();
-                                },
-                                label: Text(
-                                  'Skip',
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins-SemiBold',
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .inverseSurface,
-                                  ),
-                                ),
-                                icon: Icon(
-                                  IconlyBold.arrow_right,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .inverseSurface,
-                                ),
-                                iconAlignment: IconAlignment.end,
                               ),
                             ],
-                          ),
-                        ),
-                      ],
+                          )),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       );
     },
-  );
+  ).then((_) => isWelcomeDialogOpen.value = false);
 }
 
 Widget _buildIcon(BuildContext context, String url) {
