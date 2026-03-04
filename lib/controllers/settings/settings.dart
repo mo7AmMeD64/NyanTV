@@ -62,8 +62,8 @@ class Settings extends GetxController {
   }
 
   double get uiScale {
-    if (!_isInitialized) return 1.0;
-    final value = preferences.get('ui_scale', defaultValue: 1.0);
+    if (!_isInitialized) return 0.7;
+    final value = preferences.get('ui_scale', defaultValue: 0.7);
     if (value <= 0.0 || value > 3.0) {
       return 1.0;
     }
