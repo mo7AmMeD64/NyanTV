@@ -232,11 +232,20 @@ class SimklService extends GetxController
               data: trendingMovies.value.sublist(0, 10),
               title: "Trending Movies"),
           ReusableCarousel(
+              data: trendingSeries.value.sublist(0, 10),
+              title: "Trending Series"),
+          ReusableCarousel(
               data: trendingMovies.value.sublist(11, 20),
               title: "More Trending Movies"),
           ReusableCarousel(
+              data: trendingSeries.value.sublist(11, 20),
+              title: "More Trending Series"),
+          ReusableCarousel(
               data: trendingMovies.value.sublist(21, 30),
               title: "More than More Trending Movies"),
+          ReusableCarousel(
+              data: trendingSeries.value.sublist(21, trendingSeries.length - 1),
+              title: "More than More Trending Series"),
         ],
       ].obs;
 

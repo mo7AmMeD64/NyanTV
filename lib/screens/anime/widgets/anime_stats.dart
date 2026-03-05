@@ -22,11 +22,10 @@ class AnimeStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final serviceHandler = Get.find<ServiceHandler>();
+    final isSimkl = serviceHandler.serviceType.value == ServicesType.simkl;
     final covers = [
-                ...serviceHandler.anilistService.trendingAnime,
-              ]
-        .where((e) => e.cover != null && (e.cover?.isNotEmpty ?? false))
-        .toList();
+      ...serviceHandler.anilistService.trendingAnime,
+    ].where((e) => e.cover != null && (e.cover?.isNotEmpty ?? false)).toList();
     final isDesktop = MediaQuery.of(context).size.width > 600;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,33 +74,41 @@ class AnimeStats extends StatelessWidget {
               StateItem(label: "Type", value: data.type),
               StateItem(label: "Rating", value: '${data.rating}/10'),
               StateItem(label: "Popularity", value: data.popularity),
-              StateItem(label: "Season", value: data.season),
-              StateItem(label: "Format", value: data.format),
-              StateItem(label: "Status", value: data.status),
+              if (!isSimkl) ...[
+                StateItem(label: "Season", value: data.season),
+                StateItem(label: "Format", value: data.format),
+              ],
+              if (![data.format, data.type].contains("MOVIE")) ...[
+                StateItem(label: "Status", value: data.status),
+                StateItem(label: "Total Episodes", value: data.totalEpisodes),
+              ],
               StateItem(label: "Duration", value: data.duration),
-              StateItem(label: "Total Episodes", value: data.totalEpisodes),
-              StateItem(label: "Premiered", value: data.premiered),
+              StateItem(
+                  label: data.type == "SHOW" ? "First Aired" : "Premiered",
+                  value: data.premiered),
               if (data.studios?.isNotEmpty ?? false)
                 StateItem(label: "Studios", value: data.studios?.first ?? ''),
             ],
           ),
         ),
-        const SizedBox(height: 30),
-        const NyantvText(
-          text: "Romaji Title",
-          variant: TextVariant.bold,
-          size: 17,
-        ),
-        10.height(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: NyantvText(
-            text: data.romajiTitle,
-            variant: TextVariant.semiBold,
-            size: 14,
-            color: Colors.grey[300],
+        if (!isSimkl) ...[
+          const SizedBox(height: 30),
+          const NyantvText(
+            text: "Romaji Title",
+            variant: TextVariant.bold,
+            size: 17,
           ),
-        ),
+          10.height(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: NyantvText(
+              text: data.romajiTitle,
+              variant: TextVariant.semiBold,
+              size: 14,
+              color: Colors.grey[300],
+            ),
+          ),
+        ],
         const SizedBox(height: 30),
         const NyantvText(
           text: "Synopsis",

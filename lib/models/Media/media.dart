@@ -7,6 +7,12 @@ import 'package:nyantv/models/Offline/Hive/offline_media.dart';
 import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
 import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 
+String? _parseDate(dynamic value) {
+  if (value == null) return null;
+  final str = value.toString();
+  return str.length >= 10 ? str.substring(0, 10) : str;
+}
+
 class Media {
   String id;
   String idMal;
@@ -172,18 +178,22 @@ class Media {
           ? 'https://wsrv.nl/?url=https://simkl.in/fanart/${json['fanart']}_medium.jpg'
           : null,
       totalEpisodes: json['total_episodes']?.toString() ?? '1',
-      type: json['country']?.toUpperCase() ?? 'UNKNOWN',
-      premiered: json['released'] ?? 'Unknown release date',
+      type: json['type']?.toUpperCase() ?? 'UNKNOWN',
+      premiered: json['released'] ??
+          _parseDate(json['first_aired']) ??
+          'Unknown release date',
       duration: json['runtime'] != null
           ? '${json['runtime']} minutes'
           : 'Unknown runtime',
-      status: json['type']?.toUpperCase() ?? 'UNKNOWN',
+      status: json['status']?.toUpperCase() ?? 'UNKNOWN',
       rating: json['ratings']?['simkl']?['rating']?.toString() ??
           json['ratings']?['imdb']?['rating']?.toString() ??
           ' N/A',
       popularity: json['rank']?.toString() ?? '0',
       mediaType: type,
-      aired: json['released'] ?? 'Unknown air date',
+      aired: json['released'] ??
+          _parseDate(json['first_aired']) ??
+          'Unknown air date',
       totalChapters: '0',
       genres: (json['genres'] as List<dynamic>?)
               ?.map((genre) => genre.toString())
