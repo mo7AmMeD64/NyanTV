@@ -182,6 +182,22 @@ class ExoticCard extends CarouselCard {
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
 
+    final bool hasRating = variant == DataVariant.anilist &&
+        variant != DataVariant.recommendation &&
+        itemData.source != null &&
+        itemData.source!.isNotEmpty &&
+        itemData.source != '?' &&
+        itemData.source != '0' &&
+        itemData.source != '0.0';
+
+    final bool hasValidExtraData = itemData.extraData != null &&
+        itemData.extraData!.isNotEmpty &&
+        itemData.extraData != '?' &&
+        itemData.extraData != '??';
+
+    final bool isSimklRecommendation = variant == DataVariant.recommendation &&
+        itemData.servicesType == ServicesType.simkl;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5),
       constraints: BoxConstraints(maxWidth: isDesktop(context) ? 160 : 118),
@@ -239,6 +255,12 @@ class ExoticCard extends CarouselCard {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+          ],
+          if (shouldShowTitle() &&
+              !isSimklRecommendation &&
+              (variant == DataVariant.library ||
+                  hasRating ||
+                  hasValidExtraData)) ...[
             10.height(),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 4),
@@ -267,24 +289,21 @@ class ExoticCard extends CarouselCard {
                       variant: TextVariant.bold,
                     ),
                   ] else ...[
-                    Icon(
-                      getIconForVariant(itemData.extraData ?? '', variant),
-                      size: 12,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    const SizedBox(width: 4),
-                    NyantvText(
-                      text: itemData.extraData ?? '',
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      size: 12,
-                      variant: TextVariant.bold,
-                    ),
-                    if (variant == DataVariant.anilist &&
-                        variant != DataVariant.recommendation &&
-                        itemData.source != null &&
-                        itemData.source != '?' &&
-                        itemData.source != '0' &&
-                        itemData.source != '0.0') ...[
+                    if (hasValidExtraData) ...[
+                      Icon(
+                        getIconForVariant(itemData.extraData ?? '', variant),
+                        size: 12,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      const SizedBox(width: 4),
+                      NyantvText(
+                        text: itemData.extraData ?? '',
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        size: 12,
+                        variant: TextVariant.bold,
+                      ),
+                    ],
+                    if (hasRating) ...[
                       Container(
                         width: 1,
                         height: 11,
@@ -331,6 +350,22 @@ class MinimalExoticCard extends CarouselCard {
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
+
+    final bool hasRating = variant == DataVariant.anilist &&
+        variant != DataVariant.recommendation &&
+        itemData.source != null &&
+        itemData.source!.isNotEmpty &&
+        itemData.source != '?' &&
+        itemData.source != '0' &&
+        itemData.source != '0.0';
+
+    final bool hasValidExtraData = itemData.extraData != null &&
+        itemData.extraData!.isNotEmpty &&
+        itemData.extraData != '?' &&
+        itemData.extraData != '??';
+
+    final bool isSimklRecommendation = variant == DataVariant.recommendation &&
+        itemData.servicesType == ServicesType.simkl;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 5),
@@ -405,7 +440,11 @@ class MinimalExoticCard extends CarouselCard {
               ),
             ),
           ),
-          if (shouldShowTitle()) ...[
+          if (shouldShowTitle() &&
+              !isSimklRecommendation &&
+              (variant == DataVariant.library ||
+                  hasRating ||
+                  hasValidExtraData)) ...[
             10.height(),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 4),
@@ -434,29 +473,26 @@ class MinimalExoticCard extends CarouselCard {
                       variant: TextVariant.bold,
                     ),
                   ] else ...[
-                    Icon(
-                      getIconForVariant(
-                        variant == DataVariant.relation
-                            ? itemData.args!
-                            : itemData.extraData ?? '',
-                        variant,
+                    if (hasValidExtraData) ...[
+                      Icon(
+                        getIconForVariant(
+                          variant == DataVariant.relation
+                              ? itemData.args!
+                              : itemData.extraData ?? '',
+                          variant,
+                        ),
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    const SizedBox(width: 4),
-                    NyantvText(
-                      text: itemData.extraData ?? '',
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      size: 12,
-                      variant: TextVariant.bold,
-                    ),
-                    if (variant == DataVariant.anilist &&
-                        variant != DataVariant.recommendation &&
-                        itemData.source != null &&
-                        itemData.source != '?' &&
-                        itemData.source != '0' &&
-                        itemData.source != '0.0') ...[
+                      const SizedBox(width: 4),
+                      NyantvText(
+                        text: itemData.extraData ?? '',
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        size: 12,
+                        variant: TextVariant.bold,
+                      ),
+                    ],
+                    if (hasRating) ...[
                       Container(
                         width: 1,
                         height: 11,
