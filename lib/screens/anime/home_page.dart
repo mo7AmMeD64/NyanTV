@@ -28,7 +28,6 @@ class _AnimeHomePageState extends State<AnimeHomePage> with TVScrollMixin {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.find<Settings>().checkForUpdates(context);
-      Get.find<Settings>().showWelcomeDialog(context);
       _scrollController.addListener(() {
         final statusBarHeight = MediaQuery.of(context).padding.top;
         const appBarHeight = kToolbarHeight + 20;

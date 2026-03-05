@@ -181,7 +181,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
                 child: Material(
                   elevation: elevation,
                   color: Colors.transparent,
-                  shadowColor: Theme.of(context).colorScheme.shadow.withOpacity(0.3),
+                  shadowColor:
+                      Theme.of(context).colorScheme.shadow.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(24),
                   child: child,
                 ),
@@ -200,7 +201,7 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
       itemBuilder: (context, index) => _buildListCard(index),
     );
   }
-  
+
   Widget _buildListCard(int index) {
     final theme = Theme.of(context);
     final listData = _lists[index];
@@ -254,7 +255,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
                               padding: const EdgeInsets.all(4),
                               child: Icon(
                                 Icons.drag_handle_rounded,
-                                color: theme.colorScheme.onSurface.withOpacity(0.4),
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.4),
                                 size: 24,
                               ),
                             ),
@@ -283,7 +285,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
                                   Text(
                                     '${listData.listData.length} items',
                                     style: TextStyle(
-                                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                      color: theme.colorScheme.onSurface
+                                          .withOpacity(0.6),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -604,7 +607,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
         },
         child: AlertDialog(
           backgroundColor: theme.colorScheme.surface.withOpacity(0.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Text('Rename List',
               style: TextStyle(
                   color: theme.colorScheme.onSurface,
@@ -615,10 +619,12 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
             style: TextStyle(color: theme.colorScheme.onSurface),
             decoration: InputDecoration(
               hintText: 'Enter list name',
-              hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              hintStyle: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5)),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3))),
+                  borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withOpacity(0.3))),
               focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(color: theme.colorScheme.primary)),
@@ -631,7 +637,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
               focusNode: cancelFocusNode,
               onPressed: () => Navigator.pop(context),
               child: Text('Cancel',
-                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                  style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7))),
             ),
             FilledButton(
               onPressed: () {
@@ -649,7 +656,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
               },
               style: FilledButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary.withOpacity(0.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text('Rename'),
             ),
@@ -658,7 +666,7 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
       ),
     );
   }
-    
+
   void _showDeleteDialog(int index) {
     final theme = Theme.of(context);
 
@@ -736,7 +744,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
         },
         child: AlertDialog(
           backgroundColor: theme.colorScheme.surface.withOpacity(0.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           title: Text('Create New List',
               style: TextStyle(
                   color: theme.colorScheme.onSurface,
@@ -747,10 +756,12 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
             style: TextStyle(color: theme.colorScheme.onSurface),
             decoration: InputDecoration(
               hintText: 'Enter list name',
-              hintStyle: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              hintStyle: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5)),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3))),
+                  borderSide: BorderSide(
+                      color: theme.colorScheme.outline.withOpacity(0.3))),
               focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(color: theme.colorScheme.primary)),
@@ -763,7 +774,8 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
               focusNode: cancelFocusNode,
               onPressed: () => Navigator.pop(context),
               child: Text('Cancel',
-                  style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.7))),
+                  style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.7))),
             ),
             FilledButton(
               onPressed: () {
@@ -785,10 +797,12 @@ class _CustomListsEditorState extends State<CustomListsEditor> {
               },
               style: FilledButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: Text('Create',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary)),
             ),
           ],
         ),

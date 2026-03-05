@@ -507,7 +507,7 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                                 ),
                               ),
                               Text(
-                                'Discover your favorite anime',
+                                'Discover your favorite ${Get.find<ServiceHandler>().serviceType.value == ServicesType.simkl ? "movies & shows" : "anime"}!',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Theme.of(context).colorScheme.primary,

@@ -41,7 +41,6 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.find<Settings>().checkForUpdates(context);
-      Get.find<Settings>().showWelcomeDialog(context);
     });
     _scrollController = ScrollController();
     initTVScroll();
@@ -212,7 +211,7 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Find your favourite anime!',
+                'Find your favorite ${Get.find<ServiceHandler>().serviceType.value == ServicesType.simkl ? "movies & shows" : "anime"}!',
                 style: TextStyle(
                   color: Theme.of(context)
                       .colorScheme

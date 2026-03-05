@@ -179,12 +179,12 @@ class _SettingsThemeState extends State<SettingsTheme> {
                       icon: const Icon(Icons.arrow_back_ios_new_rounded)),
                   const SizedBox(width: 10),
                   const Text("Theme",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 20)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                 ],
               ),
               const SizedBox(height: 30),
-              
+
               // Appearance Section
               NyantvExpansionTile(
                 title: 'Appearance',
@@ -214,8 +214,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
                           CustomSwitchTile(
                             icon: HugeIcons.strokeRoundedBlur,
                             title: "Liquid Mode",
-                            description:
-                                "Make everything glassy & liquidy...",
+                            description: "Make everything glassy & liquidy...",
                             switchValue: settings.liquidMode,
                             onChanged: (e) {
                               settings.disableGradient = false;
@@ -238,8 +237,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
                                     ),
                                     const SizedBox(height: 10),
                                     CustomSwitchTile(
-                                      switchValue:
-                                          settings.retainOriginalColor,
+                                      switchValue: settings.retainOriginalColor,
                                       icon: HugeIcons
                                           .strokeRoundedImageComposition,
                                       title: "Retain Original Color",
@@ -251,8 +249,8 @@ class _SettingsThemeState extends State<SettingsTheme> {
                                     const SizedBox(height: 10),
                                     CustomSwitchTile(
                                       switchValue: settings.usePosterColor,
-                                      icon: HugeIcons
-                                          .strokeRoundedImageDownload,
+                                      icon:
+                                          HugeIcons.strokeRoundedImageDownload,
                                       title: "Use Poster Color",
                                       description:
                                           "Applies anime/manga poster color on details page",
@@ -280,7 +278,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
                 initialExpanded: true,
               ),
               const SizedBox(height: 10),
-              
+
               // Extras Section
               NyantvExpansionTile(
                   initialExpanded: true,
@@ -301,7 +299,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
                       CustomTile(
                         icon: HugeIcons.strokeRoundedPaintBoard,
                         title: "Palette",
-                        description: "Choose your favourite palette!",
+                        description: "Choose your favorite palette!",
                         onTap: () {
                           showPaletteSelectionDialog(context);
                         },
@@ -318,14 +316,14 @@ class _SettingsThemeState extends State<SettingsTheme> {
                       CustomSwitchTile(
                         icon: HugeIcons.strokeRoundedColors,
                         title: "Custom Theme",
-                        description: "Choose your favourite color!",
+                        description: "Choose your favorite color!",
                         switchValue: customTheme,
                         onChanged: handleCustomThemeSwitch,
                       ),
                     ],
                   )),
               const SizedBox(height: 10),
-              
+
               // Custom Theme Colors
               if (customTheme) ...[
                 NyantvCard(
@@ -471,7 +469,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
               brightness: Brightness.dark);
           bool isSelected = themeMode == theme['label'];
           bool isSystem = theme['label'] == "System";
-          
+
           return NyantvOnTap(
             onTap: () {
               handleThemeMode(theme['label']);
@@ -493,7 +491,8 @@ class _SettingsThemeState extends State<SettingsTheme> {
                           ? Theme.of(context).colorScheme.primary
                           : Colors.transparent,
                     ),
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ClipRRect(
@@ -713,7 +712,7 @@ class _SettingsThemeState extends State<SettingsTheme> {
       ),
     );
   }
-    
+
   Widget _buildColorTemplates() {
     return GridView.builder(
       shrinkWrap: true,
@@ -727,8 +726,8 @@ class _SettingsThemeState extends State<SettingsTheme> {
       itemBuilder: (context, index) {
         final theme = colorMap.entries.toList()[index];
         bool isSelected = selectedColorIndex == index;
-        final ColorScheme colorScheme = buildColorScheme(
-            theme.value, Theme.of(context).brightness);
+        final ColorScheme colorScheme =
+            buildColorScheme(theme.value, Theme.of(context).brightness);
 
         return NyantvOnTap(
           onTap: () {
@@ -927,5 +926,4 @@ class _SettingsThemeState extends State<SettingsTheme> {
       },
     );
   }
-
 }

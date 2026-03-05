@@ -1,5 +1,6 @@
 import 'package:nyantv/utils/logger.dart';
 import 'package:nyantv/main.dart';
+import 'dart:async';
 import 'dart:io';
 
 import 'package:nyantv/controllers/settings/settings.dart';
@@ -29,30 +30,24 @@ Future<int> _getSdkInt() async {
 
 Future<bool> _requestStoragePermissions() async {
   if (!Platform.isAndroid) return true;
-
   try {
     final sdkInt = await _getSdkInt();
-    Logger.i('Android SDK version: $sdkInt');
-
     if (sdkInt >= 33) {
-      final permissions = [Permission.photos, Permission.videos];
-      final statuses = await permissions.request();
-
+      final statuses = await [Permission.photos, Permission.videos].request();
       if (await Permission.manageExternalStorage.isDenied) {
         final manageStorageStatus =
             await Permission.manageExternalStorage.request();
         if (manageStorageStatus.isPermanentlyDenied) {
-          await openAppSettings();
+          snackBar("Go to Settings > Permissions to enable storage");
           return false;
         }
       }
-
       return statuses.values.every((s) =>
           s == PermissionStatus.granted || s == PermissionStatus.limited);
     } else if (sdkInt >= 30) {
       final status = await Permission.manageExternalStorage.request();
       if (status.isPermanentlyDenied) {
-        await openAppSettings();
+        snackBar("Go to Settings > Permissions to enable storage");
         return false;
       }
       return status.isGranted;
@@ -60,7 +55,7 @@ Future<bool> _requestStoragePermissions() async {
       final statuses = await [Permission.storage].request();
       final allGranted = statuses.values.every((s) => s.isGranted);
       if (!allGranted && statuses.values.any((s) => s.isPermanentlyDenied)) {
-        await openAppSettings();
+        snackBar("Go to Settings > Permissions to enable storage");
         return false;
       }
       return allGranted;
@@ -83,15 +78,47 @@ void showWelcomeDialogg(BuildContext context) {
       final settings = Get.find<Settings>();
       final RxBool storagePermissionGranted = false.obs;
       final RxBool installPermissionGranted = false.obs;
+      if (Platform.isAndroid) {
+        Permission.manageExternalStorage.status.then(
+          (s) => storagePermissionGranted.value = s.isGranted,
+        );
+        Permission.requestInstallPackages.status.then(
+          (s) => installPermissionGranted.value = s.isGranted,
+        );
+      }
       final RxBool performanceMode = (!settings.enableAnimation).obs;
       final RxBool disableGradient = settings.disableGradient.obs;
       final serviceHandler = Get.find<ServiceHandler>();
       serviceHandler.changeService(ServicesType.anilist);
 
       Future<void> requestStoragePermission() async {
-        final status = await _requestStoragePermissions();
-        storagePermissionGranted.value = status;
-        if (!status) {
+        await _requestStoragePermissions();
+
+        final completer = Completer<void>();
+        late final AppLifecycleListener listener;
+        listener = AppLifecycleListener(
+          onResume: () {
+            if (!completer.isCompleted) completer.complete();
+            listener.dispose();
+          },
+        );
+        await completer.future.timeout(
+          const Duration(seconds: 60),
+          onTimeout: () => listener.dispose(),
+        );
+
+        bool granted = false;
+        for (int i = 0; i < 6; i++) {
+          await Future.delayed(const Duration(milliseconds: 400));
+          final status = await Permission.manageExternalStorage.status;
+          if (status.isGranted) {
+            granted = true;
+            break;
+          }
+        }
+
+        storagePermissionGranted.value = granted;
+        if (!granted) {
           snackBar("Storage permission is required to download updates");
         }
       }
@@ -182,7 +209,12 @@ void showWelcomeDialogg(BuildContext context) {
                                       "Allow storage access to download updates",
                                   switchValue: storagePermissionGranted.value,
                                   onChanged: (val) {
-                                    if (val) requestStoragePermission();
+                                    if (val) {
+                                      storagePermissionGranted.value = true;
+                                      requestStoragePermission();
+                                    } else {
+                                      storagePermissionGranted.value = false;
+                                    }
                                   },
                                 ),
                                 CustomSwitchTile(
@@ -192,7 +224,12 @@ void showWelcomeDialogg(BuildContext context) {
                                       "Allow installing updates for the app",
                                   switchValue: installPermissionGranted.value,
                                   onChanged: (val) {
-                                    if (val) requestInstallPermission();
+                                    if (val) {
+                                      installPermissionGranted.value = true;
+                                      requestInstallPermission();
+                                    } else {
+                                      installPermissionGranted.value = false;
+                                    }
                                   },
                                 ),
                               ],

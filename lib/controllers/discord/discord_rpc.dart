@@ -96,7 +96,7 @@ class DiscordProfile {
   }
 }
 
-class DiscordRPCController extends GetxController with WidgetsBindingObserver{
+class DiscordRPCController extends GetxController with WidgetsBindingObserver {
   static const String _applicationId = '1470114715978961099';
   static const String _gatewayUrl =
       'wss://gateway.discord.gg/?v=10&encoding=json';
@@ -142,29 +142,29 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver{
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     switch (state) {
       case AppLifecycleState.resumed:
         print('App resumed - checking Discord connection');
         _checkAndReconnect();
         break;
-        
+
       case AppLifecycleState.paused:
         print('App paused - clearing presence');
         _missedHeartbeats = 0;
         // Optional: Presence clearen wenn App in Hintergrund geht
         clearPresence();
         break;
-        
+
       case AppLifecycleState.inactive:
         print('App inactive');
         break;
-        
+
       case AppLifecycleState.detached:
         print('App detached - disconnecting Discord');
         _disconnect();
         break;
-        
+
       case AppLifecycleState.hidden:
         print('App hidden');
         break;
@@ -186,9 +186,9 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver{
 
     _isReconnecting = true;
     await _disconnect();
-    
+
     await Future.delayed(const Duration(seconds: 2));
-    
+
     await connect();
     _isReconnecting = false;
   }
@@ -326,7 +326,7 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver{
 
   void _scheduleReconnect() {
     if (_token.value.isEmpty || _isReconnecting) return;
-    
+
     Future.delayed(const Duration(seconds: 5), () {
       if (!_isConnected.value && _token.value.isNotEmpty) {
         _reconnect();
@@ -394,7 +394,7 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver{
         (_) {
           _sendHeartbeat();
           _missedHeartbeats++;
-          
+
           if (_missedHeartbeats >= _maxMissedHeartbeats) {
             _reconnect();
           }
@@ -423,18 +423,18 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver{
     _gatewaySocket?.add(jsonEncode(payload));
   }
 
-Future<String> _processImageUrl(String? url, {int retries = 3}) async {
+  Future<String> _processImageUrl(String? url, {int retries = 3}) async {
     try {
       if (Platform.isAndroid || Platform.isIOS) {
         for (int i = 0; i < retries; i++) {
           try {
             final processedUrl = await urlToDcAsset(url ?? _getAppIconUrl())
                 .timeout(const Duration(seconds: 5));
-            
+
             if (processedUrl.startsWith('mp:')) {
               return processedUrl;
             }
-            
+
             if (i < retries - 1) {
               await Future.delayed(Duration(seconds: 2 * (i + 1)));
             }
@@ -507,7 +507,7 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
     print('Connected: $_isConnected');
     print('Episode: ${episode.number}');
     print('Anime: ${anime.title}');
-    
+
     if (!_isConnected.value) {
       print('Discord not connected - skipping update');
       return;
@@ -527,12 +527,13 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
     final anilistUrl = 'https://anilist.co/anime/${anime.id}';
     final animeTitle = anime.title;
 
-    final stateText = 'Episode $episodeNumber ${!episodeName.toLowerCase().contains('episode') ? '– $episodeName' : ''}';
+    final stateText =
+        'Episode $episodeNumber ${!episodeName.toLowerCase().contains('episode') ? '– $episodeName' : ''}';
 
     if (isMobile) {
       final largeImage = await _processImageUrl(posterUrl);
       final smallImage = await _processImageUrl(_getAppIconUrl());
-      
+
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {
@@ -556,7 +557,10 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
               },
               'buttons': ['View on AL', 'Watch on NyanTV'],
               'metadata': {
-                'button_urls': [anilistUrl, 'https://github.com/NyanTV/NyanTV/'],
+                'button_urls': [
+                  anilistUrl,
+                  'https://github.com/NyanTV/NyanTV/'
+                ],
               },
             }
           ],
@@ -630,7 +634,7 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
     if (isMobile) {
       final largeImage = await _processImageUrl(posterUrl);
       final smallImage = await _processImageUrl(_getAppIconUrl());
-      
+
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {
@@ -650,7 +654,10 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
               },
               'buttons': ['View on AL', 'Watch on NyanTV'],
               'metadata': {
-                'button_urls': [anilistUrl, 'https://github.com/NyanTV/NyanTV/'],
+                'button_urls': [
+                  anilistUrl,
+                  'https://github.com/NyanTV/NyanTV/'
+                ],
               },
             }
           ],
@@ -694,7 +701,6 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
     }
   }
 
-
   Future<void> updateMediaPresence({required Media media}) async {
     if (!_isConnected.value) {
       print('Discord not connected');
@@ -711,7 +717,7 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
     if (isMobile) {
       final largeImage = await _processImageUrl(media.poster);
       final smallImage = await _processImageUrl(_getAppIconUrl());
-      
+
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {
@@ -731,7 +737,10 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
               },
               'buttons': ['View on AL', 'Watch on NyanTV'],
               'metadata': {
-                'button_urls': [anilistUrl, 'https://github.com/NyanTV/NyanTV/'],
+                'button_urls': [
+                  anilistUrl,
+                  'https://github.com/NyanTV/NyanTV/'
+                ],
               },
             }
           ],
@@ -762,7 +771,8 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
             buttons: [
               RPCButton(label: 'View on AL', url: anilistUrl),
               RPCButton(
-                label: '${media.mediaType.isAnime ? 'Watch' : 'Read'} on NyanTV',
+                label:
+                    '${media.mediaType.isAnime ? 'Watch' : 'Read'} on NyanTV',
                 url: 'https://github.com/NyanTV/NyanTV/',
               ),
             ],
@@ -785,9 +795,8 @@ Future<String> _processImageUrl(String? url, {int retries = 3}) async {
     }
 
     if (isMobile) {
-      // WICHTIG: Images VOR jsonEncode verarbeiten!
       final largeImage = await _processImageUrl(_getAppIconUrl());
-      
+
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {

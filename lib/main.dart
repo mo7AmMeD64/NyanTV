@@ -439,14 +439,6 @@ class _FilterScreenState extends State<FilterScreen> {
     });
   }
 
-  final routes = [
-    const SizedBox.shrink(),
-    const HomePage(),
-    const AnimeHomePage(),
-    const MyLibrary(),
-    const ExtensionScreen(disableGlow: true),
-  ];
-
   final mobileRoutes = [
     const HomePage(),
     const AnimeHomePage(),
@@ -498,12 +490,22 @@ class _FilterScreenState extends State<FilterScreen> {
             onItemTapped: _onItemTapped,
           ),
           Expanded(
-            child: _firstLoad
-                ? routes[_selectedIndex]
-                : SmoothPageEntrance(
-                    style: PageEntranceStyle.slideUpGentle,
-                    key: Key(_selectedIndex.toString()),
-                    child: routes[_selectedIndex]),
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: [
+                const SizedBox.shrink(),
+                ExcludeFocus(
+                    excluding: _selectedIndex != 1, child: const HomePage()),
+                ExcludeFocus(
+                    excluding: _selectedIndex != 2,
+                    child: const AnimeHomePage()),
+                ExcludeFocus(
+                    excluding: _selectedIndex != 3, child: const MyLibrary()),
+                ExcludeFocus(
+                    excluding: _selectedIndex != 4,
+                    child: const ExtensionScreen(disableGlow: true)),
+              ],
+            ),
           ),
         ],
       ),

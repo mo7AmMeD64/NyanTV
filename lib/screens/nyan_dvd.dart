@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -48,10 +49,9 @@ class _InitialisingScreenState extends State<InitialisingScreen>
         details: 'Idle',
       );
     } else {
-      final state = SchedulerBinding.instance.lifecycleState;
-      if (state == AppLifecycleState.resumed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         _startInit();
-      }
+      });
     }
   }
 
@@ -70,15 +70,18 @@ class _InitialisingScreenState extends State<InitialisingScreen>
 
   Future<void> _waitForInit() async {
     final serviceHandler = Get.find<ServiceHandler>();
-    const minWait = Duration(milliseconds: 1500);
+    final isFirstTime =
+        Hive.box('themeData').get('isFirstTime', defaultValue: true);
+    final minWait = isFirstTime
+        ? const Duration(milliseconds: 3000)
+        : const Duration(milliseconds: 1500);
     const maxWait = Duration(seconds: 10);
     final start = DateTime.now();
 
-    while (DateTime.now().difference(start) < maxWait) {
-      await Future.delayed(const Duration(milliseconds: 150));
-      if (DateTime.now().difference(start) >= minWait &&
-          _isServiceReady(serviceHandler)){ break; }
-    }
+    await Future.wait([
+      _precacheWelcomeAssets(),
+      _waitForService(serviceHandler, start, minWait, maxWait),
+    ]);
 
     if (!mounted) return;
     await Future.delayed(const Duration(milliseconds: 500));
@@ -89,8 +92,40 @@ class _InitialisingScreenState extends State<InitialisingScreen>
       setState(() => _isReady = true);
       if (!widget.dvdMode) {
         setExcludedScreen(false);
+        final isFirstTime =
+            Hive.box('themeData').get('isFirstTime', defaultValue: true);
+        if (isFirstTime) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) Get.find<Settings>().showWelcomeDialog(context);
+          });
+        }
       }
     }
+  }
+
+  Future<void> _waitForService(ServiceHandler handler, DateTime start,
+      Duration minWait, Duration maxWait) async {
+    while (DateTime.now().difference(start) < maxWait) {
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (DateTime.now().difference(start) >= minWait &&
+          _isServiceReady(handler)) {
+        break;
+      }
+    }
+  }
+
+  Future<void> _precacheWelcomeAssets() async {
+    final isFirstTime =
+        Hive.box('themeData').get('isFirstTime', defaultValue: true);
+    if (!isFirstTime) return;
+    if (!mounted) return;
+
+    await Future.wait([
+      precacheImage(
+          const AssetImage('assets/images/anilist-icon.png'), context),
+      precacheImage(const AssetImage('assets/images/mal-icon.png'), context),
+      precacheImage(const AssetImage('assets/images/simkl-icon.png'), context),
+    ]);
   }
 
   bool _isServiceReady(ServiceHandler handler) =>
@@ -122,14 +157,14 @@ class _InitialisingScreenState extends State<InitialisingScreen>
     final bypass = UIScaleBypass.of(context);
     final isScaled = bypass?.bypassScale == true;
     final settings = Get.find<Settings>();
-    final scale = (isScaled && settings.uiScale > 0.0 && settings.uiScale != 1.0)
-        ? settings.uiScale
-        : 1.0;
+    final scale =
+        (isScaled && settings.uiScale > 0.0 && settings.uiScale != 1.0)
+            ? settings.uiScale
+            : 1.0;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF08080F) : const Color(0xFFF4F4F9);
-    final textColor =
-        (isDark ? Colors.white : Colors.black).withOpacity(0.35);
+    final textColor = (isDark ? Colors.white : Colors.black).withOpacity(0.35);
     final primary = Theme.of(context).colorScheme.primary;
 
     final neutralMediaQuery = MediaQuery.of(context).copyWith(
@@ -178,10 +213,9 @@ class _InitialisingScreenState extends State<InitialisingScreen>
                 children: [
                   if (!widget.dvdMode)
                     const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: ExpressiveLoadingIndicator()
-                    ),
+                        width: 20,
+                        height: 20,
+                        child: ExpressiveLoadingIndicator()),
                   const SizedBox(height: 14),
                   Text(
                     widget.dvdMode ? 'PRESS BACK TO RETURN' : 'INITIALISING',
@@ -288,10 +322,9 @@ class _DVDBounceLayerState extends State<_DVDBounceLayer>
   void initState() {
     super.initState();
     final rng = Random();
-    if (widget.dvdMode){
+    if (widget.dvdMode) {
       _logoSize = 95.0;
-    }
-    else {
+    } else {
       _logoSize = 350.0;
     }
     _vx = _speed * (rng.nextBool() ? 1.0 : -1.0);
@@ -315,9 +348,9 @@ class _DVDBounceLayerState extends State<_DVDBounceLayer>
     if (!mounted) return;
 
     if (elapsed - _lastTickTime < _targetFrameDuration) return;
-    
-    final deltaMs = _lastTickTime == Duration.zero 
-        ? _targetFrameDuration.inMilliseconds 
+
+    final deltaMs = _lastTickTime == Duration.zero
+        ? _targetFrameDuration.inMilliseconds
         : (elapsed - _lastTickTime).inMilliseconds;
     _lastTickTime = elapsed;
 
@@ -330,7 +363,7 @@ class _DVDBounceLayerState extends State<_DVDBounceLayer>
 
   void _updateBounceAnimation(int deltaMs) {
     if (_maxX <= 0.0 || _maxY <= 0.0) return;
-    
+
     final deltaFactor = deltaMs / 16.67;
     double nx = _x + (_vx * deltaFactor);
     double ny = _y + (_vy * deltaFactor);
@@ -392,7 +425,8 @@ class _DVDBounceLayerState extends State<_DVDBounceLayer>
             left: centerX,
             top: centerY,
             child: RepaintBoundary(
-              child: _BouncingLogo(size: _logoSize, color: rgbColor, dvdMode: false),
+              child: _BouncingLogo(
+                  size: _logoSize, color: rgbColor, dvdMode: false),
             ),
           ),
         ]);
@@ -406,7 +440,9 @@ class _DVDBounceLayerState extends State<_DVDBounceLayer>
             child: AnimatedBuilder(
               animation: _colorAnim,
               builder: (context, child) => _BouncingLogo(
-                  size: _logoSize, color: _colorAnim.value ?? Colors.white, dvdMode: false),
+                  size: _logoSize,
+                  color: _colorAnim.value ?? Colors.white,
+                  dvdMode: false),
             ),
           ),
         ),
@@ -419,7 +455,8 @@ class _BouncingLogo extends StatelessWidget {
   final double size;
   final Color color;
   final bool dvdMode;
-  const _BouncingLogo({required this.size, required this.color, required this.dvdMode});
+  const _BouncingLogo(
+      {required this.size, required this.color, required this.dvdMode});
 
   @override
   Widget build(BuildContext context) {
@@ -465,7 +502,8 @@ class _BouncingLogo extends StatelessWidget {
           ImageFiltered(
             imageFilter: ui.ImageFilter.blur(sigmaX: 14, sigmaY: 14),
             child: ColorFiltered(
-              colorFilter: ColorFilter.mode(color.withOpacity(0.55), BlendMode.modulate),
+              colorFilter:
+                  ColorFilter.mode(color.withOpacity(0.55), BlendMode.modulate),
               child: Image.asset(
                 'assets/images/logo_transparent.png',
                 width: size,

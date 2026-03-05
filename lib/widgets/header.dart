@@ -141,9 +141,9 @@ class Header extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                        "Find your favourite Anime or whatever you like!",
-                        style: TextStyle())
+                    Text(
+                        "Find your favorite ${Get.find<ServiceHandler>().serviceType.value == ServicesType.simkl ? "Movies & Shows" : "Anime"} or whatever you like!",
+                        style: const TextStyle())
                   ],
                 ),
                 const Spacer(),
