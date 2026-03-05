@@ -79,7 +79,9 @@ class TrackedMedia {
       servicesType: ServicesType.simkl,
       mediaStatus:
           json['not_aired_episodes_count'] == 0 ? "completed" : "airing",
-      rating: null,
+      rating: show['ratings']?['imdb']?['rating']?.toString() ??
+          show['ratings']?['simkl']?['rating']?.toString() ??
+          '?',
       score: null,
       format: null,
       mediaListId: '${ids['simkl']}*SERIES',
@@ -103,7 +105,9 @@ class TrackedMedia {
       type: "movie",
       mediaStatus:
           json['not_aired_episodes_count'] == 0 ? "COMPLETED" : "AIRING",
-      rating: null,
+      rating: show['ratings']?['imdb']?['rating']?.toString() ??
+          show['ratings']?['simkl']?['rating']?.toString() ??
+          '?',
       score: null,
       format: null,
       mediaListId: '${ids['simkl']}*MOVIE',

@@ -715,7 +715,9 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
         CharactersCarousel(characters: anilistData!.characters ?? []),
         ReusableCarousel(
           data: anilistData!.recommendations,
-          title: "Recommended Anime",
+          title: anilistData!.serviceType == ServicesType.simkl
+              ? "Recommended ${anilistData!.id.endsWith('MOVIE') ? 'Movies' : 'Shows'}"
+              : "Recommended Anime",
           variant: DataVariant.recommendation,
         ),
       ],

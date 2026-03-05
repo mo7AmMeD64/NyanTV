@@ -7,6 +7,7 @@ import 'package:nyantv/controllers/service_handler/params.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/controllers/services/widgets/widgets_builders.dart';
 import 'package:nyantv/controllers/settings/methods.dart';
+import 'package:nyantv/controllers/settings/settings.dart';
 import 'package:nyantv/models/Anilist/anilist_media_user.dart';
 import 'package:nyantv/models/Anilist/anilist_profile.dart';
 import 'package:nyantv/models/Media/media.dart';
@@ -19,6 +20,7 @@ import 'package:nyantv/widgets/common/big_carousel.dart';
 import 'package:nyantv/widgets/common/reusable_carousel.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
@@ -58,7 +60,7 @@ class SimklService extends GetxController
 
   Future<void> fetchMovies() async {
     final url =
-        "https://api.simkl.com/movies/trending?extended=overview&client_id=${dotenv.env['SIMKL_CLIENT_ID']}&perPage=20";
+        "https://api.simkl.com/movies/trending?extended=full&client_id=${dotenv.env['SIMKL_CLIENT_ID']}&perPage=20";
     final resp = await get(Uri.parse(url));
     if (resp.statusCode == 200) {
       final data = jsonDecode(resp.body) as List<dynamic>;
@@ -126,6 +128,11 @@ class SimklService extends GetxController
   @override
   RxList<Widget> homeWidgets(BuildContext context) {
     final isDesktop = Get.width > 600;
+    final settings = Get.find<Settings>();
+    final acceptedLists = settings.homePageCards.entries
+        .where((entry) => entry.value)
+        .map<String>((entry) => entry.key)
+        .toList();
     return [
       if (isLoggedIn.value)
         Row(
@@ -175,6 +182,17 @@ class SimklService extends GetxController
           ],
         ),
       const SizedBox(height: 25),
+      if (acceptedLists.isNotEmpty)
+        Column(
+          children: acceptedLists.map((e) {
+            return ReusableCarousel(
+              data: filterListByLabel(animeList, e),
+              title: e,
+              variant: DataVariant.anilist,
+              type: ItemType.anime,
+            );
+          }).toList(),
+        ),
       buildSection("Planned Movies", continueWatchingMovies.value,
           variant: DataVariant.anilist),
       buildSection("Continue Watching (SHOWS)", continueWatchingSeries.value,
@@ -219,38 +237,6 @@ class SimklService extends GetxController
           ReusableCarousel(
               data: trendingMovies.value.sublist(21, 30),
               title: "More than More Trending Movies"),
-        ],
-      ].obs;
-
-  @override
-  RxList<Widget> mangaWidgets(BuildContext context) => [
-        if (trendingSeries.isEmpty)
-          const Center(
-            child: NyantvProgressIndicator(),
-          )
-        else ...[
-          // CustomSearchBar(
-          //   onSubmitted: (val) {
-          //     navigate(() => SearchPage(
-          //           searchTerm: val,
-          //           isManga: false,
-          //         ));
-          //   },
-          //   suffixIconWidget: buildChip("SERIES"),
-          //   disableIcons: true,
-          //   hintText: "Search Series...",
-          // ),
-          buildBigCarousel(trendingSeries.value.sublist(0, 10), false,
-              type: CarouselType.simkl),
-          ReusableCarousel(
-              data: trendingSeries.value.sublist(0, 10),
-              title: "Trending Series"),
-          ReusableCarousel(
-              data: trendingSeries.value.sublist(11, 20),
-              title: "More Trending Series"),
-          ReusableCarousel(
-              data: trendingSeries.value.sublist(21, trendingSeries.length - 1),
-              title: "More than More Trending Series"),
         ],
       ].obs;
 
@@ -488,43 +474,101 @@ class SimklService extends GetxController
   Future<void> fetchUserMovieList() async {
     final token = await storage.get('simkl_auth_token');
     final apiKey = dotenv.env['SIMKL_CLIENT_ID'];
-    final url = Uri.parse('https://api.simkl.com/sync/all-items/movies');
-    final response = await get(url, headers: {
+    final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
       'simkl-api-key': apiKey!
-    });
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      animeList.value = (data['movies'] as List<dynamic>)
-          .map((e) => TrackedMedia.fromSimklMovie(e))
-          .toList();
+    };
+
+    final results = await Future.wait([
+      get(Uri.parse('https://api.simkl.com/sync/all-items/movies'),
+          headers: headers),
+      get(
+          Uri.parse(
+              'https://api.simkl.com/ratings/ratings/movies?user_watchlist=all&fields=simkl,ext&client_id=$apiKey'),
+          headers: headers),
+    ]);
+
+    if (results[0].statusCode == 200) {
+      final data = jsonDecode(results[0].body);
+
+      Map<int, Map<String, dynamic>> ratingMap = {};
+      if (results[1].statusCode == 200) {
+        for (final r in (jsonDecode(results[1].body) as List<dynamic>? ?? [])) {
+          final id = r['id'];
+          if (id != null) ratingMap[id] = r;
+        }
+      }
+
+      final movies = (data['movies'] as List<dynamic>).map((e) {
+        final simklId = e['movie']?['ids']?['simkl'];
+        final r = ratingMap[simklId];
+        if (r != null) {
+          e['movie']['ratings'] = {
+            if (r['simkl'] != null) 'simkl': r['simkl'],
+            if (r['imdb'] != null) 'imdb': r['imdb'],
+          };
+        }
+        return e;
+      }).toList();
+
+      animeList.value =
+          movies.map((e) => TrackedMedia.fromSimklMovie(e)).toList();
       continueWatchingMovies.value = animeList.value
           .where((e) => e.watchingStatus != "COMPLETED")
           .toList();
     } else {
-      Logger.i(response.body);
+      Logger.i(results[0].body);
     }
   }
 
   Future<void> fetchUserSeriesList() async {
     final token = await storage.get('simkl_auth_token');
     final apiKey = dotenv.env['SIMKL_CLIENT_ID'];
-    final url = Uri.parse('https://api.simkl.com/sync/all-items/shows');
-    final response = await get(url, headers: {
+    final headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
       'simkl-api-key': apiKey!
-    });
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      mangaList.value = (data['shows'] as List<dynamic>)
-          .map((e) => TrackedMedia.fromSimklShow(e))
-          .toList();
+    };
+
+    final results = await Future.wait([
+      get(Uri.parse('https://api.simkl.com/sync/all-items/shows'),
+          headers: headers),
+      get(
+          Uri.parse(
+              'https://api.simkl.com/ratings/ratings/tv?user_watchlist=all&fields=simkl,ext&client_id=$apiKey'),
+          headers: headers),
+    ]);
+
+    if (results[0].statusCode == 200) {
+      final data = jsonDecode(results[0].body);
+
+      Map<int, Map<String, dynamic>> ratingMap = {};
+      if (results[1].statusCode == 200) {
+        for (final r in (jsonDecode(results[1].body) as List<dynamic>? ?? [])) {
+          final id = r['id'];
+          if (id != null) ratingMap[id] = r;
+        }
+      }
+
+      final shows = (data['shows'] as List<dynamic>).map((e) {
+        final simklId = e['show']?['ids']?['simkl'];
+        final r = ratingMap[simklId];
+        if (r != null) {
+          e['show']['ratings'] = {
+            if (r['simkl'] != null) 'simkl': r['simkl'],
+            if (r['imdb'] != null) 'imdb': r['imdb'],
+          };
+        }
+        return e;
+      }).toList();
+
+      mangaList.value =
+          shows.map((e) => TrackedMedia.fromSimklShow(e)).toList();
       continueWatchingSeries.value =
           mangaList.where((e) => e.watchingStatus == "CURRENT").toList();
     } else {
-      Logger.i(response.body);
+      Logger.i(results[1].body);
     }
   }
 

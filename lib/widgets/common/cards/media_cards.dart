@@ -3,6 +3,7 @@ import 'package:nyantv/utils/extension_utils.dart';
 import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/widgets/common/cards/base_card.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/widgets/header.dart';
 import 'package:blur/blur.dart';
 import 'package:dartotsu_extension_bridge/Models/Source.dart';
@@ -279,6 +280,7 @@ class ExoticCard extends CarouselCard {
                       variant: TextVariant.bold,
                     ),
                     if (variant == DataVariant.anilist &&
+                        variant != DataVariant.recommendation &&
                         itemData.source != null &&
                         itemData.source != '?' &&
                         itemData.source != '0' &&
@@ -450,6 +452,7 @@ class MinimalExoticCard extends CarouselCard {
                       variant: TextVariant.bold,
                     ),
                     if (variant == DataVariant.anilist &&
+                        variant != DataVariant.recommendation &&
                         itemData.source != null &&
                         itemData.source != '?' &&
                         itemData.source != '0' &&
@@ -553,14 +556,28 @@ class BlurCard extends CarouselCard {
   }
 
   @override
-  Widget buildCardBadge(BuildContext context, DataVariant variant, ItemType type) {
+  Widget buildCardBadge(
+      BuildContext context, DataVariant variant, ItemType type) {
+    if (variant == DataVariant.recommendation &&
+        itemData.servicesType == ServicesType.simkl) {
+      return const SizedBox.shrink();
+    }
+
     final theme = Theme.of(context);
     final bool hasRating = variant == DataVariant.anilist &&
+        variant != DataVariant.recommendation &&
         itemData.source != null &&
         itemData.source!.isNotEmpty &&
         itemData.source != '?' &&
         itemData.source != '0' &&
         itemData.source != '0.0';
+
+    final bool hasValidExtraData = itemData.extraData != null &&
+        itemData.extraData!.isNotEmpty &&
+        itemData.extraData != '?' &&
+        itemData.extraData != '??';
+
+    if (!hasRating && !hasValidExtraData) return const SizedBox.shrink();
 
     return Positioned(
       top: 6,
@@ -586,26 +603,30 @@ class BlurCard extends CarouselCard {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  getIconForVariant(itemData.extraData ?? '', variant),
-                  size: 16,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(width: 4),
-                NyantvText(
-                  text: itemData.extraData ?? '',
-                  color: theme.colorScheme.primary,
-                  size: 12,
-                  variant: TextVariant.bold,
-                ),
-                if (hasRating) ...[
-                  Container(
-                    width: 1,
-                    height: 11,
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
-                    color: theme.colorScheme.primary.withOpacity(0.4),
+                if (hasValidExtraData) ...[
+                  Icon(
+                    getIconForVariant(itemData.extraData ?? '', variant),
+                    size: 16,
+                    color: theme.colorScheme.primary,
                   ),
-                  Icon(Iconsax.star5, size: 13, color: theme.colorScheme.primary),
+                  const SizedBox(width: 4),
+                  NyantvText(
+                    text: itemData.extraData ?? '',
+                    color: theme.colorScheme.primary,
+                    size: 12,
+                    variant: TextVariant.bold,
+                  ),
+                ],
+                if (hasRating) ...[
+                  if (hasValidExtraData)
+                    Container(
+                      width: 1,
+                      height: 11,
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      color: theme.colorScheme.primary.withOpacity(0.4),
+                    ),
+                  Icon(Iconsax.star5,
+                      size: 13, color: theme.colorScheme.primary),
                   const SizedBox(width: 3),
                   NyantvText(
                     text: itemData.source!,

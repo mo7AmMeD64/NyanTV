@@ -178,7 +178,9 @@ class Media {
           ? '${json['runtime']} minutes'
           : 'Unknown runtime',
       status: json['type']?.toUpperCase() ?? 'UNKNOWN',
-      rating: json['ratings']?['simkl']?['rating']?.toString() ?? 'N/A',
+      rating: json['ratings']?['simkl']?['rating']?.toString() ??
+          json['ratings']?['imdb']?['rating']?.toString() ??
+          ' N/A',
       popularity: json['rank']?.toString() ?? '0',
       mediaType: type,
       aired: json['released'] ?? 'Unknown air date',
