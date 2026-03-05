@@ -60,7 +60,7 @@ class SimklService extends GetxController
 
   Future<void> fetchMovies() async {
     final url =
-        "https://api.simkl.com/movies/trending?extended=full&client_id=${dotenv.env['SIMKL_CLIENT_ID']}&perPage=20";
+        "https://api.simkl.com/movies/trending?extended=overview&client_id=${dotenv.env['SIMKL_CLIENT_ID']}&perPage=20";
     final resp = await get(Uri.parse(url));
     if (resp.statusCode == 200) {
       final data = jsonDecode(resp.body) as List<dynamic>;
