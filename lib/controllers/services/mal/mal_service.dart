@@ -209,7 +209,10 @@ class MalService extends GetxController implements BaseService, OnlineService {
   Rx<Profile> profileData = Profile().obs;
 
   Future<void> fetchUserAnimeList() async {
-    final data = await fetchMAL('...&limit=1000...');
+    final data = await fetchMAL(
+        'https://api.myanimelist.net/v2/users/@me/animelist?fields=num_episodes,mean,list_status&limit=1000&sort=list_updated_at&nsfw=1',
+        auth: false,
+        useAuthHeader: true);
     final rawList = data['data'] as List<dynamic>;
     animeList.value = await compute(_parseTrackedMedia, rawList);
     continueWatching.value = animeList
