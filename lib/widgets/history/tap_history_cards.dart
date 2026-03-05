@@ -39,7 +39,7 @@ class RecentlyOpenedAnimeCard extends StatelessWidget {
 
     return NyantvOnTap(
       onTap: () {
-        if (serviceHandler.serviceType.value == false) {
+        if (serviceHandler.serviceType.value == ServicesType.simkl) {
           navigate(() =>
               AnimeDetailsPage(media: media, tag: media.createdAt.toString()));
           return;

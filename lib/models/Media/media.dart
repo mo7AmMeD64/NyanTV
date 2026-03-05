@@ -117,7 +117,6 @@ class Media {
     );
   }
 
-
   factory Media.fromFullMAL(Map<String, dynamic> json) {
     final node = json;
 
@@ -156,6 +155,68 @@ class Media {
       mediaType: node['media_type'] == 'tv' ? ItemType.anime : ItemType.manga,
       serviceType: ServicesType.mal,
     );
+  }
+
+  factory Media.fromSimkl(Map<String?, dynamic> json, bool isMovie) {
+    ItemType type = ItemType.anime;
+
+    return Media(
+      id: '${json['ids']?['simkl_id']?.toString() ?? json['ids']?['simkl']?.toString()}*${isMovie ? "MOVIE" : "SERIES"}',
+      title: json['title'] ?? 'Unknown Title',
+      romajiTitle: json['title'] ?? 'Unknown Romaji Title',
+      description: json['overview'] ?? 'No description available.',
+      poster: json['poster'] != null
+          ? 'https://wsrv.nl/?url=https://simkl.in/posters/${json['poster']}_m.jpg'
+          : '',
+      cover: json['fanart'] != null
+          ? 'https://wsrv.nl/?url=https://simkl.in/fanart/${json['fanart']}_medium.jpg'
+          : null,
+      totalEpisodes: json['total_episodes']?.toString() ?? '1',
+      type: json['country']?.toUpperCase() ?? 'UNKNOWN',
+      premiered: json['released'] ?? 'Unknown release date',
+      duration: json['runtime'] != null
+          ? '${json['runtime']} minutes'
+          : 'Unknown runtime',
+      status: json['type']?.toUpperCase() ?? 'UNKNOWN',
+      rating: json['ratings']?['simkl']?['rating']?.toString() ?? 'N/A',
+      popularity: json['rank']?.toString() ?? '0',
+      mediaType: type,
+      aired: json['released'] ?? 'Unknown air date',
+      totalChapters: '0',
+      genres: (json['genres'] as List<dynamic>?)
+              ?.map((genre) => genre.toString())
+              .toList() ??
+          [],
+      recommendations: (json['users_recommendations'] as List<dynamic>?)
+              ?.map((e) {
+                try {
+                  return Media.fromSmallSimkl(e, isMovie);
+                } catch (error) {
+                  return null;
+                }
+              })
+              .where((e) => e != null)
+              .toList()
+              .cast<Media>() ??
+          [],
+      serviceType: ServicesType.simkl,
+    );
+  }
+
+  factory Media.fromSmallSimkl(Map<String?, dynamic> json, bool isMovie) {
+    ItemType type = ItemType.anime;
+    return Media(
+        id:
+            '${json['ids']?['simkl']?.toString()}*${isMovie ? "MOVIE" : "SERIES"}',
+        title: json['title'] ?? 'Unknown Title',
+        poster: json['poster'] != null
+            ? 'https://simkl.in/posters/${json['poster']}_m.jpg'
+            : '',
+        type: isMovie ? 'MOVIE' : 'SERIES',
+        rating: '0.0',
+        mediaType: type,
+        serviceType: ServicesType.simkl,
+        aired: json['year']?.toString() ?? 'Unknown air date');
   }
 
   factory Media.froDMedia(DMedia anime, ItemType type) {

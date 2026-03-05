@@ -123,6 +123,7 @@ class _AnimeListState extends State<AnimeList> {
                           animeData: isItemsReversed
                               ? animeList.reversed.toList()
                               : animeList,
+                          listTitle: widget.title,
                         ))
                     .toList()
                 : tabs
@@ -131,6 +132,7 @@ class _AnimeListState extends State<AnimeList> {
                           animeData: isItemsReversed
                               ? animeList.reversed.toList()
                               : animeList,
+                          listTitle: widget.title,
                         ))
                     .toList(),
           ),
@@ -143,11 +145,13 @@ class _AnimeListState extends State<AnimeList> {
 class AnimeListContent extends StatelessWidget {
   final String tabType;
   final List<TrackedMedia>? animeData;
+  final String? listTitle;
 
   const AnimeListContent({
     super.key,
     required this.tabType,
     required this.animeData,
+    this.listTitle,
   });
 
   int getResponsiveCrossAxisCount(double screenWidth, {int itemWidth = 150}) {
@@ -163,7 +167,8 @@ class AnimeListContent extends StatelessWidget {
     final filteredAnimeList = filterListByStatus(animeData!, tabType);
 
     if (filteredAnimeList.isEmpty) {
-      return Center(child: Text('No anime found for $tabType'));
+      return Center(
+          child: Text('No ${listTitle ?? "items"} found for $tabType'));
     }
 
     return GridView.builder(

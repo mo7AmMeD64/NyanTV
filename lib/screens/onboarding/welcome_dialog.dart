@@ -198,7 +198,7 @@ void showWelcomeDialogg(BuildContext context) {
                               ],
                               CustomTile(
                                 description:
-                                    'Change Service to whichever you prefer! like AL or MAL',
+                                    'Change Service to whichever you prefer! like AL, MAL or Simkl',
                                 icon: HugeIcons.strokeRoundedAiSetting,
                                 title: 'Change Service',
                                 onTap: () {
@@ -251,6 +251,9 @@ void showWelcomeDialogg(BuildContext context) {
                                             const Spacer(),
                                             _buildIcon(
                                                 context, 'anilist-icon.png'),
+                                            _buildIcon(context, 'mal-icon.png'),
+                                            _buildIcon(
+                                                context, 'simkl-icon.png'),
                                           ],
                                         ),
                                       ),

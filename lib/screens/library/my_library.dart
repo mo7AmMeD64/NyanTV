@@ -1,4 +1,5 @@
 import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
+import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/controllers/settings/settings.dart';
 import 'package:nyantv/models/Media/media.dart';
 import 'package:nyantv/models/Offline/Hive/offline_media.dart';
@@ -31,10 +32,6 @@ enum SortType {
   lastAdded,
   lastWatched,
   rating,
-}
-
-String _getTypeLabel(ItemType itemType) {
-  return 'Anime';
 }
 
 IconData _getTypeIcon(ItemType itemType) {
@@ -102,13 +99,12 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
   }
 
   void _getPreferences() {
-    currentSort = SortType.values[settingsController.preferences.get(
-        'anime_sort_type',
-        defaultValue: SortType.lastWatched.index)];
+    currentSort = SortType.values[settingsController.preferences
+        .get('anime_sort_type', defaultValue: SortType.lastWatched.index)];
     isAscending = settingsController.preferences
         .get('anime_sort_order', defaultValue: true);
-    gridCount.value = settingsController.preferences
-        .get('anime_grid_size', defaultValue: 0);
+    gridCount.value =
+        settingsController.preferences.get('anime_grid_size', defaultValue: 0);
   }
 
   void _savePreferences() {
@@ -225,8 +221,7 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
           crossAxisSpacing: 10,
           mainAxisSpacing: 20,
           mainAxisExtent:
-              (MediaQuery.of(context).size.width / gridCount.value) *
-                      (3 / 2) +
+              (MediaQuery.of(context).size.width / gridCount.value) * (3 / 2) +
                   10);
     }
   }
@@ -256,8 +251,8 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                         scale: 1,
                         onTap: () {
                           navigate(() => AnimeDetailsPage(
-                              media: Media.fromOfflineMedia(
-                                  item, ItemType.anime),
+                              media:
+                                  Media.fromOfflineMedia(item, ItemType.anime),
                               tag: tag));
                         },
                         child: MediaCardGate(
@@ -265,8 +260,8 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                             tag: '${getRandomTag()}-$i',
                             variant: DataVariant.library,
                             type: ItemType.anime,
-                            cardStyle: CardStyle
-                                .values[settingsController.cardStyle]),
+                            cardStyle:
+                                CardStyle.values[settingsController.cardStyle]),
                       );
                     },
                     childCount: items.length,
@@ -305,6 +300,14 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
   }
 
   final RxBool isSearchActive = false.obs;
+
+  String _getTypeLabel(ItemType itemType) {
+    if (serviceHandler.serviceType.value == ServicesType.simkl) {
+      return 'Movies & Series';
+    } else {
+      return 'Anime';
+    }
+  }
 
   Padding _buildChipTabs() {
     return Padding(
@@ -369,8 +372,7 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                 icon: Row(
                   children: [
                     Icon(Iconsax.edit,
-                        color:
-                            Theme.of(context).colorScheme.onSurfaceVariant),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
                     5.width(),
                     const NyantvText(text: 'Edit')
                   ],
@@ -439,9 +441,7 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                         key: ValueKey('${itemType.name}_icon'),
                         color: isSelected
                             ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                         size: 18,
                       ),
                     ),
@@ -454,9 +454,7 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                           fontSize: 14,
                           color: isSelected
                               ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         child: Text(
                           _getTypeLabel(itemType),
@@ -512,8 +510,7 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                                 'Discover your favorite anime',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color:
-                                      Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -549,11 +546,9 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
-                                      borderRadius:
-                                          BorderRadius.circular(12),
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: Theme.of(context)
                                             .colorScheme
@@ -624,14 +619,12 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                                   listenable: _searchFocusNode,
                                   builder: (context, _) {
                                     return Container(
-                                      margin:
-                                          const EdgeInsets.only(right: 8),
+                                      margin: const EdgeInsets.only(right: 8),
                                       decoration: BoxDecoration(
                                         color: Theme.of(context)
                                             .colorScheme
                                             .primary,
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: _searchFocusNode.hasFocus
                                               ? Theme.of(context)
@@ -675,28 +668,22 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                           curve: Curves.easeOutBack,
                           tween: Tween<double>(begin: 0.9, end: 1.0),
                           builder: (context, value, child) {
-                            return Transform.scale(
-                                scale: value, child: child);
+                            return Transform.scale(scale: value, child: child);
                           },
                           child: ListenableBuilder(
                             listenable: _sortFocusNode,
                             builder: (context, _) {
                               return Container(
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: _sortFocusNode.hasFocus
                                         ? Theme.of(context)
                                             .colorScheme
                                             .onPrimary
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .primary,
-                                    width:
-                                        _sortFocusNode.hasFocus ? 2.5 : 1,
+                                        : Theme.of(context).colorScheme.primary,
+                                    width: _sortFocusNode.hasFocus ? 2.5 : 1,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
@@ -754,8 +741,8 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                                 currentSort: currentSort,
                                 sortType: SortType.title,
                                 isAscending: isAscending,
-                                onTap: () => _handleSortChange(
-                                    SortType.title, setState),
+                                onTap: () =>
+                                    _handleSortChange(SortType.title, setState),
                                 icon: Icons.sort_by_alpha,
                               ),
                               _buildSortBox(
@@ -885,8 +872,8 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                             height: 42,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: theme.colorScheme.primary
-                                  .withOpacity(0.12),
+                              color:
+                                  theme.colorScheme.primary.withOpacity(0.12),
                             ),
                           ),
                         Icon(
@@ -922,9 +909,8 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
                       duration: const Duration(milliseconds: 200),
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w400,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
                         color: isSelected
                             ? theme.colorScheme.primary
                             : theme.colorScheme.onSurfaceVariant,
@@ -963,7 +949,9 @@ class _MyLibraryState extends State<MyLibrary> with TVScrollMixin {
 
   void _applySorting() {
     if (customListData.isEmpty ||
-        selectedListIndex.value >= customListData.length) { return; }
+        selectedListIndex.value >= customListData.length) {
+      return;
+    }
 
     final currentList = customListData[selectedListIndex.value];
     final initialList = initialCustomListData[selectedListIndex.value];

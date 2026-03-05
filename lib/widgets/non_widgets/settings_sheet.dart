@@ -38,6 +38,11 @@ class SettingsSheet extends StatelessWidget {
         'name': "MyAnimeList",
         'icon': 'mal-icon.png',
       },
+      {
+        'type': ServicesType.simkl,
+        'name': "Simkl",
+        'icon': 'simkl-icon.png',
+      },
       if (serviceHandler.extensionService.installedExtensions.length > 2)
         {
           'type': ServicesType.extensions,
@@ -164,16 +169,16 @@ class SettingsSheet extends StatelessWidget {
             const SizedBox(height: 10),
             if (serviceHandler.isLoggedIn.value &&
                 serviceHandler.serviceType.value == ServicesType.anilist)
-                NyantvOnTap(
-                  onTap: () {
-                    Get.back();
-                    navigate(() => const ProfilePage());
-                  },
-                  child: const ListTile(
-                    leading: Icon(Iconsax.user),
-                    title: Text('View Profile'),
-                  ),
+              NyantvOnTap(
+                onTap: () {
+                  Get.back();
+                  navigate(() => const ProfilePage());
+                },
+                child: const ListTile(
+                  leading: Icon(Iconsax.user),
+                  title: Text('View Profile'),
                 ),
+              ),
             Obx(() {
               final shouldShowExts =
                   sourceController.shouldShowExtensions.value;

@@ -8,6 +8,7 @@ import 'package:nyantv/controllers/discord/discord_rpc.dart';
 import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/controllers/services/mal/mal_service.dart';
+import 'package:nyantv/controllers/services/simkl/simkl_service.dart';
 import 'package:nyantv/controllers/settings/settings.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';
 import 'package:nyantv/controllers/services/anilist/anilist_auth.dart';
@@ -244,6 +245,7 @@ void _initializeGetxController() async {
   Get.put(OfflineStorageController());
   Get.put(AnilistAuth());
   Get.put(AnilistData());
+  Get.put(SimklService());
   Get.put(MalService());
   Get.put(DiscordRPCController());
   Get.put(SourceController());
@@ -461,7 +463,8 @@ class _FilterScreenState extends State<FilterScreen> {
   @override
   Widget build(BuildContext context) {
     final authService = Get.find<ServiceHandler>();
-    const isSimkl = false;
+    final isSimkl =
+        Get.find<ServiceHandler>().serviceType.value == ServicesType.simkl;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {

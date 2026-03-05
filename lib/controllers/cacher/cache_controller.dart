@@ -10,6 +10,7 @@ final cacheController = Get.find<CacheController>();
 class CacheController extends GetxController {
   RxList<String> cachedAnilistData = <String>[].obs;
   RxList<String> cachedMalData = <String>[].obs;
+  RxList<String> cachedSimklData = <String>[].obs;
   RxList<String> cachedExtensionData = <String>[].obs;
 
   RxString detailsData = ''.obs;
@@ -70,11 +71,11 @@ class CacheController extends GetxController {
         return Media.fromJson(parsedMap);
       case ServicesType.mal:
         return Media.fromFullMAL(parsedMap);
+      case ServicesType.simkl:
+        return Media.fromSimkl(parsedMap, true);
       default:
         parsedMap['status'] = parseStatusToInt(parsedMap['status']);
-        return Media.froDMedia(
-            DMedia.fromJson(parsedMap),
-            ItemType.anime);
+        return Media.froDMedia(DMedia.fromJson(parsedMap), ItemType.anime);
     }
   }
 
@@ -85,6 +86,8 @@ class CacheController extends GetxController {
         return cachedAnilistData;
       case ServicesType.mal:
         return cachedMalData;
+      case ServicesType.simkl:
+        return cachedSimklData;
       default:
         return cachedExtensionData;
     }

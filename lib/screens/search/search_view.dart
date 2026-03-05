@@ -302,7 +302,8 @@ class _SearchPageState extends State<SearchPage> with TickerProviderStateMixin {
             filled: true,
             fillColor:
                 Theme.of(context).colorScheme.surfaceContainer.withOpacity(.5),
-            hintText: 'Search anime...',
+            hintText:
+                'Search ${serviceHandler.serviceType.value == ServicesType.simkl ? 'movie or series' : 'anime'}...',
             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color:
                       Theme.of(context).colorScheme.onSurface.withOpacity(0.5),

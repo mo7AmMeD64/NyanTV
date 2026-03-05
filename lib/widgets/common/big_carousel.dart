@@ -16,7 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-enum CarouselType { anime }
+enum CarouselType { anime, simkl }
 
 class BigCarousel extends StatefulWidget {
   final List<Media> data;

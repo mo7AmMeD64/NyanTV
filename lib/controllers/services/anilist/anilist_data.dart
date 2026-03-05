@@ -480,7 +480,7 @@ averageScore
     } catch (e) {
       Logger.i('Error occurred while fetching details: $e');
     }
-    return Media(serviceType: ServicesType.anilist);
+    return Media(serviceType: ServicesType.simkl);
   }
 
   @override
