@@ -337,7 +337,7 @@ class SourceController extends GetxController implements BaseService {
   @override
   Future<Media> fetchDetails(FetchDetailsParams params) async {
     final id = params.id;
-    final data = await activeSource.value!.methods.getDetail(DMedia.withUrl(id));
+    final data = await activeSource.value!.methods.getDetail(DMedia(url: id));
 
     if (serviceHandler.serviceType.value != ServicesType.extensions) {
       cacheController.addCache(data.toJson());

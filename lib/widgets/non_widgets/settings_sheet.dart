@@ -1,6 +1,5 @@
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/screens/extensions/ExtensionScreen.dart';
 import 'package:nyantv/screens/profile/profile_page.dart';
 import 'package:nyantv/screens/settings/settings.dart';
 import 'package:nyantv/utils/function.dart';
@@ -188,7 +187,6 @@ class SettingsSheet extends StatelessWidget {
                       title: const Text('Extensions'),
                       onTap: () {
                         Get.back();
-                        navigate(() => const ExtensionScreen());
                       },
                     )
                   : const SizedBox.shrink();

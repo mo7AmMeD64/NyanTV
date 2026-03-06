@@ -213,7 +213,7 @@ class _EpisodeWatchScreenState extends State<EpisodeWatchScreen> {
           width: double.infinity,
           child: FutureBuilder<List<d.Video>>(
             future: sourceController.activeSource.value!.methods.getVideoList(
-                d.DEpisode(episodeNumber: ep.number, url: ep.link)),
+// STUB:                 d.DEpisode(episodeNumber: ep.number, url: ep.link)),
             builder: (context, snapshot) {
               Logger.i('Connection state: ${snapshot.connectionState}');
               

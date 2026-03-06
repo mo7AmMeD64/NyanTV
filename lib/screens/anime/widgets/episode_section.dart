@@ -3,7 +3,6 @@ import 'package:nyantv/stubs/extension_stubs.dart';
 // lib/screens/anime/widgets/episode_section.dart
 import 'dart:async';
 import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/screens/extensions/ExtensionSettings/ExtensionSettings.dart';
 import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/utils/logger.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';

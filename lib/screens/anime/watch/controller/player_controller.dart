@@ -796,7 +796,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
       PlayerBottomSheets.showLoader();
       final data = await sourceController.activeSource.value!.methods
           .getVideoList(
-              d.DEpisode(episodeNumber: episode.number, url: episode.link));
+// STUB:               d.DEpisode(episodeNumber: episode.number, url: episode.link));
       episodeTracks.value = data.map((e) => model.Video.fromVideo(e)).toList();
 
       final previousTrack = selectedVideo.value;
