@@ -551,7 +551,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                           2,
                           title: "Preload All",
                           description:
-                              "Builds all screens at startup. Fastest navigation but uses most RAM. For high-end TVs (3GB+ RAM).",
+                              "Builds all screens at startup. Fastest navigation but uses most RAM. Most TV Boxes / Dongles will handle this (3GB+ RAM).",
                           icon: Iconsax.flash_1,
                         ),
                       ],
