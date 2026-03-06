@@ -11,6 +11,8 @@ import 'package:nyantv/controllers/services/mal/mal_service.dart';
 import 'package:nyantv/controllers/services/simkl/simkl_service.dart';
 import 'package:nyantv/controllers/settings/settings.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';
+import 'package:nyantv/screens/witcher/witcher_home.dart';
+import 'package:nyantv/screens/witcher/witcher_search.dart';
 import 'package:nyantv/controllers/services/anilist/anilist_auth.dart';
 import 'package:nyantv/controllers/ui/greeting.dart';
 import 'package:nyantv/controllers/theme.dart';
@@ -23,7 +25,6 @@ import 'package:nyantv/models/Offline/Hive/episode.dart';
 import 'package:nyantv/models/Offline/Hive/offline_storage.dart';
 import 'package:nyantv/models/Offline/Hive/video.dart';
 import 'package:nyantv/screens/anime/home_page.dart';
-import 'package:nyantv/screens/extensions/ExtensionScreen.dart';
 import 'package:nyantv/screens/library/my_library.dart';
 import 'package:nyantv/controllers/services/anilist/anilist_data.dart';
 import 'package:nyantv/screens/home_page.dart';
@@ -454,7 +455,7 @@ class _FilterScreenState extends State<FilterScreen> {
       1 => const HomePage(),
       2 => const AnimeHomePage(),
       3 => const MyLibrary(),
-      4 => const ExtensionScreen(disableGlow: true),
+      4 => const WitcherHome(),
       _ => const SizedBox.shrink(),
     };
 
@@ -466,7 +467,7 @@ class _FilterScreenState extends State<FilterScreen> {
         1 => const HomePage(),
         2 => const AnimeHomePage(),
         3 => const MyLibrary(),
-        4 => const ExtensionScreen(disableGlow: true),
+        4 => const WitcherHome(),
         _ => const SizedBox.shrink(),
       };
 
@@ -533,7 +534,7 @@ class _FilterScreenState extends State<FilterScreen> {
                           child: const MyLibrary()),
                       ExcludeFocus(
                           excluding: _selectedIndex != 4,
-                          child: const ExtensionScreen(disableGlow: true)),
+                          child: const WitcherHome()),
                     ],
                   );
                 }
@@ -653,10 +654,10 @@ class _Sidebar extends StatelessWidget {
                   onTap: onItemTapped,
                   label: 'Library'),
               NavItem(
-                  unselectedIcon: Icons.extension_outlined,
-                  selectedIcon: Icons.extension_rounded,
+                  unselectedIcon: Icons.live_tv_outlined,
+                  selectedIcon: Icons.live_tv_rounded,
                   onTap: onItemTapped,
-                  label: "Extensions"),
+                  label: "مشاهدة"),
             ],
           ),
         ],

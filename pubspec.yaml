@@ -39,10 +39,6 @@ dependencies:
   install_plugin: ^2.1.0
   intl: ^0.20.1
   kenburns_nullsafety: ^1.0.1
-  dartotsu_extension_bridge:
-    git:
-      url: https://github.com/aayush2622/DartotsuExtensionBridge.git
-      ref: 5d81115
   outlined_text: ^1.0.1
   media_kit:
     git:
