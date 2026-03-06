@@ -37,12 +37,100 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
   final _currentStatus = ''.obs;
   final _enableShaders = false.obs;
   final _autoIdleMinutes = 0.obs;
-  final FocusNode _bufferProfileFocusNode = FocusNode();
-  final GlobalKey _bufferProfileDropdownKey = GlobalKey();
 
   late AnimationController _pulseController;
   late AnimationController _progressController;
   late Animation<double> _pulseAnimation;
+
+  Widget _buildSelectableOption(
+    BuildContext context, {
+    required bool isSelected,
+    required VoidCallback onTap,
+    required String title,
+    required String description,
+    required IconData icon,
+  }) {
+    return Focus(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent &&
+            (event.logicalKey == LogicalKeyboardKey.select ||
+                event.logicalKey == LogicalKeyboardKey.enter)) {
+          onTap();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Builder(builder: (context) {
+        final hasFocus = Focus.of(context).hasFocus;
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withOpacity(0.4)
+                  : Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withOpacity(0.3),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: hasFocus
+                    ? Theme.of(context).colorScheme.primary
+                    : isSelected
+                        ? Theme.of(context).colorScheme.primary.withOpacity(0.7)
+                        : Theme.of(context)
+                            .colorScheme
+                            .outline
+                            .withOpacity(0.2),
+                width: hasFocus || isSelected ? 2 : 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(icon,
+                    color: isSelected || hasFocus
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withOpacity(0.5)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isSelected || hasFocus
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(context).colorScheme.onSurface,
+                          )),
+                      Text(description,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                          )),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Icon(Icons.check_circle_rounded,
+                      color: Theme.of(context).colorScheme.primary),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
 
   @override
   void initState() {
@@ -51,7 +139,6 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
     _checkShadersAvailability();
     _detectDeviceRam();
     getSavedSettings();
-    _bufferProfileFocusNode.addListener(() => setState(() {}));
   }
 
   void _detectDeviceRam() {
@@ -184,7 +271,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
 
   Widget _buildBufferDetail(BuildContext context, BufferProfile profile) {
     final config = DeviceRamHelper.getConfig(profile);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -292,8 +379,24 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
   void dispose() {
     _pulseController.dispose();
     _progressController.dispose();
-    _bufferProfileFocusNode.dispose();
     super.dispose();
+  }
+
+  Widget _buildNavModeOption(
+    BuildContext context,
+    int mode, {
+    required String title,
+    required String description,
+    required IconData icon,
+  }) {
+    return _buildSelectableOption(
+      context,
+      isSelected: settings.navigationMode == mode,
+      onTap: () => settings.navigationMode = mode,
+      title: title,
+      description: description,
+      icon: icon,
+    );
   }
 
   @override
@@ -331,48 +434,48 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
               ),
               const SizedBox(height: 30),
               Obx(() => NyantvExpansionTile(
-                title: "Auto Idle",
-                initialExpanded: true,
-                content: Column(
-                  children: [
-                    CustomSliderTile(
-                      icon: Iconsax.timer_1,
-                      title: "Auto Idle Timer",
-                      description: "Automatically start NyanDVD after inactivity",
-                      sliderValue: _autoIdleMinutes.value.toDouble(),
-                      divisions: 20,
-                      onChanged: (double value) {
-                        _autoIdleMinutes.value = value.toInt();
-                        saveSettings();
-                      },
-                      min: 0,
-                      max: 20,
-                      showOffWhenZero: true,
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest
-                            .withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        "Time in minutes",
-                        style: TextStyle(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.6),
-                          fontSize: 12,
+                    title: "Auto Idle",
+                    initialExpanded: true,
+                    content: Column(
+                      children: [
+                        CustomSliderTile(
+                          icon: Iconsax.timer_1,
+                          title: "Auto Idle Timer",
+                          description:
+                              "Automatically start NyanDVD after inactivity",
+                          sliderValue: _autoIdleMinutes.value.toDouble(),
+                          divisions: 20,
+                          onChanged: (double value) {
+                            _autoIdleMinutes.value = value.toInt();
+                            saveSettings();
+                          },
+                          min: 0,
+                          max: 20,
+                          showOffWhenZero: true,
                         ),
-                      ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest
+                                .withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            "Time in minutes",
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
-
+                  )),
               GetBuilder<Settings>(
                 builder: (settings) {
                   return NyantvExpansionTile(
@@ -420,7 +523,40 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                   );
                 },
               ),
-
+              Obx(() => NyantvExpansionTile(
+                    title: "Navigation Loading",
+                    initialExpanded: true,
+                    content: Column(
+                      children: [
+                        _buildNavModeOption(
+                          context,
+                          0,
+                          title: "Legacy",
+                          description:
+                              "Rebuilds every screen on each visit. Slowest but lowest RAM usage.",
+                          icon: Iconsax.refresh,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildNavModeOption(
+                          context,
+                          1,
+                          title: "Hybrid",
+                          description:
+                              "Builds screens on first visit and caches them. Good balance for budget TVs (2GB RAM).",
+                          icon: Iconsax.cpu,
+                        ),
+                        const SizedBox(height: 8),
+                        _buildNavModeOption(
+                          context,
+                          2,
+                          title: "Preload All",
+                          description:
+                              "Builds all screens at startup. Fastest navigation but uses most RAM. For high-end TVs (3GB+ RAM).",
+                          icon: Iconsax.flash_1,
+                        ),
+                      ],
+                    ),
+                  )),
               Obx(() {
                 final currentProfile = settings.tvBufferProfile.value;
 
@@ -475,9 +611,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -494,8 +628,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                               children: [
                                 Icon(
                                   Icons.tune,
-                                  color:
-                                      Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 12),
@@ -504,94 +637,33 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     fontSize: 16,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-
-                            Focus(
-                              focusNode: _bufferProfileFocusNode,
-                              onKeyEvent: (node, event) {
-                                if (event is KeyDownEvent) {
-                                  if (event.logicalKey ==
-                                          LogicalKeyboardKey.select ||
-                                      event.logicalKey ==
-                                          LogicalKeyboardKey.enter) {
-                                    final ctx = _bufferProfileDropdownKey
-                                        .currentContext;
-                                    if (ctx != null) {
-                                      final RenderBox box = ctx
-                                          .findRenderObject() as RenderBox;
-                                      final Offset pos = box.localToGlobal(
-                                          box.size.center(Offset.zero));
-                                      GestureBinding.instance
-                                          .handlePointerEvent(
-                                              PointerDownEvent(position: pos));
-                                      Future.delayed(
-                                          const Duration(milliseconds: 50),
-                                          () {
-                                        GestureBinding.instance
-                                            .handlePointerEvent(
-                                                PointerUpEvent(position: pos));
-                                      });
-                                    }
-                                    return KeyEventResult.handled;
-                                  }
-                                }
-                                return KeyEventResult.ignored;
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: _bufferProfileFocusNode.hasFocus
-                                      ? Border.all(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                          width: 2,
-                                        )
-                                      : Border.all(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .outline
-                                              .withOpacity(0.3),
-                                          width: 1,
-                                        ),
-                                ),
-                                child: NyantvDropdown(
-                                  key: _bufferProfileDropdownKey,
-                                  items: BufferProfile.values.map((profile) {
-                                    return DropdownItem(
-                                      text: DeviceRamHelper.getProfileName(
-                                          profile),
-                                      value: DeviceRamHelper.profileToString(
-                                          profile),
-                                    );
-                                  }).toList(),
-                                  selectedItem: DropdownItem(
-                                    text: DeviceRamHelper.getProfileName(
-                                        currentProfile),
-                                    value: DeviceRamHelper.profileToString(
-                                        currentProfile),
+                            Column(
+                              children: BufferProfile.values.map((profile) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: _buildSelectableOption(
+                                    context,
+                                    isSelected: currentProfile == profile,
+                                    onTap: () =>
+                                        settings.saveTVBufferProfile(profile),
+                                    title:
+                                        DeviceRamHelper.getProfileName(profile),
+                                    description:
+                                        DeviceRamHelper.getProfileDescription(
+                                            profile),
+                                    icon: Icons.memory,
                                   ),
-                                  label: "SELECT BUFFER PROFILE",
-                                  icon: Icons.memory,
-                                  onChanged: (item) {
-                                    final profile =
-                                        DeviceRamHelper.stringToProfile(
-                                            item.value);
-                                    settings.saveTVBufferProfile(profile);
-                                  },
-                                ),
-                              ),
+                                );
+                              }).toList(),
                             ),
-
                             const SizedBox(height: 12),
-
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
@@ -626,9 +698,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 12),
-
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -666,7 +736,6 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                   ),
                 );
               }),
-
               Obx(() {
                 settings.animationDuration;
                 return NyantvExpansionTile(
@@ -704,8 +773,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                 ),
                                 child: Icon(
                                   Iconsax.eye,
-                                  color:
-                                      Theme.of(context).colorScheme.primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                   size: 20,
                                 ),
                               ),
@@ -752,8 +820,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                             .colorScheme
                                             .primaryContainer
                                             .withValues(alpha: 0.3),
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Column(
                                         children: [
@@ -763,7 +830,8 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                 animation: _pulseAnimation,
                                                 builder: (context, child) {
                                                   return Transform.scale(
-                                                    scale: _pulseAnimation.value,
+                                                    scale:
+                                                        _pulseAnimation.value,
                                                     child: Icon(
                                                       Iconsax.document_download,
                                                       color: Theme.of(context)
@@ -883,7 +951,8 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                 return Switch(
                                                   value: _enableShaders.value,
                                                   onChanged: (value) {
-                                                    _enableShaders.value = value;
+                                                    _enableShaders.value =
+                                                        value;
                                                     saveSettings();
                                                   },
                                                 );
@@ -931,22 +1000,21 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                           style: TextStyle(
                                                             fontWeight:
                                                                 FontWeight.w600,
-                                                            color:
-                                                                Theme.of(context)
-                                                                    .colorScheme
-                                                                    .onSurface,
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .colorScheme
+                                                                .onSurface,
                                                           ),
                                                         ),
                                                         Text(
                                                           'Choose accordingly to your system specs.\nMid End = Eg. GTX 980, GTX 1060, RX 570\nHigh End = Eg. GTX 1080, RTX 2070, RTX 3060, RX 590, Vega 56',
                                                           style: TextStyle(
-                                                            color:
-                                                                Theme.of(context)
-                                                                    .colorScheme
-                                                                    .onSurface
-                                                                    .withValues(
-                                                                        alpha:
-                                                                            0.7),
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .colorScheme
+                                                                .onSurface
+                                                                .withValues(
+                                                                    alpha: 0.7),
                                                             fontSize: 12,
                                                           ),
                                                         ),
@@ -966,8 +1034,10 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                       top: 20.0),
                                                   child: NyantvDropdown(
                                                       items: availProfiles
-                                                          .map((e) => DropdownItem(
-                                                              text: e, value: e))
+                                                          .map((e) =>
+                                                              DropdownItem(
+                                                                  text: e,
+                                                                  value: e))
                                                           .toList(),
                                                       selectedItem: DropdownItem(
                                                           text: settingsController
@@ -987,7 +1057,8 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                         ),
                                         const SizedBox(height: 8),
                                         AnimatedContainer(
-                                          width: _enableShaders.value ? null : 0,
+                                          width:
+                                              _enableShaders.value ? null : 0,
                                           curve: Curves.easeInOut,
                                           height:
                                               _enableShaders.value ? null : 0,
@@ -1064,8 +1135,9 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                           strictMode: true,
                                           desktopValue: Obx(() {
                                             return AnimatedOpacity(
-                                              opacity:
-                                                  _enableShaders.value ? 1 : 0.3,
+                                              opacity: _enableShaders.value
+                                                  ? 1
+                                                  : 0.3,
                                               duration: const Duration(
                                                   milliseconds: 300),
                                               child: Container(
@@ -1093,12 +1165,14 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                       children: [
                                                         Icon(
                                                           Iconsax.keyboard,
-                                                          color: Theme.of(context)
-                                                              .colorScheme
-                                                              .primary,
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .primary,
                                                           size: 20,
                                                         ),
-                                                        const SizedBox(width: 12),
+                                                        const SizedBox(
+                                                            width: 12),
                                                         Expanded(
                                                           child: Column(
                                                             crossAxisAlignment:
@@ -1107,7 +1181,8 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                             children: [
                                                               Text(
                                                                 'Shader Profiles Initialized',
-                                                                style: TextStyle(
+                                                                style:
+                                                                    TextStyle(
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
@@ -1119,7 +1194,8 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                               ),
                                                               Text(
                                                                 'Use keyboard shortcuts during playback to switch profiles',
-                                                                style: TextStyle(
+                                                                style:
+                                                                    TextStyle(
                                                                   color: Theme.of(
                                                                           context)
                                                                       .colorScheme
@@ -1226,5 +1302,4 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
       ),
     );
   }
-
 }

@@ -445,6 +445,31 @@ class _FilterScreenState extends State<FilterScreen> {
     const MyLibrary()
   ];
 
+  final Map<int, Widget> _cachedRoutes = {};
+
+  Widget _buildRoute(int index) {
+    if (_cachedRoutes.containsKey(index)) return _cachedRoutes[index]!;
+
+    final Widget route = switch (index) {
+      1 => const HomePage(),
+      2 => const AnimeHomePage(),
+      3 => const MyLibrary(),
+      4 => const ExtensionScreen(disableGlow: true),
+      _ => const SizedBox.shrink(),
+    };
+
+    _cachedRoutes[index] = route;
+    return route;
+  }
+
+  Widget _buildRouteFresh(int index) => switch (index) {
+        1 => const HomePage(),
+        2 => const AnimeHomePage(),
+        3 => const MyLibrary(),
+        4 => const ExtensionScreen(disableGlow: true),
+        _ => const SizedBox.shrink(),
+      };
+
   @override
   void dispose() {
     _autoIdleTimer?.cancel();
@@ -490,21 +515,36 @@ class _FilterScreenState extends State<FilterScreen> {
             onItemTapped: _onItemTapped,
           ),
           Expanded(
-            child: IndexedStack(
-              index: _selectedIndex,
-              children: [
-                const SizedBox.shrink(),
-                ExcludeFocus(
-                    excluding: _selectedIndex != 1, child: const HomePage()),
-                ExcludeFocus(
-                    excluding: _selectedIndex != 2,
-                    child: const AnimeHomePage()),
-                ExcludeFocus(
-                    excluding: _selectedIndex != 3, child: const MyLibrary()),
-                ExcludeFocus(
-                    excluding: _selectedIndex != 4,
-                    child: const ExtensionScreen(disableGlow: true)),
-              ],
+            child: GetBuilder<Settings>(
+              builder: (s) {
+                if (s.navigationMode == 2) {
+                  return IndexedStack(
+                    index: _selectedIndex,
+                    children: [
+                      const SizedBox.shrink(),
+                      ExcludeFocus(
+                          excluding: _selectedIndex != 1,
+                          child: const HomePage()),
+                      ExcludeFocus(
+                          excluding: _selectedIndex != 2,
+                          child: const AnimeHomePage()),
+                      ExcludeFocus(
+                          excluding: _selectedIndex != 3,
+                          child: const MyLibrary()),
+                      ExcludeFocus(
+                          excluding: _selectedIndex != 4,
+                          child: const ExtensionScreen(disableGlow: true)),
+                    ],
+                  );
+                }
+                return SmoothPageEntrance(
+                  style: PageEntranceStyle.slideUpGentle,
+                  key: Key(_selectedIndex.toString()),
+                  child: s.navigationMode == 1
+                      ? _buildRoute(_selectedIndex) // Hybrid
+                      : _buildRouteFresh(_selectedIndex), // Legacy
+                );
+              },
             ),
           ),
         ],

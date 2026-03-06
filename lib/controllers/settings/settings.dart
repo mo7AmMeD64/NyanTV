@@ -125,6 +125,8 @@ class Settings extends GetxController {
       isTV.value = true; //e;
     });
 
+    _navigationMode.value = preferences.get('navigation_mode', defaultValue: 2);
+
     // Initialize player shaders
     PlayerShaders.createMpvConfigFolder();
     PlayerShaders.getMpvPath().then((e) {
@@ -160,6 +162,14 @@ class Settings extends GetxController {
   void _setUISetting<T>(void Function(UISettings? settings) setter) {
     uiSettings.update(setter);
     saveUISettings();
+  }
+
+  final _navigationMode = 2.obs;
+
+  int get navigationMode => _navigationMode.value;
+  set navigationMode(int value) {
+    _navigationMode.value = value;
+    if (_isInitialized) preferences.put('navigation_mode', value);
   }
 
   T _getPlayerSetting<T>(T Function(PlayerSettings settings) getter) {
