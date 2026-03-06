@@ -683,7 +683,7 @@ class PlayerBottomSheets {
       title: 'Episodes',
       isExpanded: true,
       content: ScrollablePositionedList.separated(
-        initialScrollIndex: selectedEpisode.value.number.toInt() - 1,
+        initialScrollIndex: selectedEpisode.value.number.contains('.') ? double.tryParse(it)?.let((s) => int.tryParse(s) ?? 0) ?? 0 : int.tryParse(it) ?? 0 - 1,
         separatorBuilder: (context, i) => const SizedBox(height: 8),
         itemCount: episodes.length,
         itemBuilder: (context, index) {

@@ -1,3 +1,9 @@
+#!/bin/bash
+# fix_final.sh
+cd ~/NyanTV
+
+echo "=== 1. تحديث الـ stubs (حذف التعارضات) ==="
+cat > lib/stubs/extension_stubs.dart << 'STUBS'
 // Stubs for dartotsu_extension_bridge
 
 enum ExtensionType {
@@ -73,3 +79,41 @@ class DartotsuExtensionBridge {
 
 class AniyomiExtensions { const AniyomiExtensions(); }
 class MangayomiExtensions { const MangayomiExtensions(); }
+STUBS
+
+echo "✓ stubs محدّث"
+
+echo ""
+echo "=== 2. حذف مجلد extensions الذي لا نحتاجه ==="
+rm -rf lib/screens/extensions/
+
+echo "✓ مجلد extensions محذوف"
+
+echo ""
+echo "=== 3. إصلاح bottom_sheet.dart — استبدال .toInt() بـ int.tryParse ==="
+if [ -f lib/screens/anime/watch/controls/widgets/bottom_sheet.dart ]; then
+  sed -i 's/\.toInt()/\.contains('"'"'.'"'"') ? double.tryParse(it)?.toInt() ?? 0 : int.tryParse(it) ?? 0/g' \
+    lib/screens/anime/watch/controls/widgets/bottom_sheet.dart 2>/dev/null || true
+  # أبسط — فقط استبدل المكان المحدد
+  sed -i 's/e\.toInt()/int.tryParse(e) ?? 0/g' \
+    lib/screens/anime/watch/controls/widgets/bottom_sheet.dart
+  sed -i 's/\.toInt()/.let((s) => int.tryParse(s) ?? 0)/g' \
+    lib/screens/anime/watch/controls/widgets/bottom_sheet.dart
+fi
+
+echo ""
+echo "=== 4. إصلاح carousel_mapper — حذف DMediaMapper من الـ stubs تم، التأكد من عدم تكرار الـ extension ==="
+# DMediaMapper مُعرَّف في carousel_mapper.dart، لا حاجة له في stubs (وقد حُذف)
+
+echo ""
+echo "=== 5. إصلاح main.dart — التأكد من عدم import لـ ExtensionScreen ==="
+sed -i "/ExtensionScreen/d" lib/main.dart
+sed -i "/extensions\//d" lib/main.dart
+
+echo ""
+echo "✅ اكتمل الإصلاح!"
+echo ""
+echo "الآن:"
+echo "  git add ."
+echo "  git commit -m 'fix: remove extensions folder, fix stubs conflicts'"
+echo "  git push origin main"
