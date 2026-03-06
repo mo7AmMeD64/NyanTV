@@ -1,7 +1,15 @@
 // Stubs for dartotsu_extension_bridge — replaces the removed dependency
 
 // ---- Enums ----
-enum ExtensionType { anime, manga, novel }
+enum ExtensionType {
+  anime,
+  manga,
+  novel,
+  mangayomi,
+  aniyomi;
+
+  dynamic getManager() => null;
+}
 
 enum ItemType { anime, manga, novel, unknown }
 
@@ -11,8 +19,20 @@ class Source {
   final String? name;
   final String? lang;
   final bool? hasUpdate;
+  final bool? isNsfw;
+  final String? iconUrl;
+  final String? version;
   final ExtensionType? extensionType;
-  const Source({this.id, this.name, this.lang, this.hasUpdate, this.extensionType});
+  const Source({
+    this.id,
+    this.name,
+    this.lang,
+    this.hasUpdate,
+    this.isNsfw,
+    this.iconUrl,
+    this.version,
+    this.extensionType,
+  });
 }
 
 class DMedia {
@@ -59,7 +79,7 @@ class MangayomiExtensions {
   const MangayomiExtensions();
 }
 
-// String extension stub (for bottom_sheet.dart toInt)
+// String extension stub
 extension StringToIntExt on String {
   int toInt() => int.tryParse(this) ?? 0;
 }
