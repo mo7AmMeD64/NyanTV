@@ -1,5 +1,7 @@
 // Stubs for dartotsu_extension_bridge
 
+import 'package:flutter/widgets.dart';
+
 enum ExtensionType {
   anime, manga, novel, mangayomi, aniyomi;
   dynamic getManager() => null;
@@ -34,7 +36,8 @@ class DMedia {
   const DMedia({this.url, this.title, this.cover, this.description,
     this.genre, this.itemType, this.episodes});
   static DMedia fromJson(Map<String, dynamic> json) =>
-      DMedia(url: json['url'], title: json['title'], cover: json['cover']);
+      DMedia(url: json['url']?.toString(), title: json['title']?.toString(),
+             cover: json['cover']?.toString());
   DMedia withUrl(String newUrl) => DMedia(url: newUrl, title: title,
       cover: cover, description: description, genre: genre,
       itemType: itemType, episodes: episodes);
@@ -46,6 +49,31 @@ class DEpisode {
   final double? episodeNum;
   final int? episodeNumber;
   const DEpisode({this.name, this.url, this.episodeNum, this.episodeNumber});
+}
+
+class Video {
+  final String? url;
+  final String? quality;
+  final List<Track> subtitleTracks;
+  final List<Track> audioTracks;
+  const Video({this.url, this.quality,
+    this.subtitleTracks = const [],
+    this.audioTracks = const []});
+  static Video fromVideo(dynamic v) => Video(url: v?.url?.toString());
+}
+
+class Track {
+  final String? url;
+  final String? label;
+  final String? lang;
+  const Track({this.url, this.label, this.lang});
+}
+
+class BottomSheetItem {
+  final String title;
+  final dynamic icon;
+  final VoidCallback? onTap;
+  const BottomSheetItem({required this.title, this.icon, this.onTap});
 }
 
 class SourcePreference {
@@ -74,10 +102,6 @@ class DartotsuExtensionBridge {
 class AniyomiExtensions { const AniyomiExtensions(); }
 class MangayomiExtensions { const MangayomiExtensions(); }
 
-// Track stub
-class Track {
-  final String? url;
-  final String? label;
-  const Track({this.url, this.label});
-});
+extension DMediaMapper on DMedia {
+  dynamic toCarouselData() => null;
 }

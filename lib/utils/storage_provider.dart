@@ -46,9 +46,9 @@ class StorageProvider {
 
     isar = Isar.openSync(
       [
-        // MSourceSchema,
-        // SourcePreferenceSchema,
-        // SourcePreferenceStringValueSchema,
+        // // MSourceSchema,
+        // // SourcePreferenceSchema,
+        // // SourcePreferenceStringValueSchema,
         BridgeSettingsSchema
       ],
       directory: dir!.path,

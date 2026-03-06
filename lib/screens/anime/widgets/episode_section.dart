@@ -169,9 +169,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
 
   void openSourcePreferences(BuildContext context) {
     navigate(
-      () => SourcePreferenceScreen(
-        source: sourceController.activeSource.value!,
-      ),
+      () => Container(),
     );
   }
 

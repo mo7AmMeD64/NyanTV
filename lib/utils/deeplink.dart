@@ -126,7 +126,7 @@ class Deeplink {
       snackBar('Loading episode...');
 
       final resp = await sourceController.activeSource.value!.methods
-          .getVideoList(d.DEpisode(
+      // STUB: .getVideoList(d.DEpisode(
         episodeNumber: episode.number,
         url: episode.link,
       ));

@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:hive/hive.dart';
 part 'video.g.dart';
 
