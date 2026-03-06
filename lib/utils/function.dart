@@ -94,7 +94,7 @@ Future<void> snackString(
 
 Episode DEpisodeToEpisode(DEpisode chapter) {
   return Episode(
-    number: chapter.episodeNumber,
+    number: chapter.episodeNumber?.toString() ?? "",
     link: chapter.url,
     title: chapter.name,
     thumbnail: null,

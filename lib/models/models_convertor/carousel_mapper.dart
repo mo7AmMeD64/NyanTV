@@ -74,3 +74,6 @@ extension MediaMapper on Media {
         releasing: status == "RELEASING");
   }
 }
+extension DMediaMapper on DMedia {
+  dynamic toCarouselData() => null;
+}

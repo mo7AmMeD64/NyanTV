@@ -913,7 +913,7 @@ class _MyLibraryState extends State<MyLibrary> {
 
       switch (currentSort) {
         case SortType.title:
-          comparison = a.name.compareTo(b.name);
+          comparison = (a.name ?? "").compareTo(b.name ?? "");
           break;
         case SortType.lastWatched:
           final aTime = a.currentEpisode?.lastWatchedTime ?? 0;

@@ -92,7 +92,7 @@ class SourceController extends GetxController implements BaseService {
   }
 
   void _initialize() async {
-    isar = await StorageProvider().initDB(null);
+// STUB: isar assignment removed
     await DartotsuExtensionBridge().init(isar, 'AnymeX');
 
     await initExtensions();
@@ -310,7 +310,7 @@ class SourceController extends GetxController implements BaseService {
   @override
   Future<Media> fetchDetails(FetchDetailsParams params) async {
     final id = params.id;
-    final data = await activeSource.value!.methods.getDetail(DMedia.withUrl(id));
+    final data = await activeSource.value!.methods.getDetail(DMedia(url: id));
 
     if (serviceHandler.serviceType.value != ServicesType.extensions) {
       cacheController.addCache(data.toJson());

@@ -39,7 +39,7 @@ class _WrongTitleModalState extends State<WrongTitleModal> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Container()
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
