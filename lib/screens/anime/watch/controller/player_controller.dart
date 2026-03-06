@@ -793,7 +793,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
     }
 
     try {
-      PlayerBottomSheets.showLoader();
+      // STUB: PlayerBottomSheets.showLoader();
       final data = await sourceController.activeSource.value!.methods
           .getVideoList(
 // STUB:               d.DEpisode(episodeNumber: episode.number, url: episode.link));
@@ -805,7 +805,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
       _extractSubtitles();
       await _switchMedia(
           selectedVideo.value!.url, selectedVideo.value?.headers);
-      PlayerBottomSheets.hideLoader();
+      // STUB: PlayerBottomSheets.hideLoader();
     } catch (e) {
       Logger.i(e.toString());
     } finally {

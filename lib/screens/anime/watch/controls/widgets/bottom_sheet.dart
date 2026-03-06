@@ -8,6 +8,14 @@ import 'package:get/get.dart';
 import 'package:media_kit/media_kit.dart' hide Track;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+
+// Stub for BottomSheetItem
+class BottomSheetItem {
+  final String title;
+  final dynamic icon;
+  final VoidCallback? onTap;
+  const BottomSheetItem({required this.title, this.icon, this.onTap});
+}
 class DynamicBottomSheet extends StatefulWidget {
   final String title;
   final List<BottomSheetItem> items;

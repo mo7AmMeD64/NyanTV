@@ -261,7 +261,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
           child: settingsController.preferences
                   .get('universal_scrapper', defaultValue: false)
               ? _buildUniversalScraper(ep.link!)
-              : FutureBuilder<List<dynamic>>(
+              : FutureBuilder<List<Video>>(
                   future: sourceController.activeSource.value!.methods
                       .getVideoList(
                           DEpisode(episodeNumber: ep.number, url: ep.link)),
@@ -288,7 +288,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
 
   Widget _buildUniversalScraper(String url) {
     Logger.i("universal");
-    return FutureBuilder<List<dynamic>>(
+    return FutureBuilder<List<Video>>(
       future: _scrapeVideoStreams(url),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -306,8 +306,8 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
     );
   }
 
-  Future<List<dynamic>> _scrapeVideoStreams(String url) async {
-    final completer = Completer<List<dynamic>>();
+  Future<List<Video>> _scrapeVideoStreams(String url) async {
+    final completer = Completer<List<Video>>();
     final foundVideos = <Video>[];
     debugPrint('Calling => $url');
 

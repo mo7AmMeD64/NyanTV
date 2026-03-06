@@ -74,15 +74,10 @@ class DartotsuExtensionBridge {
 class AniyomiExtensions { const AniyomiExtensions(); }
 class MangayomiExtensions { const MangayomiExtensions(); }
 
-// Video and Track — used by Hive models
-class VideoStub {
-  final String? url;
-  final String? quality;
-  const VideoStub({this.url, this.quality});
-}
-
+// Track stub
 class Track {
   final String? url;
   final String? label;
   const Track({this.url, this.label});
+});
 }
