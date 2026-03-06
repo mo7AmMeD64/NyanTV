@@ -1,5 +1,5 @@
 import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/utils/function.dart';
 import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:flutter/material.dart';

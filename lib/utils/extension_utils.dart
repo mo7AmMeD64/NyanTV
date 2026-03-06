@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/source/source_controller.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

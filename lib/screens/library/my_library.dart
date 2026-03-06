@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/controllers/service_handler/service_handler.dart';
 import 'package:anymex/controllers/settings/settings.dart';
 import 'package:anymex/controllers/source/source_controller.dart';

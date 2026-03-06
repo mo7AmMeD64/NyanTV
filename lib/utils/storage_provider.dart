@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 
 import 'package:anymex/main.dart' show isar;
 import 'package:isar_community/isar.dart';

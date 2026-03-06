@@ -1,6 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member, prefer_const_constructors, unnecessary_null_comparison
 import 'dart:async';
-import 'package:nyantv/stubs/extension_stubs.dart' hide Video;
+import 'package:anymex/stubs/extension_stubs.dart' hide Video;
 import 'package:anymex/controllers/service_handler/service_handler.dart';
 import 'package:anymex/controllers/settings/settings.dart';
 import 'package:anymex/database/data_keys/general.dart';

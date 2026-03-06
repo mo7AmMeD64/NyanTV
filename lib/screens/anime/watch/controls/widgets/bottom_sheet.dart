@@ -1,5 +1,5 @@
 import 'package:anymex/models/Offline/Hive/video.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/screens/anime/watch/controller/player_controller.dart';
 import 'package:anymex/screens/anime/widgets/episode/normal_episode.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';

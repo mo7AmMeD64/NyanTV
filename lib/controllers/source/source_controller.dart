@@ -1,7 +1,7 @@
 // ignore_for_file: unnecessary_null_comparison, invalid_use_of_protected_member
 
 import 'package:anymex/screens/search/source_search_page.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/utils/extension_utils.dart';
 import 'package:anymex/utils/logger.dart';
 import 'dart:async';

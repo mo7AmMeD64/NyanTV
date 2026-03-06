@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 
 import 'package:anymex/controllers/source/source_controller.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';

@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/utils/logger.dart';
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/utils/logger.dart';
 
 class TvWatchNextService extends GetxController {
   static const _channel = MethodChannel('com.nyantv/tv_watch_next');

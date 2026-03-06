@@ -2,7 +2,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:convert';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'dart:io';
 import 'package:anymex/controllers/settings/settings.dart';
 import 'package:anymex/screens/local_source/player/offline_player_old.dart';

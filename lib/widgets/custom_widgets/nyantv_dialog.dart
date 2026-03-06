@@ -1,5 +1,5 @@
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

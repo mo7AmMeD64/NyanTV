@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/settings/settings.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/controllers/source/source_controller.dart';
 import 'package:anymex/models/Offline/Hive/offline_media.dart';
 import 'package:anymex/screens/anime/watch/watch_view.dart';

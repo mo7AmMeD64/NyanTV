@@ -3,10 +3,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nyantv/controllers/witcher/witcher_api.dart';
-import 'package:nyantv/screens/witcher/witcher_details.dart';
-import 'package:nyantv/utils/tv_scroll_mixin.dart';
-import 'package:nyantv/constants/themes.dart';
+import 'package:anymex/controllers/witcher/witcher_api.dart';
+import 'package:anymex/screens/witcher/witcher_details.dart';
+import 'package:anymex/utils/tv_scroll_mixin.dart';
+import 'package:anymex/constants/themes.dart';
 
 class WitcherHome extends StatefulWidget {
   const WitcherHome({super.key});

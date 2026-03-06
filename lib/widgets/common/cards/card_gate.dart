@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/models/Offline/Hive/offline_media.dart';
 import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
 import 'package:anymex/utils/extension_utils.dart';

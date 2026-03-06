@@ -1,6 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member
 import 'dart:async';
-import 'package:nyantv/stubs/extension_stubs.dart' hide Video;
+import 'package:anymex/stubs/extension_stubs.dart' hide Video;
 import 'dart:math' as math;
 import 'package:anymex/screens/anime/widgets/media_indicator_old.dart';
 import 'package:anymex/utils/logger.dart';

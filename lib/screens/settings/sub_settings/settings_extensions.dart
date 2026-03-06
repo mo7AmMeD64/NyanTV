@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/controllers/settings/settings.dart';
 import 'package:anymex/screens/settings/sub_settings/widgets/repo_dialog.dart';
 import 'package:anymex/widgets/common/custom_tiles.dart';

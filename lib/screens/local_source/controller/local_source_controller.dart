@@ -1,6 +1,6 @@
 // controllers/watch_offline_controller.dart
 import 'package:anymex/utils/logger.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:anymex/controllers/settings/settings.dart';

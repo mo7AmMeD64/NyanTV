@@ -1,5 +1,5 @@
 import 'package:anymex/models/Media/media.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/utils/function.dart';
 import 'package:anymex/widgets/common/big_carousel.dart';
 import 'package:anymex/widgets/common/future_reusable_carousel.dart';

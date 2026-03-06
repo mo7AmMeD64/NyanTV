@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/screens/other_features.dart';
 import 'package:anymex/utils/logger.dart';
 import 'dart:math' show min;

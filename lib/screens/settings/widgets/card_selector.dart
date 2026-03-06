@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/settings/settings.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
 import 'package:anymex/utils/fallback/fallback_anime.dart';
 import 'package:anymex/utils/function.dart';

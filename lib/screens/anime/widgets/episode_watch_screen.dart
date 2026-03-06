@@ -1,6 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member, prefer_const_constructors
 import 'dart:ui';
-import 'package:nyantv/stubs/extension_stubs.dart' hide Video;
+import 'package:anymex/stubs/extension_stubs.dart' hide Video;
 import 'package:anymex/models/Offline/Hive/video.dart';
 import 'package:anymex/controllers/services/anilist/anilist_auth.dart';
 import 'package:anymex/controllers/source/source_controller.dart';

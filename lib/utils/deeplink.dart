@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 
 import 'package:anymex/utils/extensions.dart';
 import 'package:anymex/widgets/non_widgets/snackbar.dart';

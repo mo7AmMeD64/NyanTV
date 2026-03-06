@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/settings/settings.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/controllers/source/source_controller.dart';
 import 'package:anymex/models/Media/media.dart';
 import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';

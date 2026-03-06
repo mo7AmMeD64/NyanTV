@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/models/Media/media.dart';
 import 'package:anymex/models/Offline/Hive/custom_list.dart';
 import 'package:anymex/widgets/common/search_bar.dart';

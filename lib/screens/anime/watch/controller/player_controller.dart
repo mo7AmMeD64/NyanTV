@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:anymex/controllers/discord/discord_rpc.dart';

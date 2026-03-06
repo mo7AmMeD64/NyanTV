@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/settings/methods.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/utils/extension_utils.dart';
 import 'package:anymex/utils/function.dart';
 import 'package:anymex/widgets/common/cards/base_card.dart';

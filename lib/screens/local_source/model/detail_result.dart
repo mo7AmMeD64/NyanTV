@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 
 
 class DetailResult {

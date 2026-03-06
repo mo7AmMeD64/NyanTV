@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/discord/discord_rpc.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/discord/discord_rpc.dart';
+import 'package:anymex/controllers/settings/settings.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:nyantv/main.dart';
+import 'package:anymex/main.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 
 List<double> _calcVisualBounds(Map<String, dynamic> args) {

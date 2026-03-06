@@ -1,5 +1,5 @@
 import 'package:anymex/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/controllers/source/source_controller.dart';
 import 'package:anymex/utils/extension_utils.dart';
 import 'package:anymex/utils/function.dart';

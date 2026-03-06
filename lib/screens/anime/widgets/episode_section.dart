@@ -1,7 +1,7 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:async';
-import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/controllers/settings/settings.dart';
 import 'package:anymex/utils/function.dart';
 import 'package:anymex/utils/logger.dart';

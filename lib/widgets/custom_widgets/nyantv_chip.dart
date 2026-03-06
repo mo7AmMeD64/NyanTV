@@ -1,5 +1,5 @@
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
