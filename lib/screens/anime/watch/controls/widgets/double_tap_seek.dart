@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:nyantv/widgets/animation/animations.dart';
+import 'package:anymex/widgets/animation/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nyantv/screens/anime/watch/controller/player_controller.dart';
+import 'package:anymex/screens/anime/watch/controller/player_controller.dart';
 import 'dart:async';
 
 import 'package:get/get.dart';
@@ -44,7 +44,7 @@ class _DoubleTapSeekWidgetState extends State<DoubleTapSeekWidget>
   Timer? _holdStartTimer;
 
   double _initialSwipeY = 0.0;
-  final _isDragging = false;
+  bool _isDragging = false;
   bool _longPressStarted = false;
   late AnimationController _speedAnimationController;
   late Animation<double> _speedScaleAnimation;
@@ -547,6 +547,28 @@ class _DoubleTapSeekWidgetState extends State<DoubleTapSeekWidget>
             onKeyEvent: _handleKeyboard,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
+              onVerticalDragStart: (details) {
+                if (!_longPressStarted && !_isHolding) {
+                  _isDragging = true;
+                  widget.controller.onVerticalDragStart(context, details);
+                } else if (_isHolding) {
+                  _initialSwipeY = details.globalPosition.dy;
+                }
+              },
+              onVerticalDragEnd: (details) {
+                if (!_isHolding) {
+                  _isDragging = false;
+                  widget.controller.onVerticalDragEnd(context, details);
+                }
+              },
+              onVerticalDragUpdate: (details) {
+                if (_isHolding) {
+                  double deltaY = details.globalPosition.dy - _initialSwipeY;
+                  _updateSpeedFromSwipe(deltaY);
+                } else if (_isDragging) {
+                  widget.controller.onVerticalDragUpdate(context, details);
+                }
+              },
               onTapDown: _handleSingleTap,
               onDoubleTapDown: _handleDoubleTap,
               onLongPressStart: (details) {

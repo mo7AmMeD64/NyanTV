@@ -1,13 +1,13 @@
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/screens/anime/details_page.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/header.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_textspan.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/screens/anime/details_page.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/header.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/custom_widgets/custom_textspan.dart';
 import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -84,10 +84,11 @@ class GridAnimeCard extends StatelessWidget {
   const GridAnimeCard({
     super.key,
     required this.data,
+    required this.isManga,
     this.variant,
   });
   final dynamic data;
-  final bool isManga = false;
+  final bool isManga;
   final CardVariant? variant;
 
   @override
@@ -105,7 +106,7 @@ class GridAnimeCard extends StatelessWidget {
         children: [
           Stack(
             children: [
-              NyantvOnTap(
+              AnymexOnTap(
                 margin: 0,
                 onTap: () {
                   navigate(() => AnimeDetailsPage(media: media.data, tag: media.title));
@@ -135,13 +136,13 @@ class GridAnimeCard extends StatelessWidget {
           const SizedBox(height: 5),
           if (data is Media &&
               ((variant ?? CardVariant.onlinelist) != CardVariant.search))
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.movie_filter_rounded,
                     color: Colors.grey, size: 16),
-                SizedBox(width: 2),
-                NyantvText(
+                const SizedBox(width: 2),
+                AnymexText(
                   text: 'ANIME',
                   maxLines: 1,
                   variant: TextVariant.regular,
@@ -154,7 +155,7 @@ class GridAnimeCard extends StatelessWidget {
           const SizedBox(height: 5),
           SizedBox(
             width: cardWidth,
-            child: NyantvText(
+            child: AnymexText(
               text: media.title,
               maxLines: 2,
               size: 14,
@@ -165,21 +166,21 @@ class GridAnimeCard extends StatelessWidget {
           if (media.episodeCount != 'N/A')
             SizedBox(
               width: cardWidth,
-              child: NyantvTextSpans(
+              child: AnymexTextSpans(
                 text: '  |  ~',
                 maxLines: 1,
                 fontSize: 14,
                 spans: [
-                  NyantvTextSpan(
+                  AnymexTextSpan(
                       text: "${media.episodeCount} ",
                       color: Theme.of(context).colorScheme.primary,
                       variant: TextVariant.semiBold),
                   if (media.nextEpisode != null)
-                    NyantvTextSpan(
+                    AnymexTextSpan(
                         text: "| ${media.nextEpisode} ",
                         color: Colors.grey,
                         variant: TextVariant.semiBold),
-                  NyantvTextSpan(
+                  AnymexTextSpan(
                       text:
                           "| ${media.totalEpisodes == '0' ? '?' : media.totalEpisodes} ",
                       color: Colors.grey,
@@ -211,7 +212,7 @@ class GridAnimeCard extends StatelessWidget {
             color: Theme.of(context).colorScheme.onPrimary,
           ),
           const SizedBox(width: 4),
-          NyantvText(
+          AnymexText(
             text: media.rating ?? '0.0',
             color: Theme.of(context).colorScheme.onPrimary,
             size: 12,
@@ -236,7 +237,7 @@ class BlurAnimeCard extends StatelessWidget {
       Theme.of(context).colorScheme.primaryContainer.withOpacity(0.8),
     ];
 
-    return NyantvOnTap(
+    return AnymexOnTap(
       onTap: () {
         navigate(() => AnimeDetailsPage(media: data, tag: data.title));
       },
@@ -296,7 +297,7 @@ class BlurAnimeCard extends StatelessWidget {
                         SizedBox(
                             height: getResponsiveSize(context,
                                 mobileSize: 10, desktopSize: 30)),
-                        NyantvText(
+                        AnymexText(
                           text: "Episode ${data.nextAiringEpisode!.episode}",
                           size: 14,
                           maxLines: 2,
@@ -305,7 +306,7 @@ class BlurAnimeCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 10),
-                        NyantvText(
+                        AnymexText(
                           text: data.title,
                           size: 14,
                           maxLines: 2,
@@ -329,7 +330,7 @@ class BlurAnimeCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular((8.multiplyRadius())),
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  child: NyantvText(
+                  child: AnymexText(
                     text: '',
                     size: 12,
                     color: Theme.of(context).colorScheme.onPrimary,

@@ -1,13 +1,13 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:nyantv/screens/anime/watch/controller/player_controller.dart';
-import 'package:nyantv/utils/logger.dart';
+import 'package:anymex/screens/anime/watch/controller/player_controller.dart';
+import 'package:anymex/utils/logger.dart';
 
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/utils/shaders.dart';
-import 'package:nyantv/widgets/common/slider_semantics.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/utils/shaders.dart';
+import 'package:anymex/widgets/common/slider_semantics.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -244,16 +244,12 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
     with TickerProviderStateMixin {
   late TabController _tabController;
   String _selectedProfile = '';
-  final _scrollController = ScrollController();
   Map<String, int> _customSettings = {
     "brightness": 0,
     "contrast": 0,
     "saturation": 0,
     "gamma": 0,
     "hue": 0,
-  };
-  late final Map<String, GlobalKey> _sliderKeys = {
-  for (final key in _customSettings.keys) key: GlobalKey()
   };
 
   @override
@@ -271,7 +267,6 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
   @override
   void dispose() {
     _tabController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -345,106 +340,69 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
               ],
             ),
           ),
-          Focus(
-            onKeyEvent: (node, event) {
-              if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-                return KeyEventResult.ignored;
-              }
-              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                if (_tabController.index > 0) {
-                  setState(() => _tabController.index--);
-                }
-                return KeyEventResult.handled;
-              }
-              if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                if (_tabController.index < 2) {
-                  setState(() => _tabController.index++);
-                }
-                return KeyEventResult.handled;
-              }
-              if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                node.focusInDirection(TraversalDirection.down);
-                return KeyEventResult.handled;
-              }
-              return KeyEventResult.ignored;
-            },
-            canRequestFocus: true,
-            child: Builder(
-              builder: (context) {
-                final isFocused = Focus.of(context).hasFocus;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceVariant,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isFocused
-                          ? theme.colorScheme.primary
-                          : Colors.transparent,
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.shadow.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 24),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.shadow.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Iconsax.eye, size: 20),
+                      SizedBox(width: 8),
+                      Text('Shaders'),
                     ],
                   ),
-                  child: TabBar(
-                    controller: _tabController,
-                    tabs: const [
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Iconsax.eye, size: 20),
-                            SizedBox(width: 8),
-                            Text('Shaders'),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.dashboard_customize, size: 20),
-                            SizedBox(width: 8),
-                            Text('Presets'),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.tune, size: 20),
-                            SizedBox(width: 8),
-                            Text('Custom'),
-                          ],
-                        ),
-                      ),
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.dashboard_customize, size: 20),
+                      SizedBox(width: 8),
+                      Text('Presets'),
                     ],
-                    indicator: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    labelColor: theme.colorScheme.onPrimary,
-                    unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    dividerColor: Colors.transparent,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                );
-              },
+                ),
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.tune, size: 20),
+                      SizedBox(width: 8),
+                      Text('Custom'),
+                    ],
+                  ),
+                ),
+              ],
+              indicator: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              labelColor: theme.colorScheme.onPrimary,
+              unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelStyle: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(
@@ -506,7 +464,7 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
             ),
           ),
           const SizedBox(height: 20),
-          NyantvExpansionTile(
+          AnymexExpansionTile(
             title: 'ANIME 4K',
             initialExpanded: true,
             content: Column(
@@ -519,7 +477,7 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
                       : settingsController.selectedShader == shader;
                   return IgnorePointer(
                     ignoring: !enableShaders,
-                    child: NyantvOnTap(
+                    child: AnymexOnTap(
                       onTap: () => setShaders(shader),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 12),
@@ -665,7 +623,7 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
         ),
         const SizedBox(height: 20),
         ...groupedProfiles.entries.map((category) {
-          return NyantvExpansionTile(
+          return AnymexExpansionTile(
             title: category.key,
             initialExpanded: true,
             content: Column(
@@ -823,7 +781,6 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
 
   Widget _buildCustomTab(ThemeData theme) {
     return ListView(
-      controller: _scrollController,
       padding: const EdgeInsets.all(24),
       children: [
         Container(
@@ -896,10 +853,8 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
   Widget _buildSliderTile(String setting, ThemeData theme) {
     final value = _customSettings[setting]!;
     final displayName = setting[0].toUpperCase() + setting.substring(1);
-    final containerKey = _sliderKeys[setting]!;
 
     return Container(
-      key: containerKey,
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -930,7 +885,8 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -958,115 +914,18 @@ class _ColorProfileBottomSheetState extends State<ColorProfileBottomSheet>
             ],
           ),
           const SizedBox(height: 16),
-          Focus(
-            canRequestFocus: true,
-            onFocusChange: (focused) {
-              if (focused) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  final ctx = containerKey.currentContext;
-                  if (ctx == null || !_scrollController.hasClients) return;
-
-                  final itemBox = ctx.findRenderObject() as RenderBox?;
-                  if (itemBox == null) return;
-
-                  final scrollRenderBox = _scrollController
-                      .position.context.storageContext
-                      .findRenderObject() as RenderBox?;
-                  if (scrollRenderBox == null) return;
-
-                  final itemOffset = itemBox.localToGlobal(
-                    Offset.zero,
-                    ancestor: scrollRenderBox,
-                  );
-
-                  final itemTop = itemOffset.dy;
-                  final itemBottom = itemTop + itemBox.size.height;
-                  final viewportHeight = scrollRenderBox.size.height;
-                  const padding = 24.0;
-                  final current = _scrollController.offset;
-                  double? target;
-
-                  if (itemTop < padding) {
-                    target = current + itemTop - padding;
-                  } else if (itemBottom > viewportHeight - padding) {
-                    target = current + itemBottom - viewportHeight + padding;
-                  }
-
-                  if (target != null) {
-                    _scrollController.animateTo(
-                      target.clamp(0.0, _scrollController.position.maxScrollExtent),
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                });
-              }
+          CustomSlider(
+            value: value.toDouble(),
+            min: -100,
+            max: 100,
+            divisions: 200,
+            onChanged: (newValue) {
+              setState(() {
+                _customSettings[setting] = newValue.round();
+              });
+              _applyCustomSettings(); // Apply changes immediately
             },
-            onKeyEvent: (node, event) {
-              if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-                return KeyEventResult.ignored;
-              }
-              if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                node.focusInDirection(TraversalDirection.up);
-                return KeyEventResult.handled;
-              }
-              if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                node.focusInDirection(TraversalDirection.down);
-                return KeyEventResult.handled;
-              }
-              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                setState(() {
-                  _customSettings[setting] = (value - 1).clamp(-100, 100);
-                });
-                _applyCustomSettings();
-                return KeyEventResult.handled;
-              }
-              if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                setState(() {
-                  _customSettings[setting] = (value + 1).clamp(-100, 100);
-                });
-                _applyCustomSettings();
-                return KeyEventResult.handled;
-              }
-              return KeyEventResult.ignored;
-            },
-            child: Builder(
-              builder: (context) {
-                final isFocused = Focus.of(context).hasFocus;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isFocused
-                          ? theme.colorScheme.primary
-                          : Colors.transparent,
-                      width: 2,
-                    ),
-                    color: isFocused
-                        ? theme.colorScheme.primary.withOpacity(0.08)
-                        : Colors.transparent,
-                  ),
-                  child: ExcludeFocus(
-                    child: CustomSlider(
-                      value: value.toDouble(),
-                      min: -100,
-                      max: 100,
-                      divisions: 200,
-                      onChanged: (newValue) {
-                        setState(() {
-                          _customSettings[setting] = newValue.round();
-                        });
-                        _applyCustomSettings();
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
           ),
-          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

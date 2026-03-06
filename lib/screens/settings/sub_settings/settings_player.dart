@@ -1,12 +1,11 @@
-// lib/screens/settings/sub_settings/settings_player.dart
-import 'package:nyantv/constants/contants.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/widgets/common/checkmark_tile.dart';
-import 'package:nyantv/widgets/common/custom_tiles.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/non_widgets/reusable_checkmark.dart';
+import 'package:anymex/constants/contants.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/widgets/common/checkmark_tile.dart';
+import 'package:anymex/widgets/common/custom_tiles.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/non_widgets/reusable_checkmark.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -217,11 +216,24 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
               Obx(() => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      NyantvExpansionTile(
+                      AnymexExpansionTile(
                           initialExpanded: true,
                           title: 'Common',
                           content: Column(
                             children: [
+                              CustomSwitchTile(
+                                  icon: Icons.play_arrow_rounded,
+                                  padding: const EdgeInsets.all(10),
+                                  title: "Use Old Player",
+                                  description:
+                                      "As many features are missing in the new player",
+                                  switchValue: settings.preferences
+                                      .get('useOldPlayer', defaultValue: false),
+                                  onChanged: (val) {
+                                    settings.preferences
+                                        .put('useOldPlayer', val);
+                                    setState(() {});
+                                  }),
                               CustomTile(
                                 padding: 10,
                                 descColor:
@@ -233,6 +245,15 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
                                 description:
                                     numToPlayerStyle(settings.playerStyle),
                               ),
+                              CustomSwitchTile(
+                                  padding: const EdgeInsets.all(10),
+                                  icon: Icons.stay_current_portrait,
+                                  title: "Default Portrait",
+                                  description:
+                                      "For psychopaths who like watching in portrait",
+                                  switchValue: settings.defaultPortraitMode,
+                                  onChanged: (val) =>
+                                      settings.defaultPortraitMode = val),
                               CustomTile(
                                 padding: 10,
                                 isDescBold: true,
@@ -283,22 +304,13 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
                                       settings.autoSkipOnce = val),
                               CustomSwitchTile(
                                   padding: const EdgeInsets.all(10),
-                                  icon: Icons.fast_forward_outlined,
-                                  title: "Auto Skip Recap",
+                                  icon: Icons.play_disabled_rounded,
+                                  title: "Enable Swipe Controls",
                                   description:
-                                      "Auto skip the recap section",
-                                  switchValue: settings.autoSkipRecap,
+                                      "Enable if you want to use brightness and volume controls",
+                                  switchValue: settings.enableSwipeControls,
                                   onChanged: (val) =>
-                                      settings.autoSkipRecap = val),
-                              CustomSwitchTile(
-                                  padding: const EdgeInsets.all(10),
-                                  icon: Icons.skip_next_rounded,
-                                  title: "Auto Skip Filler",
-                                  description:
-                                      "Automatically skip filler episodes when going to next episode",
-                                  switchValue: settings.autoSkipFiller,
-                                  onChanged: (val) =>
-                                      settings.autoSkipFiller = val),
+                                      settings.enableSwipeControls = val),
                               CustomSliderTile(
                                 sliderValue: settings.seekDuration.toDouble(),
                                 max: 50,
@@ -347,7 +359,7 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
                             ],
                           )),
                       // Subtitle Color
-                      NyantvExpansionTile(
+                      AnymexExpansionTile(
                           title: 'Subtitles',
                           content: Column(
                             children: [
@@ -398,12 +410,11 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
                                 title: 'Subtitle Background Color',
                                 onTap: () {
                                   _showColorSelectionDialog(
-                                    'Select Subtitle Background Color',
-                                    colorOptions[settings.subtitleBackgroundColor] ?? Colors.transparent,
-                                    (color) {
-                                      settings.subtitleBackgroundColor = color;
-                                    },
-                                  );
+                                      'Select Subtitle Background Color',
+                                      colorOptions[settings
+                                          .subtitleBackgroundColor]!, (color) {
+                                    settings.subtitleBackgroundColor = color;
+                                  });
                                 },
                               ),
                               // Subtitle Preview
@@ -426,7 +437,7 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
                                 max: 5.0,
                                 divisions: 5,
                                 onChanged: (double value) {
-                                  settings.subtitleOutlineWidth = value.round();
+                                  settings.subtitleOutlineWidth = value.toInt();
                                 },
                                 title: 'Subtitle Outline Width',
                                 description: 'Adjust Subtitle Outline Width',
@@ -446,49 +457,33 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
                                           fontWeight: FontWeight.w600),
                                     ),
                                     const SizedBox(height: 10),
-
-                                    Focus(
-                                      child: Builder(
-                                        builder: (context) {
-                                          final isFocused = Focus.of(context).hasFocus;
-                                          return Container(
-                                              alignment: Alignment.center,
-                                              decoration: BoxDecoration(
-                                                  color: colorOptions[settings
-                                                      .subtitleBackgroundColor],
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  border: isFocused
-                                                        ? Border.all(
-                                                            color: Theme.of(context).colorScheme.primary,
-                                                            width: 2.0,
-                                                          )
-                                                        : null,
-                                              ),
-                                              padding: const EdgeInsets.all(10),
-                                              child: OutlinedText(
-                                                text: Text(
-                                                  'Subtitle Preview Text',
-                                                  style: TextStyle(
-                                                    color: colorOptions[
-                                                        settings.subtitleColor],
-                                                    fontSize: settings.subtitleSize
-                                                        .toDouble(),
-                                                  ),
-                                                ),
-                                                strokes: [
-                                                  OutlinedTextStroke(
-                                                      color: fontColorOptions[settings
-                                                          .subtitleOutlineColor]!,
-                                                      width: settings
-                                                          .subtitleOutlineWidth
-                                                          .toDouble())
-                                                ],
-                                              ),
-                                            );
-                                        },
-                                      ),
-                                    ),
+                                    Container(
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                            color: colorOptions[settings
+                                                .subtitleBackgroundColor],
+                                            borderRadius:
+                                                BorderRadius.circular(12)),
+                                        padding: const EdgeInsets.all(10),
+                                        child: OutlinedText(
+                                          text: Text(
+                                            'Subtitle Preview Text',
+                                            style: TextStyle(
+                                              color: colorOptions[
+                                                  settings.subtitleColor],
+                                              fontSize: settings.subtitleSize
+                                                  .toDouble(),
+                                            ),
+                                          ),
+                                          strokes: [
+                                            OutlinedTextStroke(
+                                                color: fontColorOptions[settings
+                                                    .subtitleOutlineColor]!,
+                                                width: settings
+                                                    .subtitleOutlineWidth
+                                                    .toDouble())
+                                          ],
+                                        )),
                                   ],
                                 ),
                               ),
@@ -503,15 +498,15 @@ class _SettingsPlayerState extends State<SettingsPlayer> {
     );
   }
 
-//  static List<Shadow> outlinedText(
-//      {int strokeWidth = 2, Color strokeColor = Colors.black}) {
-//    return List.generate(
-//      strokeWidth,
-//      (index) => Shadow(
-//        offset: Offset(index * 0.5, index * 0.5),
-//        blurRadius: index.toDouble(),
-//        color: strokeColor,
-//      ),
-//    );
-//  }
+  static List<Shadow> outlinedText(
+      {int strokeWidth = 2, Color strokeColor = Colors.black}) {
+    return List.generate(
+      strokeWidth,
+      (index) => Shadow(
+        offset: Offset(index * 0.5, index * 0.5),
+        blurRadius: index.toDouble(),
+        color: strokeColor,
+      ),
+    );
+  }
 }

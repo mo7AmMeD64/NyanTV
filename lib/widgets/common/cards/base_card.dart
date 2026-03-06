@@ -1,8 +1,7 @@
+import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -29,7 +28,7 @@ abstract class CarouselCard extends StatelessWidget {
   Widget buildCardTitle(bool isDesktop) {
     return SizedBox(
       height: 50,
-      child: NyantvText(
+      child: AnymexText(
         text: itemData.title ?? '?',
         maxLines: 2,
         size: isDesktop ? 14 : 12,
@@ -41,26 +40,7 @@ abstract class CarouselCard extends StatelessWidget {
 
   Widget buildCardBadgeV2(
       BuildContext context, DataVariant variant, ItemType type) {
-    if (variant == DataVariant.recommendation &&
-        itemData.servicesType == ServicesType.simkl) {
-      return const SizedBox.shrink();
-    }
-
     final theme = Theme.of(context);
-    final bool hasRating = variant == DataVariant.anilist &&
-        variant != DataVariant.recommendation &&
-        itemData.source != null &&
-        itemData.source!.isNotEmpty &&
-        itemData.source != '?' &&
-        itemData.source != '0' &&
-        itemData.source != '0.0';
-
-    final bool hasValidExtraData = itemData.extraData != null &&
-        itemData.extraData!.isNotEmpty &&
-        itemData.extraData != '?' &&
-        itemData.extraData != '??';
-
-    if (!hasRating && !hasValidExtraData) return const SizedBox.shrink();
 
     return Positioned(
       top: 6,
@@ -74,41 +54,18 @@ abstract class CarouselCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (hasValidExtraData) ...[
-              Icon(
-                getIconForVariant(itemData.extraData ?? '', variant),
-                size: 15,
-                color: theme.colorScheme.onPrimary,
-              ),
-              const SizedBox(width: 4),
-              NyantvText(
-                text: itemData.extraData ?? '',
-                color: theme.colorScheme.onPrimary,
-                size: 11,
-                variant: TextVariant.bold,
-              ),
-            ],
-            if (hasRating) ...[
-              if (hasValidExtraData)
-                Container(
-                  width: 1,
-                  height: 11,
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  color: theme.colorScheme.onPrimary.withOpacity(0.4),
-                ),
-              Icon(
-                Iconsax.star5,
-                size: 13,
-                color: theme.colorScheme.onPrimary,
-              ),
-              const SizedBox(width: 3),
-              NyantvText(
-                text: itemData.source!,
-                color: theme.colorScheme.onPrimary,
-                size: 11,
-                variant: TextVariant.bold,
-              ),
-            ],
+            Icon(
+              getIconForVariant(itemData.extraData ?? '', variant),
+              size: 15,
+              color: theme.colorScheme.onPrimary,
+            ),
+            const SizedBox(width: 4),
+            AnymexText(
+              text: itemData.extraData ?? '',
+              color: theme.colorScheme.onPrimary,
+              size: 11,
+              variant: TextVariant.bold,
+            ),
           ],
         ),
       ),
@@ -117,26 +74,7 @@ abstract class CarouselCard extends StatelessWidget {
 
   Widget buildCardBadge(
       BuildContext context, DataVariant variant, ItemType type) {
-    if (variant == DataVariant.recommendation &&
-        itemData.servicesType == ServicesType.simkl) {
-      return const SizedBox.shrink();
-    }
-
     final theme = Theme.of(context);
-    final bool hasRating = variant == DataVariant.anilist &&
-        variant != DataVariant.recommendation &&
-        itemData.source != null &&
-        itemData.source!.isNotEmpty &&
-        itemData.source != '?' &&
-        itemData.source != '0' &&
-        itemData.source != '0.0';
-
-    final bool hasValidExtraData = itemData.extraData != null &&
-        itemData.extraData!.isNotEmpty &&
-        itemData.extraData != '?' &&
-        itemData.extraData != '??';
-
-    if (!hasRating && !hasValidExtraData) return const SizedBox.shrink();
 
     return Positioned(
       right: 0,
@@ -153,37 +91,18 @@ abstract class CarouselCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (hasValidExtraData) ...[
-              Icon(
-                getIconForVariant(itemData.extraData ?? '', variant),
-                size: 16,
-                color: theme.colorScheme.onPrimary,
-              ),
-              const SizedBox(width: 4),
-              NyantvText(
-                text: itemData.extraData ?? '',
-                color: theme.colorScheme.onPrimary,
-                size: 12,
-                variant: TextVariant.bold,
-              ),
-            ],
-            if (hasRating) ...[
-              if (hasValidExtraData)
-                Container(
-                  width: 1,
-                  height: 11,
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  color: theme.colorScheme.onPrimary.withOpacity(0.4),
-                ),
-              Icon(Iconsax.star5, size: 13, color: theme.colorScheme.onPrimary),
-              const SizedBox(width: 3),
-              NyantvText(
-                text: itemData.source!,
-                color: theme.colorScheme.onPrimary,
-                size: 12,
-                variant: TextVariant.bold,
-              ),
-            ],
+            Icon(
+              getIconForVariant(itemData.extraData ?? '', variant),
+              size: 16,
+              color: theme.colorScheme.onPrimary,
+            ),
+            const SizedBox(width: 4),
+            AnymexText(
+              text: itemData.extraData ?? '',
+              color: theme.colorScheme.onPrimary,
+              size: 12,
+              variant: TextVariant.bold,
+            ),
           ],
         ),
       ),

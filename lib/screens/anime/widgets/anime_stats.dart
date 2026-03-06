@@ -1,12 +1,13 @@
 // ignore_for_file: prefer_const_constructors
 
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/screens/home_page.dart';
-import 'package:nyantv/screens/search/search_view.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/screens/home_page.dart';
+import 'package:anymex/screens/search/search_view.dart';
+import 'package:anymex/utils/fallback/fallback_anime.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,10 +23,12 @@ class AnimeStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final serviceHandler = Get.find<ServiceHandler>();
-    final isSimkl = serviceHandler.serviceType.value == ServicesType.simkl;
+    final isSimkl = false;
     final covers = [
-      ...serviceHandler.anilistService.trendingAnime,
-    ].where((e) => e.cover != null && (e.cover?.isNotEmpty ?? false)).toList();
+                ...serviceHandler.anilistService.trendingAnimes,
+              ]
+        .where((e) => e.cover != null && (e.cover?.isNotEmpty ?? false))
+        .toList();
     final isDesktop = MediaQuery.of(context).size.width > 600;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +41,7 @@ class AnimeStats extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  NyantvText(
+                  AnymexText(
                     text:
                         "EPISODE ${data.nextAiringEpisode?.episode} WILL BE RELEASED IN",
                     size: 14,
@@ -49,7 +52,7 @@ class AnimeStats extends StatelessWidget {
                         .withOpacity(0.8),
                   ),
                   const SizedBox(height: 5),
-                  NyantvText(
+                  AnymexText(
                     text: countdown,
                     size: getResponsiveSize(context,
                         mobileSize: 16, desktopSize: 20),
@@ -61,7 +64,7 @@ class AnimeStats extends StatelessWidget {
               ),
             ),
           ),
-        const NyantvText(
+        const AnymexText(
           text: "Statistics",
           variant: TextVariant.bold,
           size: 17,
@@ -74,50 +77,42 @@ class AnimeStats extends StatelessWidget {
               StateItem(label: "Type", value: data.type),
               StateItem(label: "Rating", value: '${data.rating}/10'),
               StateItem(label: "Popularity", value: data.popularity),
-              if (!isSimkl) ...[
-                StateItem(label: "Season", value: data.season),
-                StateItem(label: "Format", value: data.format),
-              ],
-              if (![data.format, data.type].contains("MOVIE")) ...[
-                StateItem(label: "Status", value: data.status),
-                StateItem(label: "Total Episodes", value: data.totalEpisodes),
-              ],
+              StateItem(label: "Season", value: data.season),
+              StateItem(label: "Format", value: data.format),
+              StateItem(label: "Status", value: data.status),
               StateItem(label: "Duration", value: data.duration),
-              StateItem(
-                  label: data.type == "SHOW" ? "First Aired" : "Premiered",
-                  value: data.premiered),
+              StateItem(label: "Total Episodes", value: data.totalEpisodes),
+              StateItem(label: "Premiered", value: data.premiered),
               if (data.studios?.isNotEmpty ?? false)
                 StateItem(label: "Studios", value: data.studios?.first ?? ''),
             ],
           ),
         ),
-        if (!isSimkl) ...[
-          const SizedBox(height: 30),
-          const NyantvText(
-            text: "Romaji Title",
-            variant: TextVariant.bold,
-            size: 17,
-          ),
-          10.height(),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: NyantvText(
-              text: data.romajiTitle,
-              variant: TextVariant.semiBold,
-              size: 14,
-              color: Colors.grey[300],
-            ),
-          ),
-        ],
         const SizedBox(height: 30),
-        const NyantvText(
+        const AnymexText(
+          text: "Romaji Title",
+          variant: TextVariant.bold,
+          size: 17,
+        ),
+        10.height(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: AnymexText(
+            text: data.romajiTitle,
+            variant: TextVariant.semiBold,
+            size: 14,
+            color: Colors.grey[300],
+          ),
+        ),
+        const SizedBox(height: 30),
+        const AnymexText(
           text: "Synopsis",
           variant: TextVariant.bold,
           size: 17,
         ),
         Padding(
           padding: const EdgeInsets.all(10.0),
-          child: NyantvText(
+          child: AnymexText(
             text: data.description,
             size: 14,
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.9),
@@ -126,7 +121,7 @@ class AnimeStats extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        const NyantvText(
+        const AnymexText(
           text: "Genres",
           variant: TextVariant.bold,
           size: 17,
@@ -152,6 +147,7 @@ class AnimeStats extends StatelessWidget {
                       ServicesType.anilist) {
                     navigate(() => SearchPage(
                           searchTerm: '',
+                          isManga: false,
                           initialFilters: {
                             'genres': [e]
                           },
@@ -184,14 +180,14 @@ class StateItem extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          NyantvText(
+          AnymexText(
             text: label,
             variant: TextVariant.semiBold,
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.9),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: NyantvText(
+            child: AnymexText(
               text: value,
               variant: TextVariant.semiBold,
               color: Theme.of(context).colorScheme.primary,

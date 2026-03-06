@@ -1,11 +1,11 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/screens/settings/sub_settings/widgets/repo_dialog.dart';
-import 'package:nyantv/widgets/common/custom_tiles.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
+import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/screens/settings/sub_settings/widgets/repo_dialog.dart';
+import 'package:anymex/widgets/common/custom_tiles.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -62,15 +62,15 @@ class _SettingsExtensionsState extends State<SettingsExtensions> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    NyantvExpansionTile(
+                    AnymexExpansionTile(
                         initialExpanded: true,
-                        title: 'Mangayomi',
+                        title: 'Extensions',
                         content: Column(
                           children: [
                             CustomTile(
                               icon: HugeIcons.strokeRoundedGithub,
                               title: 'Github Repo',
-                              description: "Add github repo anime",
+                              description: "Add github repo for extensions",
                               onTap: () => const GitHubRepoDialog(
                                 type: ItemType.anime,
                                 extType: ExtensionType.mangayomi,
@@ -79,15 +79,15 @@ class _SettingsExtensionsState extends State<SettingsExtensions> {
                           ],
                         )),
                     if (Platform.isAndroid)
-                      NyantvExpansionTile(
+                      AnymexExpansionTile(
                           initialExpanded: true,
-                          title: 'Aniyomi',
+                          title: 'Android Extensions',
                           content: Column(
                             children: [
                               CustomTile(
                                 icon: HugeIcons.strokeRoundedGithub,
                                 title: 'Github Repo',
-                                description: "Add github repo for anime",
+                                description: "Add github repo for android extensions",
                                 onTap: () => const GitHubRepoDialog(
                                   type: ItemType.anime,
                                   extType: ExtensionType.aniyomi,

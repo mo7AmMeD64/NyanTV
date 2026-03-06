@@ -1,4 +1,4 @@
-import 'package:nyantv/screens/settings/sub_settings/settings_about.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_about.dart';
 import 'package:flutter/material.dart';
 
 class ProfileInfo extends StatelessWidget {
@@ -134,7 +134,7 @@ class ProfileSection extends StatelessWidget {
               backgroundImage: AssetImage('assets/images/logo.png'),
             ),
             title: "Developer",
-            subtitle: "hoemotion",
+            subtitle: "RyanYuuki",
             trailing: IconButton(
                 onPressed: () async {
                   await launchUrlHelper('https://github.com/');

@@ -1,14 +1,14 @@
+import 'package:anymex/controllers/settings/settings.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
-import 'package:nyantv/utils/fallback/fallback_anime.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/common/cards/base_card.dart';
-import 'package:nyantv/widgets/common/cards/card_gate.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_chip.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_dialog.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
+import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
+import 'package:anymex/utils/fallback/fallback_anime.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/common/cards/base_card.dart';
+import 'package:anymex/widgets/common/cards/card_gate.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_chip.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_dialog.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -21,7 +21,7 @@ void showCardStyleSwitcher(BuildContext context) {
     builder: (dialogContext) {
       return Obx(
         () {
-          return NyantvDialog(
+          return AnymexDialog(
               title: 'Card Style',
               onConfirm: () {
                 settingsController.cardStyle = selectedStyle.value.index;
@@ -89,7 +89,7 @@ class _CardStyleSelectorState extends State<CardStyleSelector> {
           ),
         ),
         10.height(),
-        NyantvCard(
+        AnymexCard(
           enableAnimation: true,
           padding: const EdgeInsets.all(10),
           child: AnimatedSwitcher(
@@ -121,7 +121,7 @@ class _CardStyleSelectorState extends State<CardStyleSelector> {
   Widget _buildStyleChip(CardStyle style) {
     final bool isSelected = style == _selectedStyle;
 
-    return NyantvChip(
+    return AnymexChip(
       isSelected: isSelected,
       label: style.name.capitalize!,
       onSelected: (bool selected) {

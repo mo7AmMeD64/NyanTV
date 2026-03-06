@@ -1,46 +1,43 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member
-//lib/screens/anime/details_page.dart
 import 'dart:async';
-import 'package:nyantv/controllers/discord/discord_rpc.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/controllers/source/source_mapper.dart';
-import 'package:nyantv/database/comments_db.dart';
-import 'package:nyantv/database/model/comment.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_button.dart';
-import 'package:nyantv/controllers/cacher/cache_controller.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/services/anilist/anilist_auth.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/controllers/services/anilist/anilist_data.dart';
-import 'package:nyantv/controllers/services/jikan.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/screens/anime/widgets/anime_stats.dart';
-import 'package:nyantv/screens/anime/widgets/custom_list_dialog.dart';
-import 'package:nyantv/screens/anime/widgets/episode_section.dart';
-import 'package:nyantv/screens/anime/widgets/list_editor.dart';
-import 'package:nyantv/screens/anime/widgets/seasons_buttons.dart';
-import 'package:nyantv/screens/anime/widgets/voice_actor.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/utils/media_syncer.dart';
-import 'package:nyantv/utils/string_extensions.dart';
-import 'package:nyantv/widgets/anime/gradient_image.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/common/navbar.dart';
-import 'package:nyantv/widgets/common/reusable_carousel.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_textspan.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/controllers/discord/discord_rpc.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/utils/logger.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/controllers/source/source_mapper.dart';
+import 'package:anymex/database/comments_db.dart';
+import 'package:anymex/database/model/comment.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_button.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/services/anilist/anilist_auth.dart';
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/controllers/services/anilist/anilist_data.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/screens/anime/widgets/anime_stats.dart';
+import 'package:anymex/screens/anime/widgets/custom_list_dialog.dart';
+import 'package:anymex/screens/anime/widgets/episode_section.dart';
+import 'package:anymex/screens/anime/widgets/list_editor.dart';
+import 'package:anymex/screens/anime/widgets/seasons_buttons.dart';
+import 'package:anymex/screens/anime/widgets/voice_actor.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/utils/media_syncer.dart';
+import 'package:anymex/utils/string_extensions.dart';
+import 'package:anymex/widgets/anime/gradient_image.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/common/navbar.dart';
+import 'package:anymex/widgets/common/reusable_carousel.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/custom_widgets/custom_textspan.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_progress.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:iconly/iconly.dart';
@@ -89,9 +86,6 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
   // Tracker's Controller
   PageController controller = PageController();
 
-  // for fast parallel filler fetching
-  Map<String, bool> fillerEpisodes = {};
-
   // Extensions Controller
   final sourceController = Get.find<SourceController>();
 
@@ -112,26 +106,10 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
     if (sourceController.installedExtensions.isEmpty) {
       showAnify.value = false;
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final isCached = Get.find<CacheController>()
-          .getStoredAnime()
-          .any((m) => m.id == widget.media.id);
-
-      if (isCached) {
-        _fetchAnilistData();
-        _checkAnimePresence();
-      } else {
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (!mounted) return;
-          _fetchAnilistData();
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (!mounted) return;
-            _checkAnimePresence();
-          });
-        });
-      }
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _checkAnimePresence();
     });
+    _fetchAnilistData();
   }
 
   Future<void> _syncMediaIds() async {
@@ -147,43 +125,10 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
     }
   }
 
-  Future<void> _fetchFillerInfo() async {
-    final malId = anilistData?.idMal ?? widget.media.idMal;
-    if (malId == '0') return;
-
-    try {
-      final data = await JikanService.getFillerEpisodes(malId.toString());
-
-      if (data.isNotEmpty) {
-        fillerEpisodes = data;
-        _applyFillerInfo();
-      }
-    } catch (_) {}
-  }
-
-  void _applyFillerInfo() {
-    if (fillerEpisodes.isEmpty || episodeList.isEmpty) return;
-
-    bool updated = false;
-    for (var ep in episodeList) {
-      if (fillerEpisodes.containsKey(ep.number)) {
-        ep.filler = true;
-        updated = true;
-      }
-    }
-
-    if (updated && mounted) setState(() {});
-  }
-
   @override
   void dispose() {
     controller.dispose();
-
-    DiscordRPCController.instance.updateBrowsingPresence(
-      activity: 'Browsing Anime',
-      details: 'Exploring the library',
-    );
-
+    DiscordRPCController.instance.updateBrowsingPresence();
     super.dispose();
   }
 
@@ -245,7 +190,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       if (isExtensions) {
         _processExtensionData(tempData);
       } else {
-        Future.wait([_mapToService(), _syncMediaIds(), _fetchFillerInfo()]);
+        Future.wait([_mapToService(), _syncMediaIds()]);
       }
     } catch (e) {
       if (e.toString().contains('author')) {
@@ -291,7 +236,12 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
     try {
       episodeError.value = false;
       final episodeFuture = await sourceController.activeSource.value!.methods
-          .getDetail(DMedia(url: media.id));
+          .getDetail(DMedia.withUrl(media.id));
+
+      // if (episodeFuture == null) {
+      //   episodeError.value = true;
+      //   return;
+      // }
 
       final episodes = _convertEpisodes(
         episodeFuture.episodes!.reversed.toList(),
@@ -301,7 +251,6 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       rawEpisodes.value = _createRawEpisodes(episodes);
       episodeList.value = _renewEpisodeData(episodes);
       searchedTitle.value = media.title;
-      _applyFillerInfo();
       if (mounted) {
         setState(() {});
       }
@@ -323,7 +272,6 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       showAnify.value = false;
     }
     episodeList.value = newEps;
-    _applyFillerInfo();
     if (mounted) {
       setState(() {});
     }
@@ -488,7 +436,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      NyantvText(
+                                      AnymexText(
                                         text: convertAniListStatus(
                                             animeStatus.value),
                                         variant: TextVariant.bold,
@@ -536,7 +484,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                           ),
                         ] else ...[
                           Expanded(
-                            child: NyantvButton2(
+                            child: AnymexButton2(
                               onTap: () {
                                 showCustomListDialog(
                                     context,
@@ -560,7 +508,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
           ] else ...[
             const SizedBox(
               height: 400,
-              child: Center(child: NyantvProgressIndicator()),
+              child: Center(child: AnymexProgressIndicator()),
             )
           ],
           ExpandablePageView(
@@ -575,6 +523,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
               else
                 const SizedBox.shrink(),
               _buildEpisodeSection(context),
+              // _buildCommentsSection(context)
             ],
           )
         ],
@@ -621,25 +570,25 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: NyantvTextSpans(
+            child: AnymexTextSpans(
               fontSize: 14,
               spans: [
-                NyantvTextSpan(
+                AnymexTextSpan(
                   text: "Episode ",
                   color:
                       Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 ),
-                NyantvTextSpan(
+                AnymexTextSpan(
                   text: currentAnime.value?.episodeCount?.toString() ?? '0',
                   variant: TextVariant.bold,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                NyantvTextSpan(
+                AnymexTextSpan(
                   text: ' of ',
                   color:
                       Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 ),
-                NyantvTextSpan(
+                AnymexTextSpan(
                   text: anilistData?.totalEpisodes.toString() ??
                       anilistData?.totalEpisodes.toString() ??
                       '??',
@@ -678,16 +627,26 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
         episodeError: episodeError,
         mapToAnilist: _mapToService,
         getDetailsFromSource: _fetchSourceDetails,
+
+        // getSourcePreference: getSourcePreference,
         isAnify: isAnify,
         showAnify: showAnify,
       );
     });
   }
 
-//  Widget _buildCommentsSection(BuildContext context) {
-//    return const SizedBox.shrink();
-//  }
+  Widget _buildCommentsSection(BuildContext context) {
+    return
+        // comments.value != null
+        //     ? CommentSection(
+        //         mediaId: widget.media.id,
+        //         currentTag: ('Episode ${currentAnime.value?.episodeCount ?? '0'}'),
+        //       )
+        //     :
+        const SizedBox.shrink();
+  }
 
+  // Common Info Section
   Column _buildCommonInfo(BuildContext context) {
     return Column(
       children: [
@@ -715,15 +674,15 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
         CharactersCarousel(characters: anilistData!.characters ?? []),
         ReusableCarousel(
           data: anilistData!.recommendations,
-          title: anilistData!.serviceType == ServicesType.simkl
-              ? "Recommended ${anilistData!.id.endsWith('MOVIE') ? 'Movies' : 'Shows'}"
-              : "Recommended Anime",
+          title: "Recommended Animes",
           variant: DataVariant.recommendation,
         ),
       ],
     );
   }
+  // Common Info Section
 
+  // Desktop Navigation bar: START
   Widget _buildDesktopNav() {
     return Obx(() => Container(
           margin: const EdgeInsets.all(20),
@@ -780,12 +739,19 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
                           selectedIcon: Iconsax.play5,
                           unselectedIcon: Iconsax.play,
                           label: "Watch"),
+                    // NavItem(
+                    //     onTap: _onPageSelected,
+                    //     selectedIcon: HugeIcons.strokeRoundedComment01,
+                    //     unselectedIcon: HugeIcons.strokeRoundedComment02,
+                    //     label: "Comments"),
                   ]),
             ],
           ),
         ));
   }
+  // Desktop Navigation bar: END
 
+// Mobile Navigation bar: START
   Widget _buildMobiledNav() {
     return Obx(() => ResponsiveNavBar(
             isDesktop: false,
@@ -814,6 +780,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       builder: (BuildContext context) {
         return ListEditorModal(
           animeStatus: animeStatus,
+          isManga: false,
           animeScore: animeScore,
           animeProgress: animeProgress,
           currentAnime: currentAnime,

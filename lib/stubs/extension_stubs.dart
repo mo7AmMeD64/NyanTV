@@ -1,5 +1,4 @@
-// Stubs for dartotsu_extension_bridge
-
+// ignore_for_file: unused_element
 import 'package:flutter/widgets.dart';
 
 enum ExtensionType {
@@ -35,12 +34,12 @@ class DMedia {
   final List<DEpisode>? episodes;
   const DMedia({this.url, this.title, this.cover, this.description,
     this.genre, this.itemType, this.episodes});
-  static DMedia fromJson(Map<String, dynamic> json) =>
-      DMedia(url: json['url']?.toString(), title: json['title']?.toString(),
-             cover: json['cover']?.toString());
+  static DMedia fromJson(Map<String, dynamic> json) => DMedia(
+    url: json['url']?.toString(), title: json['title']?.toString(),
+    cover: json['cover']?.toString());
   DMedia withUrl(String newUrl) => DMedia(url: newUrl, title: title,
-      cover: cover, description: description, genre: genre,
-      itemType: itemType, episodes: episodes);
+    cover: cover, description: description, genre: genre,
+    itemType: itemType, episodes: episodes);
 }
 
 class DEpisode {
@@ -49,17 +48,6 @@ class DEpisode {
   final double? episodeNum;
   final int? episodeNumber;
   const DEpisode({this.name, this.url, this.episodeNum, this.episodeNumber});
-}
-
-class Video {
-  final String? url;
-  final String? quality;
-  final List<Track> subtitleTracks;
-  final List<Track> audioTracks;
-  const Video({this.url, this.quality,
-    this.subtitleTracks = const [],
-    this.audioTracks = const []});
-  static Video fromVideo(dynamic v) => Video(url: v?.url?.toString());
 }
 
 class Track {
@@ -101,7 +89,3 @@ class DartotsuExtensionBridge {
 
 class AniyomiExtensions { const AniyomiExtensions(); }
 class MangayomiExtensions { const MangayomiExtensions(); }
-
-extension DMediaMapper on DMedia {
-  dynamic toCarouselData() => null;
-}

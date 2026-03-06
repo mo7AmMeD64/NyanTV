@@ -1,40 +1,39 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member
-// lib/screens/anime/watch_page.dart
 import 'dart:async';
-import 'package:nyantv/utils/logger.dart';
+import 'package:nyantv/stubs/extension_stubs.dart' hide Video;
+import 'dart:math' as math;
+import 'package:anymex/screens/anime/widgets/media_indicator_old.dart';
+import 'package:anymex/utils/logger.dart';
 import 'dart:io';
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Offline/Hive/video.dart' as model;
-import 'package:nyantv/constants/contants.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/models/player/player_adaptor.dart';
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Media/media.dart' as nyantv;
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/screens/anime/widgets/episode_watch_screen.dart';
-import 'package:nyantv/screens/anime/widgets/video_slider.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_player.dart';
-import 'package:nyantv/utils/color_profiler.dart';
-import 'package:nyantv/utils/device_ram.dart';
-import 'package:nyantv/utils/shaders.dart';
-import 'package:nyantv/utils/string_extensions.dart';
-import 'package:nyantv/widgets/common/checkmark_tile.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_titlebar.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
-import 'package:nyantv/screens/anime/watch/controller/tv_remote_handler.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_button.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_textspan.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Offline/Hive/video.dart' as model;
+import 'package:anymex/constants/contants.dart';
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/models/player/player_adaptor.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Media/media.dart' as anymex;
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/screens/anime/widgets/episode_watch_screen.dart';
+import 'package:anymex/screens/anime/widgets/video_slider.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_player.dart';
+import 'package:anymex/utils/color_profiler.dart';
+import 'package:anymex/utils/shaders.dart';
+import 'package:anymex/utils/string_extensions.dart';
+import 'package:anymex/widgets/common/checkmark_tile.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_titlebar.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_button.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/custom_widgets/custom_textspan.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_progress.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -42,18 +41,18 @@ import 'package:iconsax/iconsax.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:outlined_text/outlined_text.dart';
+import 'package:screen_brightness/screen_brightness.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
-import 'package:nyantv/utils/aniskip.dart' as aniskip;
-import 'package:nyantv/utils/tv_scroll_mixin.dart';
-import 'package:nyantv/controllers/discord/discord_rpc.dart';
-import 'package:nyantv/main.dart';
-import 'package:nyantv/controllers/tv/tv_watch_next_service.dart';
+import 'package:volume_controller/volume_controller.dart';
+import 'package:anymex/utils/aniskip.dart' as aniskip;
+import 'package:anymex/utils/tv_scroll_mixin.dart';
 
 class WatchPage extends StatefulWidget {
   final model.Video episodeSrc;
   final Episode currentEpisode;
   final List<Episode> episodeList;
-  final nyantv.Media anilistData;
+  final anymex.Media anilistData;
   final List<model.Video> episodeTracks;
   final bool shouldTrack;
   const WatchPage(
@@ -69,28 +68,19 @@ class WatchPage extends StatefulWidget {
   State<WatchPage> createState() => _WatchPageState();
 }
 
-class _ActiveSkip {
-  final String label;
-  final int end;
-  final int start;
-  _ActiveSkip({required this.label, required this.end, required this.start});
-}
-
-final Rx<_ActiveSkip?> activeSkip = Rx<_ActiveSkip?>(null);
-
-class _WatchPageState extends State<WatchPage>
-    with TickerProviderStateMixin, TVScrollMixin, WidgetsBindingObserver {
+class _WatchPageState extends State<WatchPage> with TickerProviderStateMixin, TVScrollMixin {
   late Rx<model.Video> episode;
   late Rx<Episode> currentEpisode;
   late RxList<model.Video> episodeTracks;
   late RxList<Episode> episodeList;
-  late Rx<nyantv.Media> anilistData;
+  late Rx<anymex.Media> anilistData;
   RxList<model.Track?> subtitles = <model.Track>[].obs;
 
+  // Library
   final offlineStorage = Get.find<OfflineStorageController>();
   late ServicesType mediaService;
-  late DiscordRPCController discordRPC;
 
+  // Player Related Stuff
   late Player player;
   late VideoController playerController;
   final isPlaying = true.obs;
@@ -101,8 +91,6 @@ class _WatchPageState extends State<WatchPage>
   final showControls = true.obs;
   final isBuffering = true.obs;
   final bufferred = const Duration(milliseconds: 0).obs;
-  Timer? _bufferingDebounceTimer;
-  final isBufferingVisible = false.obs;
   final playbackSpeed = 1.0.obs;
   final isFullscreen = false.obs;
   final selectedSubIndex = (-1).obs;
@@ -111,18 +99,24 @@ class _WatchPageState extends State<WatchPage>
   final RxString resizeMode = "Cover".obs;
   late PlayerSettings playerSettings;
   late FocusNode _keyboardListenerFocusNode;
-  final ScrollController _scrollController = ScrollController();
-  final skipTimes = Rx<aniskip.EpisodeSkipTimes?>(null);
+  aniskip.EpisodeSkipTimes? skipTimes;
   final isOPSkippedOnce = false.obs;
   final isEDSkippedOnce = false.obs;
 
+  // Player Seek Related
+  final RxBool _volumeIndicator = false.obs;
+  final RxBool _brightnessIndicator = false.obs;
+  Timer? _volumeTimer;
+  Timer? _brightnessTimer;
+  var _volumeInterceptEventStream = false;
+  final RxDouble _volumeValue = 0.0.obs;
+  final RxDouble _brightnessValue = 0.0.obs;
   late AnimationController _leftAnimationController;
   late AnimationController _rightAnimationController;
   RxInt skipDuration = 10.obs;
   final isLocked = false.obs;
   RxList<String> subtitleText = [''].obs;
   RxInt subtitleDelay = 0.obs;
-  FocusNode? _lastControlsFocusNode;
 
   final doubleTapLabel = 0.obs;
   Timer? doubleTapTimeout;
@@ -130,190 +124,45 @@ class _WatchPageState extends State<WatchPage>
   Timer? _hideControlsTimer;
   final pressed2x = false.obs;
 
+  // Service Related Handlers and Variables
   final sourceController = Get.find<SourceController>();
   final isEpisodeDialogOpen = false.obs;
   late bool isLoggedIn;
-  final _prevEpFocusNode = FocusNode(debugLabel: 'prev-ep');
-  final _playPauseFocusNode = FocusNode(debugLabel: 'play-pause');
-  final _nextEpFocusNode = FocusNode(debugLabel: 'next-ep');
-  final _skipButtonFocusNode = FocusNode(debugLabel: 'skip-btn');
-  late TVRemoteHandler? _tvRemoteHandler;
+  final leftOriented = true.obs;
 
-  bool _menuInteractionPaused = false;
-
-  Timer? _discordUpdateTimer;
-  Timer? _periodicDiscordUpdateTimer;
-  bool _isUpdatingDiscord = false;
-  DateTime? _lastDiscordUpdate;
-  final _minUpdateInterval = const Duration(seconds: 2);
-  final _periodicUpdateInterval = const Duration(seconds: 20);
-
-  final _skipOpEdFocusNode = FocusNode(debugLabel: 'skip-oped');
-  int _focusGeneration = 0;
-  DateTime? _controlsClosedAt;
-
+  // Video Player Visual Profile
   final currentVisualProfile = 'natural'.obs;
   RxMap<String, int> customSettings = <String, int>{}.obs;
-  final _activeSegmentKey = Rx<String?>(null);
 
-  bool get isMobile =>
-      !settings.isTV.value && (Platform.isAndroid || Platform.isIOS);
-
-  @override
-  ScrollController get scrollController => _scrollController;
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!mounted) return;
-    if (state == AppLifecycleState.resumed) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      setState(() {});
-    }
-  }
-
-  String? _computeSegmentKey(int secs) {
-    if (skipTimes.value == null) return null;
-    final segs = [
-      skipTimes.value!.op,
-      skipTimes.value!.mixedOp,
-      skipTimes.value!.ed,
-      skipTimes.value!.mixedEd,
-      skipTimes.value!.recap,
-    ];
-    for (final seg in segs) {
-      if (seg != null && secs >= seg.start && secs < seg.end) {
-        return '${seg.start}-${seg.end}';
-      }
-    }
-    return null;
-  }
+  bool get isMobile => !settings.isTV.value && (Platform.isAndroid || Platform.isIOS);
 
   void applySavedProfile() => ColorProfileManager()
       .applyColorProfile(currentVisualProfile.value, player);
-
-  void navigateToNextEpisode() {
-    if (playerSettings.autoSkipFiller) {
-      final targetEpisode = _getNextNonFillerEpisode();
-      if (targetEpisode != null) {
-        _switchToEpisode(targetEpisode);
-      } else if (_hasNextEpisode()) {
-        _switchToEpisode(_getNextEpisode()!);
-      }
-    } else {
-      if (_hasNextEpisode()) {
-        _switchToEpisode(_getNextEpisode()!);
-      }
-    }
-  }
-
-  bool _hasNextEpisode() {
-    return currentEpisode.value.number.toInt() <
-        episodeList.value.last.number.toInt();
-  }
-
-  Episode? _getNextEpisode() {
-    final currentIndex = episodeList.value.indexOf(currentEpisode.value);
-    return currentIndex < episodeList.value.length - 1
-        ? episodeList.value[currentIndex + 1]
-        : null;
-  }
-
-  Episode? _getNextNonFillerEpisode() {
-    final currentIndex = episodeList.value.indexOf(currentEpisode.value);
-    int skippedCount = 0;
-
-    for (int i = currentIndex + 1; i < episodeList.value.length; i++) {
-      final episode = episodeList.value[i];
-      if (episode.filler != true) {
-        if (skippedCount > 0) {
-          snackBar(
-              'Skipped $skippedCount filler episode${skippedCount > 1 ? 's' : ''}');
-        }
-        return episode;
-      }
-      skippedCount++;
-    }
-    return _getNextEpisode();
-  }
-
-  Future<void> _switchToEpisode(Episode episode) async {
-    isSwitchingEpisode = true;
-
-    trackEpisode(
-        currentPosition.value, episodeDuration.value, currentEpisode.value);
-
-    setState(() {
-      player.open(Media(''));
-    });
-
-    currentEpisode.value = episode;
-    final resp = await sourceController.activeSource.value!.methods
-        .getVideoList(
-// STUB:             d.DEpisode(episodeNumber: episode.number, url: episode.link));
-    final video = resp.map((e) => model.Video.fromVideo(e)).toList();
-    final preferredStream = video.firstWhere(
-      (e) => e.quality == this.episode.value.quality,
-      orElse: () {
-        snackBar("Preferred Stream Not Found, Selecting ${video[0].quality}");
-        return video[0];
-      },
-    );
-
-    this.episode.value = preferredStream;
-    episodeTracks.value = video;
-    currentEpisode.value.source = sourceController.activeSource.value!.name;
-    currentEpisode.value.currentTrack = preferredStream;
-    currentEpisode.value.videoTracks = video;
-
-    if (settings.isTV.value) {
-      try {
-        Get.find<TvWatchNextService>()
-            .setCurrentMedia(widget.anilistData.id.toString());
-      } catch (_) {}
-    }
-
-    _initPlayer(false);
-
-    _waitForPlayerReady().then((_) {
-      if (mounted) {
-        isSwitchingEpisode = false;
-        Logger.i('Episode switched, updating Discord presence...');
-        _scheduleDiscordUpdate(isPaused: false);
-        if (isPlaying.value) {
-          _startPeriodicDiscordUpdates();
-        }
-      }
-    });
-  }
 
   @override
   void initState() {
     super.initState();
     initTVScroll();
-    WidgetsBinding.instance.addObserver(this);
-    setExcludedScreen(true);
     final settings = Get.find<Settings>();
+    bool isTV = Get.find<Settings>().isTV.value;
+    final isDesktop = isTV ? true : MediaQuery.of(context).size.width > 600;
+    final isMobile = isTV ? false : !isDesktop;
     mediaService = widget.anilistData.serviceType;
-    discordRPC = DiscordRPCController.instance;
-
+    
     if (settings.isTV.value) {
       resizeMode.value = "Contain";
+      // TV-spezifische Player-Einstellungen
       final tempDir = Directory.systemTemp;
       if (tempDir.existsSync()) {
-        final cacheDir = Directory('${tempDir.path}/nyantv_cache');
+        final cacheDir = Directory('${tempDir.path}/anymex_cache');
         if (!cacheDir.existsSync()) {
           cacheDir.createSync(recursive: true);
         }
       }
-
+      
       settings.preferences.put('shaders_enabled', false);
     }
-    if (settings.isTV.value) {
-      try {
-        Get.find<TvWatchNextService>()
-            .setCurrentMedia(widget.anilistData.id.toString());
-      } catch (_) {}
-    }
+    _initOrientations();
     _leftAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -322,306 +171,56 @@ class _WatchPageState extends State<WatchPage>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    skipTimes.value = null;
+    skipTimes = null;
     _initRxVariables();
     _initHiveVariables();
     _initPlayer(true);
     _attachListeners();
     applySavedProfile();
+    if (isMobile) {
+      _handleVolumeAndBrightness();
+    }
     if (widget.currentEpisode.number.toInt() > 1) {
       final episodeNum = widget.currentEpisode.number.toInt() - 1;
       trackAnilistAndLocal(episodeNum, widget.currentEpisode);
     }
+    ever(isBuffering, (buffering) {
+      if (showControls.value && !buffering) _startHideControlsTimer();
+    });
     _keyboardListenerFocusNode = FocusNode(
       canRequestFocus: !settings.isTV.value,
       skipTraversal: settings.isTV.value,
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_keyboardListenerFocusNode.hasFocus) {
+        _keyboardListenerFocusNode.requestFocus();
+      }
+    });
+  }
 
-    ever(showControls, (controlsVisible) {
-      if (!settings.isTV.value || !mounted) return;
-      final generation = ++_focusGeneration;
-
-      if (controlsVisible) {
-        if (_keyboardListenerFocusNode.hasFocus) {
-          _keyboardListenerFocusNode.unfocus();
-        }
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || !showControls.value || generation != _focusGeneration) {
-            return;
-          }
-
-          Future.delayed(const Duration(milliseconds: 250), () {
-            if (!mounted ||
-                !showControls.value ||
-                generation != _focusGeneration) {
-              return;
-            }
-
-            final skipVisible = activeSkip.value != null;
-
-            if (skipVisible) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted ||
-                    !showControls.value ||
-                    generation != _focusGeneration) {
-                  return;
-                }
-                if (_skipOpEdFocusNode.canRequestFocus) {
-                  _skipOpEdFocusNode.requestFocus();
-                }
-              });
-            } else if (_lastControlsFocusNode != null &&
-                _lastControlsFocusNode!.canRequestFocus) {
-              _lastControlsFocusNode!.requestFocus();
-            }
-          });
-        });
+  void _initOrientations() async {
+    if (!settings.isTV.value) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      if (settings.defaultPortraitMode) {
+        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
       } else {
-        _controlsClosedAt = DateTime.now();
-        final currentFocus = FocusScope.of(context).focusedChild;
-        if (currentFocus != null &&
-            currentFocus != _keyboardListenerFocusNode &&
-            currentFocus != _skipOpEdFocusNode) {
-          _lastControlsFocusNode = currentFocus;
-        }
-
-        _prevEpFocusNode.unfocus();
-        _playPauseFocusNode.unfocus();
-        _nextEpFocusNode.unfocus();
-        _skipButtonFocusNode.unfocus();
-        _skipOpEdFocusNode.unfocus();
-
-        Future.delayed(const Duration(milliseconds: 60), () {
-          if (mounted &&
-              generation == _focusGeneration &&
-              !_keyboardListenerFocusNode.hasFocus) {
-            FocusScope.of(context).requestFocus(_keyboardListenerFocusNode);
-          }
-        });
+        final orientation = await _getClosestLandscapeOrientation();
+        SystemChrome.setPreferredOrientations([orientation]);
       }
-    });
+    }
+  }
 
-    ever(isBuffering, (buffering) {
-      if (showControls.value && !buffering) {
-        _startHideControlsTimer();
-        if (!settings.isTV.value) {
-          _keyboardListenerFocusNode.requestFocus();
-        }
-      }
-    });
+  Future<DeviceOrientation> _getClosestLandscapeOrientation() async {
+    final event = await accelerometerEvents.first;
 
-    ever(activeSkip, (skip) {
-      if (!settings.isTV.value || !mounted || !showControls.value) return;
-      if (skip == null) {
-        Future.delayed(const Duration(milliseconds: 50), () {
-          if (!mounted || !showControls.value) return;
-          _skipButtonFocusNode.requestFocus();
-        });
-      }
-    });
+    double angle = math.atan2(event.y, event.x) * 180 / math.pi;
 
-    if (settings.isTV.value) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Future.delayed(const Duration(milliseconds: 300), () {
-            if (mounted && !showControls.value) {
-              FocusScope.of(context).requestFocus(_keyboardListenerFocusNode);
-            }
-          });
-        }
-      });
+    if (angle < 0) angle += 360;
+
+    if (angle >= 0 && angle < 180) {
+      return DeviceOrientation.landscapeLeft;
     } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_keyboardListenerFocusNode.hasFocus) {
-          _keyboardListenerFocusNode.requestFocus();
-        }
-      });
-    }
-
-    if (settings.isTV.value) {
-      _tvRemoteHandler = TVRemoteHandler(
-        player: player,
-        context: context,
-        seekDuration: settings.seekDuration,
-        onSeek: (duration) {
-          player.seek(duration);
-          currentPosition.value = duration;
-          formattedTime.value = formatDuration(duration);
-        },
-        onToggleMenu: () {
-          if (isEpisodeDialogOpen.value) {
-            isEpisodeDialogOpen.value = false;
-            _menuInteractionPaused = false;
-            _startHideControlsTimer();
-            return;
-          }
-
-          toggleControls();
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) {
-              if (showControls.value) {
-                if (_keyboardListenerFocusNode.hasFocus) {
-                  _keyboardListenerFocusNode.unfocus();
-                }
-              } else {
-                FocusScope.of(context).requestFocus(_keyboardListenerFocusNode);
-              }
-            }
-          });
-        },
-        onExitPlayer: () {
-          if (isEpisodeDialogOpen.value) {
-            isEpisodeDialogOpen.value = false;
-            _menuInteractionPaused = false;
-            _startHideControlsTimer();
-            return;
-          }
-          Get.back();
-        },
-        getCurrentPosition: () => currentPosition.value,
-        getVideoDuration: () => episodeDuration.value,
-        isMenuVisible: () => showControls.value,
-        isLocked: () => isLocked.value,
-        onPlayPause: () => player.playOrPause(),
-        onNextEpisode: () {
-          if (currentEpisode.value.number.toInt() <
-              episodeList.value.last.number.toInt()) {
-            isSwitchingEpisode = true;
-            player.pause().then((_) => fetchEpisode(false));
-          }
-        },
-        onPreviousEpisode: () {
-          if (currentEpisode.value.number.toInt() > 1) {
-            isSwitchingEpisode = true;
-            player.pause().then((_) => fetchEpisode(true));
-          }
-        },
-        onSkipSegments: (isLeft, amount) => _skipSegmentsTV(isLeft, amount),
-        onMenuInteraction: () => _startHideControlsTimer(),
-      );
-    }
-  }
-
-  void _scheduleDiscordUpdate({bool isPaused = false}) {
-    _discordUpdateTimer?.cancel();
-
-    if (_isUpdatingDiscord) {
-      Logger.i('Discord update already in progress, skipping...');
-      return;
-    }
-
-    if (_lastDiscordUpdate != null) {
-      final timeSinceLastUpdate =
-          DateTime.now().difference(_lastDiscordUpdate!);
-      if (timeSinceLastUpdate < _minUpdateInterval) {
-        Logger.i('Discord update too soon, waiting...');
-        final waitTime = _minUpdateInterval - timeSinceLastUpdate;
-        _discordUpdateTimer = Timer(waitTime, () {
-          _performDiscordUpdate(isPaused: isPaused);
-        });
-        return;
-      }
-    }
-
-    _discordUpdateTimer = Timer(const Duration(milliseconds: 300), () {
-      _performDiscordUpdate(isPaused: isPaused);
-    });
-  }
-
-  Future<void> _waitForPlayerReady() async {
-    int attempts = 0;
-    while (attempts < 30) {
-      if (episodeDuration.value.inMilliseconds > 0 &&
-          currentEpisode.value.durationInMilliseconds != null &&
-          currentEpisode.value.durationInMilliseconds! > 0) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        Logger.i(
-            'Player ready check passed: Duration=${episodeDuration.value.inSeconds}s, Episode Duration=${currentEpisode.value.durationInMilliseconds}ms');
-        return;
-      }
-      await Future.delayed(const Duration(milliseconds: 200));
-      attempts++;
-    }
-    Logger.i(
-        'Warning: Player ready timeout after ${attempts * 200}ms - proceeding anyway');
-  }
-
-  Future<void> _performDiscordUpdate({bool isPaused = false}) async {
-    if (_isUpdatingDiscord) {
-      Logger.i('Skipping Discord update - already updating');
-      return;
-    }
-
-    if (episodeDuration.value.inMilliseconds == 0) {
-      Logger.i(
-          'Skipping Discord update - duration not ready yet (episodeDuration=0)');
-      return;
-    }
-
-    _isUpdatingDiscord = true;
-    _lastDiscordUpdate = DateTime.now();
-
-    try {
-      final totalEps =
-          episodeList.isNotEmpty ? 'Total: ${episodeList.length} Episodes' : '';
-
-      if (isPaused) {
-        Logger.i('Calling updateAnimePresencePaused...');
-        await discordRPC.updateAnimePresencePaused(
-          anime: anilistData.value,
-          episode: currentEpisode.value,
-          totalEpisodes: totalEps,
-        );
-      } else {
-        Logger.i('Calling updateAnimePresence...');
-        await discordRPC.updateAnimePresence(
-          anime: anilistData.value,
-          episode: currentEpisode.value,
-          totalEpisodes: totalEps,
-        );
-      }
-    } catch (e, stackTrace) {
-      Logger.i('Error: $e');
-      Logger.i('Stack: $stackTrace');
-    } finally {
-      _isUpdatingDiscord = false;
-    }
-  }
-
-  void _startPeriodicDiscordUpdates() {
-    _stopPeriodicDiscordUpdates();
-
-    if (!isPlaying.value || isSwitchingEpisode) {
-      return;
-    }
-
-    _periodicDiscordUpdateTimer =
-        Timer.periodic(_periodicUpdateInterval, (timer) {
-      if (!mounted || !isPlaying.value || isSwitchingEpisode) {
-        _stopPeriodicDiscordUpdates();
-        return;
-      }
-
-      if (_lastDiscordUpdate != null) {
-        final timeSinceLastUpdate =
-            DateTime.now().difference(_lastDiscordUpdate!);
-        if (timeSinceLastUpdate >= _periodicUpdateInterval &&
-            !_isManualSeeking) {
-          _scheduleDiscordUpdate(isPaused: false);
-        } else {}
-      } else {
-        if (!_isManualSeeking) {
-          _scheduleDiscordUpdate(isPaused: false);
-        }
-      }
-    });
-  }
-
-  void _stopPeriodicDiscordUpdates() {
-    if (_periodicDiscordUpdateTimer != null) {
-      _periodicDiscordUpdateTimer?.cancel();
-      _periodicDiscordUpdateTimer = null;
+      return DeviceOrientation.landscapeRight;
     }
   }
 
@@ -661,64 +260,19 @@ class _WatchPageState extends State<WatchPage>
 
   PlayerConfiguration getPlayerConfig(bool shadersEnabled) {
     final settings = Get.find<Settings>();
-
     if (settings.isTV.value) {
-      final profile = settings.tvBufferProfile.value;
-      final config = DeviceRamHelper.getConfig(profile);
-      final useHW = config.cacheSecs < 120;
-
-      Logger.i(
-          'TV buffer profile : ${DeviceRamHelper.getProfileName(profile)}');
-      Logger.i('Buffer            : ${config.bufferMB}MB');
-      Logger.i('Cache             : ${config.cacheSecs}s');
-      Logger.i('HW accel          : $useHW');
-
-      return PlayerConfiguration(
+      return const PlayerConfiguration(
         options: {
-          // ── Rendering ──────────────────────────────────────────────────
-          // Do NOT force "vo: gpu" or "gpu-context: android" here.
-          // media_kit sets a sane default; overriding it breaks Amlogic/MTK.
-          if (useHW) "hwdec": "mediacodec-copy" else "hwdec": "no",
-          "vd-lavc-threads": "0", // auto thread count
-
-          // ── Cache / demuxer ────────────────────────────────────────────
+          "vo": "gpu",
+          "hwdec": "no",
+          "gpu-context": "android",
           "cache": "yes",
-          "cache-secs": "${config.cacheSecs}",
-          "demuxer-max-bytes": config.demuxerMax,
-          "demuxer-max-back-bytes": config.demuxerBack,
-          "demuxer-readahead-secs": "${config.cacheSecs}",
-          "demuxer-seekable-cache": "yes",
-          "demuxer-force-seekable": "yes",
-          "cache-on-disk": "no",
-
-          // ── Cache pause / resume ───────────────────────────────────────
-          // cache-pause:       pause when buffer runs dry  (prevents stutter)
-          // cache-pause-wait:  resume only after X seconds of buffer are full
-          // cache-pause-initial: also pause at the very first open
-          "cache-pause": "yes",
-          "cache-pause-initial": "yes",
-          "cache-pause-wait": config.extraMpvOptions['cache-pause-wait'] ?? '3',
-
-          // ── Network ────────────────────────────────────────────────────
-          "stream-buffer-size": "${config.bufferBytes}",
-          "network-timeout": config.extraMpvOptions['network-timeout'] ?? '20',
-          "tcp-nodelay": "yes", // disables Nagle → lower latency per chunk
-          "tls-verify": "no", // faster TLS handshake on Android TV
-
-          // ── Seek quality ───────────────────────────────────────────────
-          "hr-seek": "yes", // accurate seek → less A/V gap after resume
-          "audio-buffer": "0.2", // small audio buffer → less desync
-
-          // ── Playlist pre-fetch ─────────────────────────────────────────
-          "prefetch-playlist": "yes", // pre-opens next segment URL
-
-          // ── Spread any remaining profile-specific overrides ────────────
-          ...config.extraMpvOptions,
+          "cache-secs": "30",
         },
-        bufferSize: config.bufferBytes,
+        bufferSize: 32 * 1024 * 1024,
       );
     }
-
+    
     if (shadersEnabled) {
       return const PlayerConfiguration();
     }
@@ -731,49 +285,20 @@ class _WatchPageState extends State<WatchPage>
         settings.preferences.get('shaders_enabled', defaultValue: false);
     Episode? savedEpisode = offlineStorage.getWatchedEpisode(
         widget.anilistData.id, currentEpisode.value.number);
-
-    int savedMs = (savedEpisode?.number ?? 0) == currentEpisode.value.number
-        ? savedEpisode?.timeStampInMilliseconds ?? 0
-        : 0;
-
-    final savedDuration = savedEpisode?.durationInMilliseconds ?? 0;
-    final isNearEnd = savedDuration > 0 && (savedMs / savedDuration) >= 0.99;
-
-    int startTimeMilliseconds = isNearEnd ? 0 : savedMs;
-    final bool hasInitialSeek = startTimeMilliseconds > 0;
-
+    int startTimeMilliseconds =
+        (savedEpisode?.number ?? 0) == currentEpisode.value.number
+            ? savedEpisode?.timeStampInMilliseconds ?? 0
+            : 0;
     if (firstTime) {
-      // IMPORTANT: Use the buffer profile configuration
       player = Player(
         configuration: getPlayerConfig(areShadersEnabled),
       );
-
       if (settings.isTV.value) {
-        // Log the active buffer configuration
-        final profile = settings.tvBufferProfile.value;
-        final config = DeviceRamHelper.getConfig(profile);
-        Logger.i('=== TV PLAYER INITIALIZED ===');
-        Logger.i('Profile: ${DeviceRamHelper.getProfileName(profile)}');
-        Logger.i(
-            'Buffer Size: ${config.bufferMB}MB (${config.bufferBytes} bytes)');
-        Logger.i('Cache Duration: ${config.cacheSecs}s');
-        Logger.i('Demuxer Max: ${config.demuxerMax}');
-        Logger.i('Demuxer Back: ${config.demuxerBack}');
-        Logger.i('=============================');
-
-        if (config.cacheSecs >= 120) {
-          playerController = VideoController(player,
-              configuration: const VideoControllerConfiguration(
-                androidAttachSurfaceAfterVideoParameters: false,
-                enableHardwareAcceleration: false,
-              ));
-        } else {
-          playerController = VideoController(player,
-              configuration: const VideoControllerConfiguration(
-                androidAttachSurfaceAfterVideoParameters: false,
-                enableHardwareAcceleration: true,
-              ));
-        }
+        playerController = VideoController(player,
+            configuration: const VideoControllerConfiguration(
+              androidAttachSurfaceAfterVideoParameters: false, // Changed for TV
+              enableHardwareAcceleration: false, // Disable for TV
+            ));
       } else {
         playerController = VideoController(player,
             configuration: const VideoControllerConfiguration(
@@ -784,144 +309,35 @@ class _WatchPageState extends State<WatchPage>
       episodeDuration.value = Duration.zero;
       bufferred.value = Duration.zero;
     }
-
     player.open(Media(episode.value.url,
         httpHeaders: episode.value.headers ??
-            {'Referer': sourceController.activeSource.value?.baseUrl ?? ''}));
-
-    await _performInitialSeek(startTimeMilliseconds);
-
+            {'Referer': sourceController.activeSource.value?.baseUrl ?? ''},
+        start: Duration(milliseconds: startTimeMilliseconds)));
     _initSubs();
     player.setRate(prevRate.value);
     isOPSkippedOnce.value = false;
     isEDSkippedOnce.value = false;
-
     final skipQuery = aniskip.SkipSearchQuery(
         idMAL: widget.anilistData.idMal,
         episodeNumber: currentEpisode.value.number);
     aniskip.AniSkipApi().getSkipTimes(skipQuery).then((skipTimeResult) {
-      skipTimes.value = skipTimeResult;
+      skipTimes = skipTimeResult;
     }).onError((error, stackTrace) {
       debugPrint("An error occurred: $error");
       debugPrint("Stack trace: $stackTrace");
     });
-
     if (areShadersEnabled) {
       final key = (PlayerShaders.getShaders()
           .indexWhere((e) => e == settings.selectedShader));
       setShaders(key, showMessage: false);
     }
-
-    if (firstTime) {
-      StreamSubscription? initSub;
-      bool discordUpdateHandled = false;
-
-      initSub = player.stream.duration.listen((duration) {
-        if (duration.inMilliseconds > 0 && !discordUpdateHandled) {
-          discordUpdateHandled = true;
-          Logger.i('Player ready with duration: ${duration.inSeconds}s');
-          initSub?.cancel();
-
-          _waitForPlayerReady().then((_) {
-            if (mounted) {
-              if (!hasInitialSeek) {
-                _waitForBufferingAfterSeek().then((_) {
-                  if (mounted && !isSwitchingEpisode) {
-                    Logger.i(
-                        'Player fully ready (no initial seek), performing Discord update...');
-                    isSwitchingEpisode = false;
-                    _performDiscordUpdate(isPaused: false);
-                  }
-                });
-              } else {
-                isSwitchingEpisode = false;
-                Logger.i('Initial seek completed, Discord already updated');
-              }
-            }
-          });
-        }
-      });
-
-      Future.delayed(const Duration(seconds: 10), () {
-        if (!discordUpdateHandled && mounted) {
-          Logger.i('Duration stream timeout, forcing Discord update');
-          discordUpdateHandled = true;
-          initSub?.cancel();
-          isSwitchingEpisode = false;
-          _performDiscordUpdate(isPaused: false);
-        }
-      });
-    }
   }
 
-  StreamSubscription? _initialSeekSubscription;
-  //bool _hasPerformedInitialSeek = false;
-
-  Future<void> _performInitialSeek(int startTimeMilliseconds) async {
-    if (startTimeMilliseconds <= 0) {
-      Logger.i('No initial seek needed');
-      //_hasPerformedInitialSeek = true;
-      return;
-    }
-
-    Logger.i('Scheduling initial seek → ${startTimeMilliseconds}ms');
-    //_hasPerformedInitialSeek = false;
-    _initialSeekSubscription?.cancel();
-
-    final completer = Completer<void>();
-    bool seekDone = false;
-
-    _initialSeekSubscription = player.stream.duration.listen((duration) async {
-      if (duration.inMilliseconds <= 0 || seekDone) return;
-      seekDone = true;
-      _initialSeekSubscription?.cancel();
-
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (!mounted) {
-        completer.complete();
-        return;
-      }
-
-      final seekPos = Duration(milliseconds: startTimeMilliseconds);
-      Logger.i('Seeking to ${seekPos.inSeconds}s …');
-      player.seek(seekPos);
-
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (mounted &&
-          currentPosition.value.inMilliseconds < startTimeMilliseconds - 2000) {
-        Logger.i('Seek retry …');
-        player.seek(seekPos);
-      }
-
-      // _hasPerformedInitialSeek = true;
-      Logger.i('Initial seek done');
-
-      if (mounted) {
-        _performDiscordUpdate(isPaused: false);
-      }
-
-      if (!completer.isCompleted) completer.complete();
-    });
-
-    Future.delayed(const Duration(milliseconds: 5000), () {
-      if (!seekDone && mounted) {
-        Logger.i('Seek timeout — forcing seek');
-        seekDone = true;
-        _initialSeekSubscription?.cancel();
-        //_hasPerformedInitialSeek = true;
-        player.seek(Duration(milliseconds: startTimeMilliseconds));
-        if (!completer.isCompleted) completer.complete();
-      }
-    });
-
-    return completer.future;
-  }
-
+  // Continuous Tracking
   int lastProcessedMinute = 0;
   bool isSwitchingEpisode = false;
   StreamSubscription<Duration>? _positionSubscription;
   bool _isSeeking = false;
-  bool _isManualSeeking = false;
   int lastProcessedSecond = -1;
   Duration _lastPosition = Duration.zero;
   DateTime _lastUIUpdate = DateTime.now();
@@ -934,19 +350,11 @@ class _WatchPageState extends State<WatchPage>
         _lastPosition = e;
         currentEpisode.value.timeStampInMilliseconds = e.inMilliseconds;
 
-        final newKey = _computeSegmentKey(e.inSeconds);
-        if (newKey != _activeSegmentKey.value) {
-          _activeSegmentKey.value = newKey;
-        }
-
-        if (e.inSeconds % 30 == 0 &&
-            e.inSeconds > 0 &&
-            isPlaying.value &&
-            !isSwitchingEpisode) {
+        if (e.inSeconds % 30 == 0 && isPlaying.value && !isSwitchingEpisode) {
           trackEpisode(e, episodeDuration.value, currentEpisode.value);
         }
 
-        if (isPlaying.value && skipTimes.value != null && !isSwitchingEpisode) {
+        if (isPlaying.value && skipTimes != null && !isSwitchingEpisode) {
           _handleAutoSkip();
         }
       }
@@ -956,72 +364,26 @@ class _WatchPageState extends State<WatchPage>
         _lastUIUpdate = now;
         currentPosition.value = e;
         formattedTime.value = formatDuration(e);
+        Logger.i('UI Updated with accurate stream position: ${e.inSeconds}s');
       }
 
       if (e.inSeconds >= episodeDuration.value.inSeconds - 1) {
         if (!isSwitchingEpisode && episodeDuration.value.inMinutes >= 1) {
           isSwitchingEpisode = true;
           Future.delayed(const Duration(milliseconds: 500), () {
-            navigateToNextEpisode();
+            fetchEpisode(false);
           });
-        }
-      }
-
-      if (skipTimes.value != null && settings.isTV.value) {
-        final pos = e.inSeconds;
-        final isAnimating = _controlsClosedAt != null &&
-            DateTime.now().difference(_controlsClosedAt!).inMilliseconds < 250;
-
-        final candidates = <_ActiveSkip>[];
-
-        void checkSegment(
-            aniskip.SkipIntervals? seg, String label, bool autoSkip) {
-          if (seg == null || autoSkip) return;
-          if (pos >= seg.start && pos < seg.end) {
-            final secsIn = pos - seg.start;
-            if (secsIn < 15 || showControls.value || isAnimating) {
-              candidates.add(
-                  _ActiveSkip(label: label, end: seg.end, start: seg.start));
-            }
-          }
-        }
-
-        checkSegment(
-            skipTimes.value!.op, 'Skip Opening', playerSettings.autoSkipOP);
-        checkSegment(skipTimes.value!.mixedOp, 'Skip Opening',
-            playerSettings.autoSkipOP);
-        checkSegment(
-            skipTimes.value!.ed, 'Skip Ending', playerSettings.autoSkipED);
-        checkSegment(
-            skipTimes.value!.mixedEd, 'Skip Ending', playerSettings.autoSkipED);
-        checkSegment(
-            skipTimes.value!.recap, 'Skip Recap', playerSettings.autoSkipRecap);
-
-        if (candidates.isEmpty) {
-          activeSkip.value = null;
-        } else {
-          candidates.sort((a, b) => b.start.compareTo(a.start));
-          activeSkip.value = candidates.first;
         }
       }
     });
 
     player.stream.playing.listen((e) {
       isPlaying.value = e;
+
       if (e) {
-        _menuInteractionPaused = false;
-        _startHideControlsTimer();
-        setExcludedScreen(true);
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (mounted) isSwitchingEpisode = false;
+        Future.delayed(const Duration(seconds: 2), () {
+          isSwitchingEpisode = false;
         });
-        _startPeriodicDiscordUpdates();
-      } else {
-        setExcludedScreen(false);
-        _stopPeriodicDiscordUpdates();
-      }
-      if (!_isManualSeeking && !isInDVDMode) {
-        _scheduleDiscordUpdate(isPaused: !e);
       }
     });
 
@@ -1033,24 +395,6 @@ class _WatchPageState extends State<WatchPage>
 
     playerController.player.stream.buffering.listen((e) {
       isBuffering.value = e;
-
-      if (e) {
-        _bufferingDebounceTimer?.cancel();
-        _bufferingDebounceTimer = Timer(const Duration(milliseconds: 400), () {
-          if (isBuffering.value) isBufferingVisible.value = true;
-        });
-      } else {
-        _bufferingDebounceTimer?.cancel();
-        isBufferingVisible.value = false;
-
-        if (isPlaying.value && !isSwitchingEpisode && !_isManualSeeking) {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted && !isSwitchingEpisode) {
-              _scheduleDiscordUpdate(isPaused: false);
-            }
-          });
-        }
-      }
     });
 
     player.stream.buffer.listen((e) {
@@ -1081,7 +425,7 @@ class _WatchPageState extends State<WatchPage>
   void _initRxVariables() {
     episode = Rx<model.Video>(widget.episodeSrc);
     episodeList = RxList<Episode>(widget.episodeList);
-    anilistData = Rx<nyantv.Media>(widget.anilistData);
+    anilistData = Rx<anymex.Media>(widget.anilistData);
     currentEpisode = Rx<Episode>(widget.currentEpisode);
     currentEpisode.value.source = sourceController.activeSource.value!.name;
     episodeTracks = RxList<model.Video>(widget.episodeTracks);
@@ -1176,27 +520,15 @@ class _WatchPageState extends State<WatchPage>
   Future<void> fetchEpisode(bool prev) async {
     trackEpisode(
         currentPosition.value, episodeDuration.value, currentEpisode.value);
-
-    isSwitchingEpisode = true;
-
     setState(() {
       player.open(Media(''));
     });
-
     final episodeToNav = navEpisode(prev);
     if (episodeToNav == null) {
       snackBar("No Streams Found");
-      isSwitchingEpisode = false;
       return;
     }
-
     currentEpisode.value = episodeToNav;
-    if (settings.isTV.value) {
-      try {
-        Get.find<TvWatchNextService>()
-            .setCurrentMedia(widget.anilistData.id.toString());
-      } catch (_) {}
-    }
     final resp = await sourceController.activeSource.value!.methods
         .getVideoList(d.DEpisode(
             episodeNumber: episodeToNav.number, url: episodeToNav.link));
@@ -1214,18 +546,61 @@ class _WatchPageState extends State<WatchPage>
     currentEpisode.value.source = sourceController.activeSource.value!.name;
     currentEpisode.value.currentTrack = preferredStream;
     currentEpisode.value.videoTracks = video;
-
     _initPlayer(false);
+  }
 
-    _waitForPlayerReady().then((_) {
+  Future<void> setVolume(double value) async {
+    try {
+      VolumeController.instance.setVolume(value);
+    } catch (_) {}
+    _volumeValue.value = value;
+    _volumeIndicator.value = true;
+    _volumeInterceptEventStream = true;
+    _volumeTimer?.cancel();
+    _volumeTimer = Timer(const Duration(milliseconds: 200), () {
       if (mounted) {
-        isSwitchingEpisode = false;
-        Logger.i('Episode switched, updating Discord presence...');
-        _scheduleDiscordUpdate(isPaused: false);
-        if (isPlaying.value) {
-          _startPeriodicDiscordUpdates();
-        }
+        _volumeIndicator.value = false;
+        _volumeInterceptEventStream = false;
       }
+    });
+  }
+
+  Future<void> setBrightness(double value) async {
+    try {
+      await ScreenBrightness.instance.setScreenBrightness(value);
+    } catch (_) {}
+    setState(() {
+      _brightnessIndicator.value = true;
+      _brightnessTimer?.cancel();
+      _brightnessTimer = Timer(const Duration(milliseconds: 200), () {
+        if (mounted) {
+          _brightnessIndicator.value = false;
+        }
+      });
+    });
+  }
+
+  void _handleVolumeAndBrightness() {
+    Future.microtask(() async {
+      try {
+        VolumeController.instance.showSystemUI = false;
+        _volumeValue.value = await VolumeController.instance.getVolume();
+        VolumeController.instance.addListener((value) {
+          if (mounted && !_volumeInterceptEventStream) {
+            _volumeValue.value = value;
+          }
+        });
+      } catch (_) {}
+    });
+    Future.microtask(() async {
+      try {
+        _brightnessValue.value = await ScreenBrightness.instance.current;
+        ScreenBrightness.instance.onCurrentBrightnessChanged.listen((value) {
+          if (mounted) {
+            _brightnessValue.value = value;
+          }
+        });
+      } catch (_) {}
     });
   }
 
@@ -1237,8 +612,6 @@ class _WatchPageState extends State<WatchPage>
   }
 
   void _skipSegments(bool isLeft) {
-    _isManualSeeking = true;
-
     player.pause();
     if (isLeftSide.value != isLeft) {
       doubleTapLabel.value = 0;
@@ -1256,73 +629,29 @@ class _WatchPageState extends State<WatchPage>
         ? (currentSeconds - skipDuration.value).clamp(0, maxSeconds)
         : (currentSeconds + skipDuration.value).clamp(0, maxSeconds);
 
+    // Batch UI updates
     formattedTime.value = formatDuration(Duration(seconds: newSeekPosition));
     player.seek(Duration(seconds: newSeekPosition));
 
+    // Optimize animations
     if (isLeft) {
       _leftAnimationController.forward(from: 0);
     } else {
       _rightAnimationController.forward(from: 0);
     }
 
+    // Reset after delay
     doubleTapTimeout?.cancel();
     doubleTapTimeout = Timer(const Duration(milliseconds: 800), () {
       _leftAnimationController.reset();
       _rightAnimationController.reset();
       doubleTapLabel.value = 0;
       skipDuration.value = 0;
-
       player.play();
-
-      _waitForBufferingAfterSeek().then((_) {
-        _isManualSeeking = false;
-        if (mounted && !isSwitchingEpisode) {
-          Logger.i('DoubleTap skip complete, updating Discord');
-          _scheduleDiscordUpdate(isPaused: false);
-        }
-      });
     });
-  }
-
-  void _skipSegmentsTV(bool isLeft, int totalSeconds) {
-    if (isLeftSide.value != isLeft) {
-      doubleTapLabel.value = 0;
-    }
-
-    isLeftSide.value = isLeft;
-    doubleTapLabel.value = totalSeconds;
-
-    if (isLeft) {
-      _leftAnimationController.forward(from: 0);
-    } else {
-      _rightAnimationController.forward(from: 0);
-    }
-
-    doubleTapTimeout?.cancel();
-    doubleTapTimeout = Timer(const Duration(milliseconds: 800), () {
-      doubleTapLabel.value = 0;
-    });
-  }
-
-  Future<void> _waitForBufferingAfterSeek() async {
-    if (!isPlaying.value) return;
-
-    int attempts = 0;
-    const maxAttempts = 75;
-
-    while (isBuffering.value && attempts < maxAttempts) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      attempts++;
-    }
-
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    Logger.i('Buffering complete after seek (${attempts * 100}ms)');
   }
 
   void _megaSkip(bool invert) {
-    _isManualSeeking = true;
-
     if (invert) {
       final duration = Duration(
           seconds: currentPosition.value.inSeconds - settings.skipDuration);
@@ -1339,43 +668,35 @@ class _WatchPageState extends State<WatchPage>
       currentPosition.value = duration;
       player.seek(duration);
     }
-
-    _waitForBufferingAfterSeek().then((_) {
-      _isManualSeeking = false;
-      if (mounted && !isSwitchingEpisode && isPlaying.value) {
-        Logger.i('MegaSkip complete, updating Discord');
-        _scheduleDiscordUpdate(isPaused: false);
-      }
-    });
   }
 
   void _handleAutoSkip() {
-    void trySkip(aniskip.SkipIntervals? seg, bool enabled, RxBool skippedOnce) {
-      if (seg == null || !enabled) return;
-      if (playerSettings.autoSkipOnce && skippedOnce.value) return;
-      if (currentPosition.value.inSeconds > seg.start &&
-          currentPosition.value.inSeconds < seg.end) {
-        final dur = Duration(seconds: seg.end);
-        currentPosition.value = dur;
-        player.seek(dur);
-        skippedOnce.value = true;
+    if (skipTimes?.op != null && playerSettings.autoSkipOP) {
+      if (playerSettings.autoSkipOnce && isOPSkippedOnce.value) {
+        return;
+      }
+      if (currentPosition.value.inSeconds > skipTimes!.op!.start &&
+          currentPosition.value.inSeconds < skipTimes!.op!.end) {
+        final skipNeeded = skipTimes!.op!.end - currentPosition.value.inSeconds;
+        final duration =
+            Duration(seconds: currentPosition.value.inSeconds + skipNeeded);
+        currentPosition.value = duration;
+        player.seek(duration);
+        isOPSkippedOnce.value = true;
       }
     }
-
-    trySkip(skipTimes.value?.op, playerSettings.autoSkipOP, isOPSkippedOnce);
-    trySkip(
-        skipTimes.value?.mixedOp, playerSettings.autoSkipOP, isOPSkippedOnce);
-    trySkip(skipTimes.value?.ed, playerSettings.autoSkipED, isEDSkippedOnce);
-    trySkip(
-        skipTimes.value?.mixedEd, playerSettings.autoSkipED, isEDSkippedOnce);
-
-    if (skipTimes.value?.recap != null && playerSettings.autoSkipRecap) {
-      final seg = skipTimes.value!.recap!;
-      if (currentPosition.value.inSeconds > seg.start &&
-          currentPosition.value.inSeconds < seg.end) {
-        final dur = Duration(seconds: seg.end);
-        currentPosition.value = dur;
-        player.seek(dur);
+    if (skipTimes?.ed != null && playerSettings.autoSkipED) {
+      if (playerSettings.autoSkipOnce && isEDSkippedOnce.value) {
+        return;
+      }
+      if (currentPosition.value.inSeconds > skipTimes!.ed!.start &&
+          currentPosition.value.inSeconds < skipTimes!.ed!.end) {
+        final skipNeeded = skipTimes!.ed!.end - currentPosition.value.inSeconds;
+        final duration =
+            Duration(seconds: currentPosition.value.inSeconds + skipNeeded);
+        currentPosition.value = duration;
+        player.seek(duration);
+        isEDSkippedOnce.value = true;
       }
     }
   }
@@ -1383,83 +704,53 @@ class _WatchPageState extends State<WatchPage>
   void toggleControls({bool? val}) {
     showControls.value = val ?? !showControls.value;
 
-    if (showControls.value) {
-      if (isPlaying.value) {
-        _startHideControlsTimer();
-      }
+    if (showControls.value && isPlaying.value) {
+      _startHideControlsTimer();
     }
   }
 
   void _startHideControlsTimer() {
-    if (!isPlaying.value || _menuInteractionPaused) {
+    if (!isPlaying.value) {
       _hideControlsTimer?.cancel();
       return;
     }
     _hideControlsTimer?.cancel();
+
     _hideControlsTimer = Timer(const Duration(seconds: 5), () {
-      if (isPlaying.value && !_menuInteractionPaused) {
+      if (isPlaying.value) {
         showControls.value = false;
       }
     });
   }
 
-  void _pauseForMenuInteraction() {
-    _hideControlsTimer?.cancel();
-    if (isPlaying.value) {
-      _menuInteractionPaused = true;
-      player.pause();
-    }
-  }
-
   @override
   void dispose() {
+    _volumeTimer?.cancel();
+    _brightnessTimer?.cancel();
     _hideControlsTimer?.cancel();
     doubleTapTimeout?.cancel();
     _positionSubscription?.cancel();
-    _discordUpdateTimer?.cancel();
-    _periodicDiscordUpdateTimer?.cancel();
-    _initialSeekSubscription?.cancel();
-    _bufferingDebounceTimer?.cancel();
-    _scrollController.dispose();
-    _skipOpEdFocusNode.dispose();
     disposeTVScroll();
-    setExcludedScreen(false);
 
-    final savedEpisode = offlineStorage.getWatchedEpisode(
-        widget.anilistData.id, currentEpisode.value.number);
-    final savedMs = savedEpisode?.timeStampInMilliseconds ?? 0;
-    final currentMs = currentPosition.value.inMilliseconds;
-    final shouldSave = currentMs > 5000 && currentMs >= savedMs - 3000;
-
-    if (shouldSave) {
-      trackEpisode(
-          currentPosition.value, episodeDuration.value, currentEpisode.value,
-          updateAL: false);
-    } else {
-      Logger.i(
-          'dispose: skip overwrite: currentMs=$currentMs savedMs=$savedMs');
-    }
-
-    if (mounted && !isInDVDMode) {
-      try {
-        discordRPC.updateMediaPresence(media: anilistData.value);
-      } catch (e) {
-        Logger.i(
-            'Discord update on dispose failed (expected on app close): $e');
-      }
-    }
+    trackEpisode(
+        currentPosition.value, episodeDuration.value, currentEpisode.value,
+        updateAL: false);
 
     player.dispose();
     _leftAnimationController.dispose();
     _rightAnimationController.dispose();
-    _tvRemoteHandler?.dispose();
-    _tvRemoteHandler = null;
-    _prevEpFocusNode.dispose();
-    _playPauseFocusNode.dispose();
-    _nextEpFocusNode.dispose();
-    _skipButtonFocusNode.dispose();
+
+    if (isMobile && !settings.isTV.value) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setPreferredOrientations(
+          [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+      ScreenBrightness.instance.resetScreenBrightness();
+    } else {
+      if (!isMobile) {
+        AnymexTitleBar.setFullScreen(false);
+      }
+    }
     _keyboardListenerFocusNode.dispose();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -1478,12 +769,10 @@ class _WatchPageState extends State<WatchPage>
     }
   }
 
-  KeyEventResult handlePlayerKeyEvent(FocusNode node, KeyEvent e) {
-    if (settings.isTV.value) {
-      return _tvRemoteHandler!.handleKeyEvent(node, e);
-    }
-
-    if (e is! KeyDownEvent) return KeyEventResult.ignored;
+  Future<void> handlePlayerKeyEvent(
+    KeyEvent e,
+  ) async {
+    if (e is! KeyDownEvent || settings.isTV.value) return;
 
     final key = e.logicalKey;
 
@@ -1497,83 +786,45 @@ class _WatchPageState extends State<WatchPage>
       _megaSkip(false);
     } else if (key == LogicalKeyboardKey.comma || e.character == '<') {
       _megaSkip(true);
-    } else if (key == LogicalKeyboardKey.escape) {
-      Get.back();
-      return KeyEventResult.handled;
     }
 
     if (settings.preferences.get('shaders_enabled', defaultValue: false)) {
       final keyLabel = key.keyLabel;
       final allowedKeys = ["1", "2", "3", "4", "5", "6", "0"];
+      Logger.i(keyLabel);
       if (allowedKeys.contains(keyLabel)) {
         setShaders(int.parse(keyLabel) - 1);
-        return KeyEventResult.handled;
       }
     }
-
-    return KeyEventResult.ignored;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      final canFocus = settings.isTV.value ? !showControls.value : true;
-
-      return Focus(
-        focusNode: _keyboardListenerFocusNode,
-        autofocus: !settings.isTV.value,
-        canRequestFocus: canFocus,
-        skipTraversal: settings.isTV.value && showControls.value,
-        onKeyEvent: (node, event) {
-          return handlePlayerKeyEvent(node, event);
-        },
-        child: PopScope(
-          canPop: false,
-          onPopInvoked: (didPop) {
-            if (didPop) return;
-
-            if (isEpisodeDialogOpen.value) {
-              isEpisodeDialogOpen.value = false;
-              _menuInteractionPaused = false;
-              _startHideControlsTimer();
-              return;
-            }
-
-            if (settings.isTV.value && showControls.value) {
-              toggleControls(val: false);
-            } else {
-              if (widget.shouldTrack) {
-                discordRPC.updateMediaPresence(media: anilistData.value);
-              }
-              Get.back();
-            }
-          },
-          child: Scaffold(
-            body: Stack(
-              alignment: Alignment.center,
-              children: [
-                _buildPlayer(context),
-                _buildOverlay(context),
-                _buildControls(),
-                _buildSubtitle(),
-                _buildRippleEffect(),
-                _build2xThingy(),
-                Obx(() => isBufferingVisible.value && !showControls.value
-                    ? _buildBufferingIndicator()
-                    : const SizedBox.shrink()),
-                Obx(() => AnimatedPositioned(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      bottom: showControls.value ? 95 : 40,
-                      right: 20,
-                      child: _buildSkipOpEdButton(),
-                    )),
-              ],
-            ),
-          ),
+    return KeyboardListener(
+      focusNode: _keyboardListenerFocusNode,
+      autofocus: !settings.isTV.value,
+      onKeyEvent: handlePlayerKeyEvent,
+      child: Scaffold(
+        body: Stack(
+          alignment: Alignment.center,
+          children: [
+            _buildPlayer(context),
+            _buildOverlay(context),
+            _buildControls(),
+            _buildSubtitle(),
+            _buildRippleEffect(),
+            _build2xThingy(),
+            if (isMobile && settings.enableSwipeControls) ...[
+              _buildBrightnessSlider(),
+              _buildVolumeSlider(),
+            ],
+            Obx(() => isBuffering.value && !showControls.value
+                ? _buildBufferingIndicator()
+                : const SizedBox.shrink()),
+          ],
         ),
-      );
-    });
+      ),
+    );
   }
 
   Obx _build2xThingy() {
@@ -1592,7 +843,7 @@ class _WatchPageState extends State<WatchPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  NyantvText(
+                  AnymexText(
                     text: "${(prevRate.value * 2).toInt()}x",
                     variant: TextVariant.semiBold,
                   ),
@@ -1609,10 +860,11 @@ class _WatchPageState extends State<WatchPage>
 
   Obx _buildPlayer(BuildContext context) {
     return Obx(() {
+      // Android TV-spezifische Behandlung
       if (settings.isTV.value) {
         return _buildTVPlayer(context);
       }
-
+      
       return Row(
         children: [
           AnimatedContainer(
@@ -1676,44 +928,96 @@ class _WatchPageState extends State<WatchPage>
                   getResponsiveSize(context,
                       mobileSize: 0.4, desktopSize: 0.3, isStrict: true)
               : 0,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onLongPressStart: (e) {
-              pressed2x.value = true;
-              player.setRate(prevRate.value * 2);
-            },
-            onLongPressEnd: (e) {
-              pressed2x.value = false;
-              player.setRate(prevRate.value);
-            },
-            onTap: () {
+          child: KeyboardListener(
+            focusNode: FocusNode(
+                skipTraversal: showControls.value,
+                canRequestFocus: !showControls.value,
+                descendantsAreFocusable: false,
+                descendantsAreTraversable: false),
+            autofocus: !showControls.value,
+            onKeyEvent: (e) {
               if (settings.isTV.value) {
-                if (!_keyboardListenerFocusNode.hasFocus &&
-                    !showControls.value) {
-                  FocusScope.of(context)
-                      .requestFocus(_keyboardListenerFocusNode);
-                }
-
                 if (!showControls.value) {
-                  toggleControls(val: true);
-                } else {
-                  toggleControls(val: false);
+                  if (e.logicalKey == LogicalKeyboardKey.select ||
+                      e.logicalKey == LogicalKeyboardKey.arrowLeft ||
+                      e.logicalKey == LogicalKeyboardKey.arrowRight ||
+                      e.logicalKey == LogicalKeyboardKey.arrowUp ||
+                      e.logicalKey == LogicalKeyboardKey.arrowDown) {
+                    toggleControls(val: true);
+                  }
                 }
-              } else {
-                toggleControls();
               }
             },
-            onDoubleTapDown: (e) => _handleDoubleTap(e),
-            child: AnimatedOpacity(
-              curve: Curves.easeInOut,
-              duration: const Duration(milliseconds: 300),
-              opacity: showControls.value ? 1 : 0,
-              child: Container(
-                color: Colors.black.withOpacity(0.5),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onLongPressStart: (e) {
+                pressed2x.value = true;
+                player.setRate(prevRate.value * 2);
+              },
+              onLongPressEnd: (e) {
+                pressed2x.value = false;
+                player.setRate(prevRate.value);
+              },
+              onTap: toggleControls,
+              onDoubleTapDown: (e) => _handleDoubleTap(e),
+              onVerticalDragUpdate: (e) async {
+                if (isMobile && settings.enableSwipeControls) {
+                  final screenHeight = MediaQuery.of(context).size.height;
+                  final topBoundary = screenHeight * 0.2;
+                  final bottomBoundary = screenHeight * 0.8;
+
+                  final position = e.localPosition;
+                  if (position.dy >= topBoundary &&
+                      position.dy <= bottomBoundary) {
+                    final delta = e.delta.dy;
+
+                    if (position.dx <= MediaQuery.of(context).size.width / 2) {
+                      final brightness = _brightnessValue - delta / 500;
+                      final result = brightness.clamp(0.0, 1.0);
+                      setBrightness(result.toDouble());
+                    } else {
+                      final volume = _volumeValue - delta / 500;
+                      final result = volume.clamp(0.0, 1.0);
+                      setVolume(result.toDouble());
+                    }
+                  }
+                }
+              },
+              child: AnimatedOpacity(
+                curve: Curves.easeInOut,
+                duration: const Duration(milliseconds: 300),
+                opacity: showControls.value ? 1 : 0,
+                child: Container(
+                  color: Colors.black.withOpacity(0.5),
+                ),
               ),
             ),
           )),
     );
+  }
+
+  Widget _buildVolumeSlider() {
+    return Obx(() => AnimatedOpacity(
+          curve: Curves.easeInOut,
+          opacity: _volumeIndicator.value ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 300),
+          child: MediaIndicatorBuilder(
+            value: _volumeValue.value,
+            isVolumeIndicator: true,
+          ),
+        ));
+  }
+
+  Widget _buildBrightnessSlider() {
+    return Obx(() => AnimatedOpacity(
+          curve: Curves.easeInOut,
+          opacity: _brightnessIndicator.value ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 300),
+          child: MediaIndicatorBuilder(
+            value: _brightnessValue.value,
+            isVolumeIndicator: false,
+          ),
+        ));
   }
 
   Obx _buildSubtitle() {
@@ -1883,7 +1187,7 @@ class _WatchPageState extends State<WatchPage>
             padding: const EdgeInsets.all(20.0),
             children: [
               const Center(
-                child: NyantvText(
+                child: AnymexText(
                   text: "Choose Audio",
                   size: 18,
                   variant: TextVariant.bold,
@@ -1912,7 +1216,7 @@ class _WatchPageState extends State<WatchPage>
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 2.5, horizontal: 10),
-                              title: NyantvText(
+                              title: AnymexText(
                                 text: e.label ?? '??',
                                 variant: TextVariant.bold,
                                 size: 16,
@@ -1960,7 +1264,7 @@ class _WatchPageState extends State<WatchPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Center(
-                  child: NyantvText(
+                  child: AnymexText(
                     text: "Choose Track",
                     size: 18,
                     variant: TextVariant.bold,
@@ -1971,7 +1275,7 @@ class _WatchPageState extends State<WatchPage>
                   mainAxisSize: MainAxisSize.min,
                   children: episodeTracks.map((e) {
                     final isSelected = episode.value.quality == e.quality;
-                    return NyantvOnTap(
+                    return AnymexOnTap(
                       onTap: () {
                         episode.value = e;
                         player.open(Media(
@@ -1991,7 +1295,7 @@ class _WatchPageState extends State<WatchPage>
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 2.5, horizontal: 10),
-                          title: NyantvText(
+                          title: AnymexText(
                             text: e.quality,
                             variant: TextVariant.bold,
                             size: 16,
@@ -2035,7 +1339,7 @@ class _WatchPageState extends State<WatchPage>
             child: Column(
               children: [
                 const Center(
-                  child: NyantvText(
+                  child: AnymexText(
                     text: "Choose Subtitle",
                     size: 18,
                     variant: TextVariant.bold,
@@ -2045,7 +1349,8 @@ class _WatchPageState extends State<WatchPage>
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    NyantvOnTap(
+                    // "None" option
+                    AnymexOnTap(
                       onTap: () {
                         selectedSubIndex.value = -1;
                         Get.back();
@@ -2054,10 +1359,11 @@ class _WatchPageState extends State<WatchPage>
                       child: subtitleTile("None", Iconsax.subtitle5,
                           selectedSubIndex.value == -1),
                     ),
+                    // Existing subtitles
                     ...subtitles.asMap().entries.map((entry) {
                       final index = entry.key;
                       final e = entry.value;
-                      return NyantvOnTap(
+                      return AnymexOnTap(
                         onTap: () {
                           selectedSubIndex.value = index;
                           Get.back();
@@ -2067,7 +1373,8 @@ class _WatchPageState extends State<WatchPage>
                             Iconsax.subtitle5, selectedSubIndex.value == index),
                       );
                     }),
-                    NyantvOnTap(
+                    // "Add Subtitle" option
+                    AnymexOnTap(
                       onTap: () async {
                         final result = await FilePicker.platform.pickFiles(
                           type: FileType.custom,
@@ -2101,29 +1408,13 @@ class _WatchPageState extends State<WatchPage>
         });
   }
 
-  void _executeSkipOpEd(_ActiveSkip skip) {
-    final dur = Duration(seconds: skip.end);
-    player.seek(dur);
-    currentPosition.value = dur;
-    _scheduleDiscordUpdate(isPaused: false);
-
-    Future.delayed(const Duration(milliseconds: 50), () {
-      if (!mounted) return;
-      if (activeSkip.value != null) {
-        _skipOpEdFocusNode.requestFocus();
-      } else {
-        _skipButtonFocusNode.requestFocus();
-      }
-    });
-  }
-
   Widget subtitleTile(String text, IconData icon, bool isSelected) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5.0),
       child: ListTile(
         contentPadding:
             const EdgeInsets.symmetric(vertical: 2.5, horizontal: 10),
-        title: NyantvText(
+        title: AnymexText(
           text: text,
           variant: TextVariant.bold,
           size: 16,
@@ -2142,6 +1433,7 @@ class _WatchPageState extends State<WatchPage>
     );
   }
 
+  // Helper Methods
   Color _getFgColor() {
     return settings.playerStyle == 0
         ? Colors.white
@@ -2173,100 +1465,117 @@ class _WatchPageState extends State<WatchPage>
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Focus(
-                      skipTraversal: true,
-                      onKeyEvent: (node, event) {
-                        if (settings.isTV.value &&
-                            event is KeyDownEvent &&
-                            event.logicalKey == LogicalKeyboardKey.arrowDown &&
-                            !_playPauseFocusNode.hasFocus) {
-                          _playPauseFocusNode.requestFocus();
-                          return KeyEventResult.handled;
-                        }
-                        return KeyEventResult.ignored;
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        transform: Matrix4.identity()
-                          ..translate(0.0, showControls.value ? 0.0 : -100.0),
-                        padding: EdgeInsets.symmetric(
-                            vertical: 15.0,
-                            horizontal: isEpisodeDialogOpen.value ? 0 : 10),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (!isLocked.value) ...[
-                              BlurWrapper(
-                                child: IconButton(
-                                    onPressed: () => Get.back(),
-                                    icon: const Icon(
-                                        Icons.arrow_back_ios_new_rounded,
-                                        color: Colors.white)),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                width: getResponsiveSize(context,
-                                    mobileSize: Get.width * 0.3,
-                                    desktopSize: isEpisodeDialogOpen.value
-                                        ? Get.width * 0.3
-                                        : (Get.width * 0.6)),
-                                padding: const EdgeInsets.only(top: 3.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    NyantvText(
-                                      text:
-                                          'Episode ${currentEpisode.value.number}: ${currentEpisode.value.title}',
-                                      variant: TextVariant.semiBold,
-                                      maxLines: 3,
-                                      color: themeFgColor.value,
-                                    ),
-                                    NyantvText(
-                                      text:
-                                          anilistData.value.title.toUpperCase(),
-                                      variant: TextVariant.bold,
-                                      color: Colors.white.withOpacity(0.8),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            const Spacer(),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      // curve: Curves.,
+                      transform: Matrix4.identity()
+                        ..translate(0.0, showControls.value ? 0.0 : -100.0),
+                      padding: EdgeInsets.symmetric(
+                          vertical: 15.0,
+                          horizontal: isEpisodeDialogOpen.value ? 0 : 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!isLocked.value) ...[
                             BlurWrapper(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                              child: IconButton(
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  icon: const Icon(
+                                      Icons.arrow_back_ios_new_rounded,
+                                      color: Colors.white)),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: getResponsiveSize(context,
+                                  mobileSize: Get.width * 0.3,
+                                  desktopSize: isEpisodeDialogOpen.value
+                                      ? Get.width * 0.3
+                                      : (Get.width * 0.6)),
+                              padding: const EdgeInsets.only(top: 3.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  if (!isLocked.value) ...[
-                                    _buildIcon(
-                                        onTap: () {
-                                          isEpisodeDialogOpen.value =
-                                              !isEpisodeDialogOpen.value;
-                                          if (isEpisodeDialogOpen.value) {
-                                            _pauseForMenuInteraction();
-                                          } else {
-                                            _menuInteractionPaused = false;
-                                            _startHideControlsTimer();
-                                          }
-                                        },
-                                        icon: HugeIcons.strokeRoundedFolder03),
-                                    _buildIcon(
-                                        onTap: () {
-                                          _pauseForMenuInteraction();
-                                          showPlaybackSpeedDialog(context);
-                                        },
-                                        icon: HugeIcons.strokeRoundedClock01),
-                                  ],
-                                  _buildIcon(
-                                      onTap: () =>
-                                          isLocked.value = !isLocked.value,
-                                      icon: isLocked.value
-                                          ? Icons.lock
-                                          : Icons.lock_open),
+                                  AnymexText(
+                                    text:
+                                        'Episode ${currentEpisode.value.number}: ${currentEpisode.value.title}',
+                                    variant: TextVariant.semiBold,
+                                    maxLines: 3,
+                                    color: themeFgColor.value,
+                                  ),
+                                  AnymexText(
+                                    text: anilistData.value.title.toUpperCase(),
+                                    variant: TextVariant.bold,
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
                                 ],
                               ),
                             ),
                           ],
-                        ),
+                          const Spacer(),
+                          BlurWrapper(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (!isLocked.value) ...[
+                                  _buildIcon(
+                                      onTap: () {
+                                        isEpisodeDialogOpen.value =
+                                            !isEpisodeDialogOpen.value;
+                                        if (MediaQuery.of(context)
+                                                .orientation ==
+                                            Orientation.portrait) {
+                                          isEpisodeDialogOpen.value = false;
+                                          showModalBottomSheet(
+                                              context: context,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          20)),
+                                              clipBehavior: Clip.antiAlias,
+                                              builder: (context) {
+                                                return EpisodeWatchScreen(
+                                                  episodeList:
+                                                      episodeList.value,
+                                                  anilistData:
+                                                      anilistData.value,
+                                                  currentEpisode:
+                                                      currentEpisode.value,
+                                                  onEpisodeSelected: (src,
+                                                      streamList,
+                                                      selectedEpisode) {
+                                                    episode.value = src;
+                                                    episodeTracks.value =
+                                                        streamList;
+                                                    currentEpisode.value =
+                                                        selectedEpisode;
+                                                    _initPlayer(false);
+                                                    isEpisodeDialogOpen.value =
+                                                        false;
+                                                  },
+                                                );
+                                              });
+                                        }
+                                      },
+                                      icon: HugeIcons.strokeRoundedFolder03),
+                                  _buildIcon(
+                                      onTap: () {
+                                        showPlaybackSpeedDialog(context);
+                                      },
+                                      icon: HugeIcons.strokeRoundedClock01),
+                                ],
+                                _buildIcon(
+                                    onTap: () {
+                                      isLocked.value = !isLocked.value;
+                                    },
+                                    icon: isLocked.value
+                                        ? Icons.lock
+                                        : Icons.lock_open),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const Spacer(),
@@ -2283,107 +1592,73 @@ class _WatchPageState extends State<WatchPage>
                             crossAxisAlignment: CrossAxisAlignment.end,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              NyantvTextSpans(
+                              AnymexTextSpans(
                                 maxLines: 1,
                                 spans: [
-                                  NyantvTextSpan(
+                                  AnymexTextSpan(
                                       text: '${formattedTime.value} ',
                                       variant: TextVariant.semiBold,
                                       color:
                                           themeFgColor.value.withOpacity(0.8)),
-                                  NyantvTextSpan(
+                                  AnymexTextSpan(
                                     variant: TextVariant.semiBold,
                                     text: ' /  ${formattedDuration.value}',
                                   ),
                                 ],
                               ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  const SizedBox(width: 8),
-                                  if (!isLocked.value &&
-                                      activeSkip.value == null)
-                                    _buildSkipButton(false),
-                                ],
-                              ),
+                              if (!isLocked.value) _buildSkipButton(false),
                             ],
                           ),
                           IgnorePointer(
                             ignoring: isLocked.value,
                             child: SizedBox(
                               height: 27,
-                              child: Stack(
-                                children: [
-                                  VideoSliderTheme(
-                                    color: themeFgColor.value,
-                                    inactiveTrackColor:
-                                        _getBgColor().withOpacity(0.1),
-                                    child: Slider(
-                                      focusNode: FocusNode(
-                                          canRequestFocus: false,
-                                          skipTraversal: true),
-                                      min: 0,
-                                      value: currentPosition
-                                          .value.inMilliseconds
-                                          .toDouble(),
-                                      max: (currentPosition
-                                                      .value.inMilliseconds >
-                                                  episodeDuration
-                                                      .value.inMilliseconds
-                                              ? currentPosition
-                                                  .value.inMilliseconds
-                                              : episodeDuration
-                                                  .value.inMilliseconds)
-                                          .toDouble(),
-                                      secondaryTrackValue: bufferred
-                                          .value.inMilliseconds
-                                          .toDouble(),
-                                      onChangeStart: (_) {
-                                        startSeeking();
-                                        _isManualSeeking = true;
-                                      },
-                                      onChangeEnd: (val) async {
-                                        if (episodeDuration.value.inMilliseconds
-                                                .toDouble() !=
-                                            0.0) {
-                                          final newPosition = Duration(
-                                              milliseconds: val.toInt());
-                                          player.seek(newPosition);
-                                          endSeeking(newPosition);
-                                          await _waitForBufferingAfterSeek();
-                                          _isManualSeeking = false;
-                                          if (mounted &&
-                                              !isSwitchingEpisode &&
-                                              isPlaying.value) {
-                                            Logger.i(
-                                                'Slider seek complete, updating Discord');
-                                            _scheduleDiscordUpdate(
-                                                isPaused: false);
-                                          }
-                                        }
-                                      },
-                                      onChanged: (val) {
-                                        if (episodeDuration.value.inMilliseconds
-                                                .toDouble() !=
-                                            0.0) {
-                                          currentPosition.value = Duration(
-                                              milliseconds: val.toInt());
-                                          formattedTime.value = formatDuration(
-                                              currentPosition.value);
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                  Positioned.fill(
-                                    child: IgnorePointer(
-                                      child: Obx(() {
-                                        _activeSegmentKey.value;
-                                        return _buildSegmentOverlay();
-                                      }),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              child: VideoSliderTheme(
+                                  color: themeFgColor.value,
+                                  inactiveTrackColor:
+                                      _getBgColor().withOpacity(0.1),
+                                  child: Slider(
+                                    focusNode: FocusNode(
+                                        canRequestFocus: false,
+                                        skipTraversal: true),
+                                    min: 0,
+                                    value: currentPosition.value.inMilliseconds
+                                        .toDouble(),
+                                    max: (currentPosition.value.inMilliseconds >
+                                                episodeDuration
+                                                    .value.inMilliseconds
+                                            ? currentPosition
+                                                .value.inMilliseconds
+                                            : episodeDuration
+                                                .value.inMilliseconds)
+                                        .toDouble(),
+                                    secondaryTrackValue: bufferred
+                                        .value.inMilliseconds
+                                        .toDouble(),
+                                    onChangeStart: (_) {
+                                      startSeeking();
+                                    },
+                                    onChangeEnd: (val) async {
+                                      if (episodeDuration.value.inMilliseconds
+                                              .toDouble() !=
+                                          0.0) {
+                                        final newPosition =
+                                            Duration(milliseconds: val.toInt());
+                                        player.seek(newPosition);
+                                        endSeeking(newPosition);
+                                      }
+                                    },
+                                    onChanged: (val) {
+                                      if (episodeDuration.value.inMilliseconds
+                                              .toDouble() !=
+                                          0.0) {
+                                        currentPosition.value =
+                                            Duration(milliseconds: val.toInt());
+                                        formattedTime.value = formatDuration(
+                                            currentPosition.value);
+                                      }
+                                    },
+                                  )),
                             ),
                           ),
                           const SizedBox(height: 5),
@@ -2397,21 +1672,18 @@ class _WatchPageState extends State<WatchPage>
                                     children: [
                                       _buildIcon(
                                           onTap: () {
-                                            _pauseForMenuInteraction();
                                             playerSettingsSheet(context);
                                           },
                                           icon: HugeIcons
                                               .strokeRoundedSettings01),
                                       _buildIcon(
                                           onTap: () {
-                                            _pauseForMenuInteraction();
                                             showTrackSelector();
                                           },
                                           icon: HugeIcons
                                               .strokeRoundedFolderVideo),
                                       _buildIcon(
                                           onTap: () {
-                                            _pauseForMenuInteraction();
                                             showSubtitleSelector();
                                           },
                                           icon:
@@ -2420,7 +1692,6 @@ class _WatchPageState extends State<WatchPage>
                                           episode.value.audios!.isNotEmpty)
                                         _buildIcon(
                                             onTap: () {
-                                              _pauseForMenuInteraction();
                                               showAudioSelector();
                                             },
                                             icon: HugeIcons
@@ -2431,11 +1702,39 @@ class _WatchPageState extends State<WatchPage>
                                 BlurWrapper(
                                   child: Row(
                                     children: [
+                                      if (Platform.isAndroid ||
+                                          Platform.isIOS) ...[
+                                        _buildIcon(
+                                            onTap: () async {
+                                              SystemChrome
+                                                  .setPreferredOrientations([
+                                                DeviceOrientation.portraitUp,
+                                              ]);
+                                            },
+                                            icon: Icons.phone_android),
+                                        _buildIcon(
+                                            onTap: () async {
+                                              leftOriented.value =
+                                                  !leftOriented.value;
+                                              if (!leftOriented.value) {
+                                                SystemChrome
+                                                    .setPreferredOrientations([
+                                                  DeviceOrientation
+                                                      .landscapeLeft,
+                                                ]);
+                                              } else {
+                                                SystemChrome
+                                                    .setPreferredOrientations([
+                                                  DeviceOrientation
+                                                      .landscapeRight,
+                                                ]);
+                                              }
+                                            },
+                                            icon: Icons.screen_rotation),
+                                      ],
                                       _buildIcon(
-                                          onTap: () {
-                                            _pauseForMenuInteraction();
-                                            showColorProfileSheet(context);
-                                          },
+                                          onTap: () =>
+                                              showColorProfileSheet(context),
                                           icon: Icons.hdr_on_rounded),
                                       _buildIcon(
                                           onTap: () {
@@ -2454,7 +1753,7 @@ class _WatchPageState extends State<WatchPage>
                                             onTap: () async {
                                               isFullscreen.value =
                                                   !isFullscreen.value;
-                                              await NyantvTitleBar
+                                              await AnymexTitleBar
                                                   .setFullScreen(
                                                       isFullscreen.value);
                                             },
@@ -2466,10 +1765,10 @@ class _WatchPageState extends State<WatchPage>
                                   ),
                                 ),
                               ],
-                            ),
+                            )
                         ],
                       ),
-                    ),
+                    )
                   ],
                 ),
                 if (!isLocked.value) ...[_buildPlaybackButtons()],
@@ -2477,13 +1776,77 @@ class _WatchPageState extends State<WatchPage>
                   Positioned(
                       right: 10,
                       top: MediaQuery.of(context).size.height * 0.48,
-                      child: _buildIcon(icon: Icons.arrow_back_ios)),
+                      child: _buildIcon(icon: Icons.arrow_back_ios))
               ],
             ),
           ),
         ),
       );
     });
+  }
+
+  _buildSkipButton(bool invert) {
+    return BlurWrapper(
+      borderRadius: BorderRadius.circular(20.multiplyRoundness()),
+      child: AnymeXButton(
+        height: 50,
+        width: 120,
+        variant: ButtonVariant.simple,
+        borderRadius: BorderRadius.circular(20.multiplyRoundness()),
+        backgroundColor: Colors.transparent,
+        onTap: () {
+          if (invert) {
+            final duration = Duration(
+                seconds:
+                    currentPosition.value.inSeconds - settings.skipDuration);
+            if (duration.inMilliseconds < 0) {
+              currentPosition.value = const Duration(milliseconds: 0);
+              player.seek(const Duration(seconds: 0));
+            } else {
+              currentPosition.value = duration;
+              player.seek(duration);
+            }
+          } else {
+            final duration = Duration(
+                seconds:
+                    currentPosition.value.inSeconds + settings.skipDuration);
+            currentPosition.value = duration;
+            player.seek(duration);
+          }
+        },
+        child: invert
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.fast_rewind_rounded,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 5),
+                  AnymexText(
+                    text: "-${settings.skipDuration}s",
+                    variant: TextVariant.semiBold,
+                    color: Colors.white,
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnymexText(
+                    text: "+${settings.skipDuration}s",
+                    variant: TextVariant.semiBold,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(width: 5),
+                  const Icon(
+                    Icons.fast_forward_rounded,
+                    color: Colors.white,
+                  )
+                ],
+              ),
+      ),
+    );
   }
 
   void showPlaybackSpeedDialog(BuildContext context) async {
@@ -2547,6 +1910,7 @@ class _WatchPageState extends State<WatchPage>
     );
   }
 
+  // Helper Methods
   Color _getPlayFgColor() {
     return settings.playerStyle == 0
         ? Colors.white
@@ -2576,7 +1940,6 @@ class _WatchPageState extends State<WatchPage>
           mainAxisSize: MainAxisSize.max,
           children: [
             _buildPlaybackButton(
-              focusNode: _prevEpFocusNode,
               icon: Icons.skip_previous_rounded,
               color: currentEpisode.value.number.toInt() <= 1
                   ? Colors.grey[800]
@@ -2598,13 +1961,11 @@ class _WatchPageState extends State<WatchPage>
                   ? _buildBufferingIndicator()
                   : buildPlayButton(
                       isPlaying: isPlaying,
-                      focusNode: _playPauseFocusNode,
                       color: themeBgColor.value,
                       iconColor: themeFgColor.value,
                     ),
             ),
             _buildPlaybackButton(
-              focusNode: _nextEpFocusNode,
               icon: Icons.skip_next_rounded,
               color: currentEpisode.value.number.toInt() >=
                       episodeList.value.last.number.toInt()
@@ -2631,246 +1992,95 @@ class _WatchPageState extends State<WatchPage>
 
   Widget buildPlayButton({
     required RxBool isPlaying,
-    FocusNode? focusNode,
     Color? color,
     Color? iconColor,
   }) {
-    final isMobile =
-        !settings.isTV.value && (Platform.isAndroid || Platform.isIOS);
-    final padding = getResponsiveSize(context,
-        mobileSize: 10, desktopSize: 20, isStrict: true);
-    final radius = getResponsiveSize(context,
-        mobileSize: 20.multiplyRadius(),
-        desktopSize: 40.multiplyRadius(),
-        isStrict: true);
-    final borderRadius = BorderRadius.circular(radius);
+    final isMobile = !settings.isTV.value && (Platform.isAndroid || Platform.isIOS);
+    final padding = getResponsiveSize(
+      context,
+      mobileSize: 10,
+      desktopSize: 20,
+      isStrict: true,
+    );
+    final radius = getResponsiveSize(
+      context,
+      mobileSize: 20.multiplyRadius(),
+      desktopSize: 40.multiplyRadius(),
+      isStrict: true,
+    );
 
     return Obx(() {
-      final iconWidget = AnimatedSwitcher(
-        duration: const Duration(milliseconds: 150),
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(scale: animation, child: child),
-        ),
-        child: IconButton(
-          key: ValueKey(isPlaying.value),
-          style: ElevatedButton.styleFrom(
-            shape: RoundedRectangleBorder(borderRadius: borderRadius),
-            padding: EdgeInsets.all(padding),
-          ),
-          onPressed: () => player.playOrPause(),
-          icon: Icon(
-            isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            color: iconColor ?? color,
-            size: getResponsiveSize(context,
-                mobileSize: 40, desktopSize: 80, isStrict: true),
-          ),
-        ),
-      );
-
-      if (settings.isTV.value) {
-        final tvInner = Container(
-          decoration: BoxDecoration(color: color, borderRadius: borderRadius),
-          clipBehavior: Clip.antiAlias,
-          margin: const EdgeInsets.symmetric(horizontal: 50),
-          child: BlurWrapper(
-            borderRadius: borderRadius,
-            child: Focus(
-              focusNode: focusNode,
-              canRequestFocus: focusNode != null && showControls.value,
-              skipTraversal: !showControls.value,
-              onKeyEvent: (node, event) {
-                if (event is! KeyDownEvent) return KeyEventResult.ignored;
-                final key = event.logicalKey;
-                if (key == LogicalKeyboardKey.enter ||
-                    key == LogicalKeyboardKey.select) {
-                  player.playOrPause();
-                  _startHideControlsTimer();
-                  return KeyEventResult.handled;
-                }
-                if (key == LogicalKeyboardKey.arrowDown) {
-                  if (activeSkip.value != null) {
-                    _skipOpEdFocusNode.requestFocus();
-                  } else {
-                    _skipButtonFocusNode.requestFocus();
-                  }
-                  _startHideControlsTimer();
-                  return KeyEventResult.handled;
-                }
-                if (key == LogicalKeyboardKey.arrowUp) {
-                  FocusScope.of(context)
-                      .focusInDirection(TraversalDirection.up);
-                  _startHideControlsTimer();
-                  return KeyEventResult.handled;
-                }
-
-                if (key == LogicalKeyboardKey.arrowLeft) {
-                  if (currentEpisode.value.number.toInt() > 1) {
-                    _prevEpFocusNode.requestFocus();
-                  }
-                  _startHideControlsTimer();
-                  return KeyEventResult.handled;
-                }
-
-                if (key == LogicalKeyboardKey.arrowRight) {
-                  if (currentEpisode.value.number.toInt() <
-                      episodeList.value.last.number.toInt()) {
-                    _nextEpFocusNode.requestFocus();
-                  }
-                  _startHideControlsTimer();
-                  return KeyEventResult.handled;
-                }
-
-                return KeyEventResult.ignored;
-              },
-              child: GestureDetector(
-                onTap: () {
-                  player.playOrPause();
-                  _startHideControlsTimer();
-                },
-                child: iconWidget,
-              ),
-            ),
-          ),
-        );
-        return _TVFocusGlass(
-            borderRadius: borderRadius, focusNode: focusNode, child: tvInner);
-      }
-
       return Container(
-        decoration: BoxDecoration(color: color, borderRadius: borderRadius),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(radius),
+        ),
         clipBehavior: Clip.antiAlias,
         margin: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 50),
         child: BlurWrapper(
-          borderRadius: borderRadius,
-          child: NyantvOnTap(
-            onTap: () => player.playOrPause(),
+          borderRadius: BorderRadius.circular(radius),
+          child: AnymexOnTap(
+            onTap: () {
+              player.playOrPause();
+            },
             bgColor: Colors.transparent,
             focusedBorderColor: Colors.transparent,
-            child: iconWidget,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(scale: animation, child: child),
+              ),
+              child: IconButton(
+                key: ValueKey(isPlaying.value),
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(radius),
+                  ),
+                  padding: EdgeInsets.all(padding),
+                ),
+                onPressed: () {
+                  player.playOrPause();
+                },
+                icon: Icon(
+                  isPlaying.value
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
+                  color: iconColor ?? color,
+                  size: getResponsiveSize(
+                    context,
+                    mobileSize: 40,
+                    desktopSize: 80,
+                    isStrict: true,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       );
     });
   }
 
-  Future<void> _doSkip(bool invert) async {
-    _isManualSeeking = true;
-    if (invert) {
-      final dur = Duration(
-          seconds: currentPosition.value.inSeconds - settings.skipDuration);
-      if (dur.inMilliseconds < 0) {
-        currentPosition.value = Duration.zero;
-        player.seek(Duration.zero);
-      } else {
-        currentPosition.value = dur;
-        player.seek(dur);
-      }
-    } else {
-      final dur = Duration(
-          seconds: currentPosition.value.inSeconds + settings.skipDuration);
-      currentPosition.value = dur;
-      player.seek(dur);
-    }
-    await _waitForBufferingAfterSeek();
-    _isManualSeeking = false;
-    if (mounted && !isSwitchingEpisode && isPlaying.value) {
-      Logger.i('Skip button complete, updating Discord');
-      _scheduleDiscordUpdate(isPaused: false);
-    }
-  }
-
-  Widget _buildSkipButtonChild(bool invert) {
-    return invert
-        ? Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.fast_rewind_rounded, color: Colors.white),
-              const SizedBox(width: 5),
-              NyantvText(
-                  text: "-${settings.skipDuration}s",
-                  variant: TextVariant.semiBold,
-                  color: Colors.white),
-            ],
-          )
-        : Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              NyantvText(
-                  text: "+${settings.skipDuration}s",
-                  variant: TextVariant.semiBold,
-                  color: Colors.white),
-              const SizedBox(width: 5),
-              const Icon(Icons.fast_forward_rounded, color: Colors.white),
-            ],
-          );
-  }
-
-  Widget _buildSkipButton(bool invert) {
-    final borderRadius = BorderRadius.circular(20.multiplyRoundness());
-
-    final btn = BlurWrapper(
-      borderRadius: borderRadius,
-      child: NyanTVButton(
-        height: 50,
-        width: 120,
-        variant: ButtonVariant.simple,
-        borderRadius: borderRadius,
-        backgroundColor: Colors.transparent,
-        onTap: () => _doSkip(invert),
-        child: _buildSkipButtonChild(invert),
-      ),
-    );
-
-    if (settings.isTV.value) {
-      return _TVFocusGlass(
-        borderRadius: borderRadius,
-        focusNode: _skipButtonFocusNode,
-        child: Focus(
-          focusNode: _skipButtonFocusNode,
-          onKeyEvent: (node, event) {
-            if (event is! KeyDownEvent) return KeyEventResult.ignored;
-            final key = event.logicalKey;
-            if (key == LogicalKeyboardKey.enter ||
-                key == LogicalKeyboardKey.select) {
-              _doSkip(invert);
-              return KeyEventResult.handled;
-            }
-            if (key == LogicalKeyboardKey.arrowUp) {
-              _playPauseFocusNode.requestFocus();
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: btn,
-        ),
-      );
-    }
-
-    return btn;
-  }
-
   Widget _buildTVPlayer(BuildContext context) {
-    final view = View.of(context);
-    final physicalSize = view.physicalSize;
-    final devicePixelRatio = view.devicePixelRatio;
-    final realWidth = physicalSize.width / devicePixelRatio;
-
-    final settings = Get.find<Settings>();
-    final scale = settings.uiScale;
-    final effectiveWidth = scale != 1.0 ? realWidth / scale : realWidth;
-
     return Row(
       children: [
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          width:
-              isEpisodeDialogOpen.value ? effectiveWidth * 0.7 : effectiveWidth,
+          width: isEpisodeDialogOpen.value
+              ? Get.width *
+                  getResponsiveSize(context,
+                      mobileSize: 0.6, desktopSize: 0.7, isStrict: true)
+              : Get.width,
           child: _buildTVVideoWidget(),
         ),
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          width: isEpisodeDialogOpen.value ? effectiveWidth * 0.3 : 0,
+          width: isEpisodeDialogOpen.value
+              ? Get.width *
+                  getResponsiveSize(context,
+                      mobileSize: 0.4, desktopSize: 0.3, isStrict: true)
+              : 0,
           child: Focus(
             focusNode: FocusNode(
                 canRequestFocus: isEpisodeDialogOpen.value,
@@ -2893,36 +2103,15 @@ class _WatchPageState extends State<WatchPage>
       ],
     );
   }
-
+  
   Widget _buildTVVideoWidget() {
-    final uiScaleBypass = UIScaleBypass.of(context);
-    final shouldBypassScale = uiScaleBypass?.bypassScale ?? false;
-
-    if (shouldBypassScale) {
-      return SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: Video(
-          controller: playerController,
-          controls: null,
-          fit: BoxFit.contain,
-          subtitleViewConfiguration: const SubtitleViewConfiguration(
-            visible: false,
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: double.infinity,
-      height: double.infinity,
-      child: Video(
-        controller: playerController,
-        controls: null,
-        fit: BoxFit.contain,
-        subtitleViewConfiguration: const SubtitleViewConfiguration(
-          visible: false,
-        ),
+    // Für Android TV: Einfacherer Fallback oder alternative Implementierung
+    return Video(
+      controller: playerController,
+      controls: null,
+      fit: BoxFit.contain, // Auf TV verwenden wir contain statt cover
+      subtitleViewConfiguration: const SubtitleViewConfiguration(
+        visible: false,
       ),
     );
   }
@@ -2932,12 +2121,10 @@ class _WatchPageState extends State<WatchPage>
     IconData? icon,
     Color? color,
     Color? iconColor,
-    FocusNode? focusNode,
   }) {
     final isPlay =
         icon == Icons.play_arrow_rounded || icon == Icons.pause_rounded;
-    final isMobile =
-        !settings.isTV.value && (Platform.isAndroid || Platform.isIOS);
+    final isMobile = !settings.isTV.value && (Platform.isAndroid || Platform.isIOS);
     final padding = getResponsiveSize(context,
         mobileSize: isPlay ? 10 : 5,
         desktopSize: isPlay ? 20 : 10,
@@ -2946,91 +2133,6 @@ class _WatchPageState extends State<WatchPage>
         mobileSize: 20.multiplyRadius(),
         desktopSize: 40.multiplyRadius(),
         isStrict: true);
-    final borderRadius = BorderRadius.circular(radius);
-
-    final iconWidget = IconButton(
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: borderRadius),
-        padding: EdgeInsets.all(padding),
-      ),
-      onPressed: onTap,
-      icon: Icon(
-        icon,
-        color: iconColor ?? color,
-        size: getResponsiveSize(context,
-            mobileSize: 40, desktopSize: 80, isStrict: true),
-      ),
-    );
-
-    if (settings.isTV.value) {
-      final isPrev = icon == Icons.skip_previous_rounded;
-      final isNext = icon == Icons.skip_next_rounded;
-
-      final tvInner = Container(
-        decoration: BoxDecoration(
-          color: isPlay ? color : Colors.transparent,
-          borderRadius: borderRadius,
-          boxShadow: isPlay ? [glowingShadow(context)] : [],
-        ),
-        clipBehavior: Clip.antiAlias,
-        margin: EdgeInsets.symmetric(horizontal: isPlay ? 50 : 0),
-        child: BlurWrapper(
-          borderRadius: borderRadius,
-          child: Focus(
-            focusNode: focusNode,
-            canRequestFocus: focusNode != null && showControls.value,
-            skipTraversal: !showControls.value,
-            onKeyEvent: (node, event) {
-              if (event is! KeyDownEvent) return KeyEventResult.ignored;
-              final key = event.logicalKey;
-              if (key == LogicalKeyboardKey.enter ||
-                  key == LogicalKeyboardKey.select) {
-                onTap();
-                _startHideControlsTimer();
-                return KeyEventResult.handled;
-              }
-              if (key == LogicalKeyboardKey.arrowDown) {
-                if (activeSkip.value != null) {
-                  _skipOpEdFocusNode.requestFocus();
-                } else {
-                  _skipButtonFocusNode.requestFocus();
-                }
-                _startHideControlsTimer();
-                return KeyEventResult.handled;
-              }
-              if (key == LogicalKeyboardKey.arrowUp) {
-                FocusScope.of(context).focusInDirection(TraversalDirection.up);
-                _startHideControlsTimer();
-                return KeyEventResult.handled;
-              }
-
-              if (isPrev && key == LogicalKeyboardKey.arrowRight) {
-                _playPauseFocusNode.requestFocus();
-                _startHideControlsTimer();
-                return KeyEventResult.handled;
-              }
-
-              if (isNext && key == LogicalKeyboardKey.arrowLeft) {
-                _playPauseFocusNode.requestFocus();
-                _startHideControlsTimer();
-                return KeyEventResult.handled;
-              }
-
-              return KeyEventResult.ignored;
-            },
-            child: GestureDetector(
-              onTap: () {
-                onTap();
-                _startHideControlsTimer();
-              },
-              child: iconWidget,
-            ),
-          ),
-        ),
-      );
-      return _TVFocusGlass(
-          borderRadius: borderRadius, focusNode: focusNode, child: tvInner);
-    }
 
     return Container(
       decoration: BoxDecoration(
@@ -3039,19 +2141,33 @@ class _WatchPageState extends State<WatchPage>
             : settings.playerStyle == 0
                 ? Colors.transparent
                 : Colors.black.withOpacity(0.5),
-        borderRadius: borderRadius,
+        borderRadius: BorderRadius.circular(radius),
         boxShadow: isPlay ? [glowingShadow(context)] : [],
       ),
       clipBehavior: Clip.antiAlias,
       margin:
           EdgeInsets.symmetric(horizontal: isPlay ? (isMobile ? 20 : 50) : 0),
       child: BlurWrapper(
-        borderRadius: borderRadius,
-        child: NyantvOnTap(
+        borderRadius: BorderRadius.circular(radius),
+        child: AnymexOnTap(
           onTap: onTap,
           bgColor: Colors.transparent,
           focusedBorderColor: Colors.transparent,
-          child: iconWidget,
+          child: IconButton(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(radius),
+              ),
+              padding: EdgeInsets.all(padding),
+            ),
+            onPressed: onTap,
+            icon: Icon(
+              icon,
+              color: iconColor ?? color,
+              size: getResponsiveSize(context,
+                  mobileSize: 40, desktopSize: 80, isStrict: true),
+            ),
+          ),
         ),
       ),
     );
@@ -3064,14 +2180,14 @@ class _WatchPageState extends State<WatchPage>
           horizontal:
               getResponsiveSize(context, mobileSize: 25, desktopSize: 50)),
       child: SizedBox(
-          height: size, width: size, child: const NyantvProgressIndicator()),
+          height: size, width: size, child: const AnymexProgressIndicator()),
     );
   }
 
   Widget _buildIcon({VoidCallback? onTap, IconData? icon}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 3),
-      child: NyantvOnTap(
+      child: AnymexOnTap(
         onTap: () {
           onTap?.call();
         },
@@ -3083,62 +2199,6 @@ class _WatchPageState extends State<WatchPage>
             )),
       ),
     );
-  }
-
-  Color rotateHue(Color base, double degrees) {
-    final hsl = HSLColor.fromColor(base);
-    return hsl.withHue((hsl.hue + degrees) % 360).toColor();
-  }
-
-  Widget _buildSegmentOverlay() {
-    if (skipTimes.value == null) return const SizedBox.shrink();
-    final totalMs = episodeDuration.value.inMilliseconds.toDouble();
-    if (totalMs <= 0) return const SizedBox.shrink();
-
-    return LayoutBuilder(builder: (context, constraints) {
-      const hPad = 10.0;
-      final trackWidth = constraints.maxWidth - hPad * 2;
-      const markerH = 7.0;
-      final markerTop = (constraints.maxHeight - markerH) / 2;
-
-      final cs = Theme.of(context).colorScheme;
-      final currentSecs = currentPosition.value.inSeconds;
-
-      final segments = <(aniskip.SkipIntervals?, Color)>[
-        (skipTimes.value?.op, rotateHue(cs.primary, 45)),
-        (skipTimes.value?.mixedOp, rotateHue(cs.primary, 45)),
-        (skipTimes.value?.ed, cs.secondary),
-        (skipTimes.value?.mixedEd, cs.secondary),
-        (skipTimes.value?.recap, cs.tertiary),
-      ];
-
-      final markers = <Widget>[];
-      for (final (seg, color) in segments) {
-        if (seg == null) continue;
-        if (seg.end <= currentSecs) continue;
-        final effectiveStart =
-            seg.start < currentSecs ? currentSecs : seg.start;
-        final startPx = hPad + (effectiveStart * 1000 / totalMs) * trackWidth;
-        final endPx = hPad + (seg.end * 1000 / totalMs) * trackWidth;
-        final w = endPx - startPx;
-        if (w <= 0) continue;
-        markers.add(Positioned(
-          left: startPx,
-          width: w,
-          top: markerTop,
-          height: markerH,
-          child: Container(
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.95),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-        ));
-      }
-
-      if (markers.isEmpty) return const SizedBox.shrink();
-      return Stack(children: markers);
-    });
   }
 
   void showColorProfileSheet(BuildContext context) {
@@ -3159,129 +2219,6 @@ class _WatchPageState extends State<WatchPage>
           settings.preferences.put('currentVisualSettings', sett);
         },
       ),
-    );
-  }
-
-  Widget _buildSkipOpEdButton() {
-    return Obx(() {
-      final skip = activeSkip.value;
-      if (skip == null) return const SizedBox.shrink();
-
-      final borderRadius = BorderRadius.circular(20.multiplyRoundness());
-
-      final btn = BlurWrapper(
-        borderRadius: borderRadius,
-        child: Focus(
-          focusNode: _skipOpEdFocusNode,
-          onKeyEvent: (node, event) {
-            if (event is! KeyDownEvent) return KeyEventResult.ignored;
-            final key = event.logicalKey;
-            if (key == LogicalKeyboardKey.enter ||
-                key == LogicalKeyboardKey.select) {
-              _executeSkipOpEd(skip);
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          child: NyanTVButton(
-            height: 50,
-            width: 160,
-            variant: ButtonVariant.simple,
-            borderRadius: borderRadius,
-            backgroundColor: Colors.transparent,
-            onTap: () {
-              _executeSkipOpEd(skip);
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.fast_forward_rounded, color: Colors.white),
-                const SizedBox(width: 5),
-                NyantvText(
-                  text: skip.label,
-                  variant: TextVariant.semiBold,
-                  color: Colors.white,
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-
-      return _TVFocusGlass(
-        borderRadius: borderRadius,
-        focusNode: _skipOpEdFocusNode,
-        child: btn,
-      );
-    });
-  }
-}
-
-class _TVFocusGlass extends StatefulWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-  final FocusNode? focusNode;
-  const _TVFocusGlass({
-    required this.child,
-    required this.borderRadius,
-    this.focusNode,
-  });
-  @override
-  State<_TVFocusGlass> createState() => _TVFocusGlassState();
-}
-
-class _TVFocusGlassState extends State<_TVFocusGlass> {
-  bool _focused = false;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.focusNode?.addListener(_onFocusChange);
-  }
-
-  @override
-  void didUpdateWidget(_TVFocusGlass old) {
-    super.didUpdateWidget(old);
-    if (old.focusNode != widget.focusNode) {
-      old.focusNode?.removeListener(_onFocusChange);
-      widget.focusNode?.addListener(_onFocusChange);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.focusNode?.removeListener(_onFocusChange);
-    super.dispose();
-  }
-
-  void _onFocusChange() {
-    final hasFocus = widget.focusNode?.hasFocus ?? false;
-    if (_focused != hasFocus) {
-      setState(() => _focused = hasFocus);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      decoration: BoxDecoration(
-        borderRadius: widget.borderRadius,
-        border: Border.all(
-          color: _focused ? Colors.white.withOpacity(0.75) : Colors.transparent,
-          width: 2,
-        ),
-        color: _focused ? Colors.white.withOpacity(0.12) : Colors.transparent,
-        boxShadow: _focused
-            ? [
-                BoxShadow(
-                    color: Colors.white.withOpacity(0.08),
-                    blurRadius: 10,
-                    spreadRadius: 1)
-              ]
-            : null,
-      ),
-      child: widget.child,
     );
   }
 }

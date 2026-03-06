@@ -1,9 +1,12 @@
+import 'package:anymex/controllers/settings/settings.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Offline/Hive/offline_media.dart';
-import 'package:nyantv/screens/anime/watch_page.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Offline/Hive/offline_media.dart';
+import 'package:anymex/screens/anime/watch/watch_view.dart';
+import 'package:anymex/screens/anime/watch_page.dart';
+import 'package:anymex/utils/extension_utils.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -37,37 +40,46 @@ class HistoryModel {
       this.progressText,
       this.date});
 
-    factory HistoryModel.fromOfflineMedia(OfflineMedia media, ItemType type) {
-        void onTap() {
-          if (media.currentEpisode == null ||
-              media.currentEpisode?.currentTrack == null ||
-              media.episodes == null ||
-              media.currentEpisode?.videoTracks == null) {
-            snackBar(
-              "Error: Missing required media. It seems you closed the app directly after watching the episode!",
-              duration: 2000,
-              maxLines: 3,
-            );
-          } else {
-            if (media.currentEpisode?.source == null) {
-              snackBar("Can't Play since user closed the app abruptly");
-            }
-            final source = Get.find<SourceController>()
-                .getExtensionByName(media.currentEpisode!.source!);
-            if (source == null) {
-              snackBar(
-                "Install ${media.currentEpisode?.source} First, Then Click");
-            } else {
-              navigate(() => WatchPage(
-                episodeSrc: media.currentEpisode!.currentTrack!,
-                episodeList: media.episodes!,
-                anilistData: convertOfflineToMedia(media),
-                currentEpisode: media.currentEpisode!,
-                episodeTracks: media.currentEpisode!.videoTracks!,
-              ));
-            }
-          }
+  factory HistoryModel.fromOfflineMedia(OfflineMedia media, ItemType type) {
+    final onTap = () {
+      if (media.currentEpisode == null ||
+          media.currentEpisode?.currentTrack == null ||
+          media.episodes == null ||
+          media.currentEpisode?.videoTracks == null) {
+        snackBar(
+          "Error: Missing required media. It seems you closed the app directly after watching the episode!",
+          duration: 2000,
+          maxLines: 3,
+        );
+      } else {
+        if (media.currentEpisode?.source == null) {
+          snackBar("Can't Play since user closed the app abruptly");
         }
+        final source = Get.find<SourceController>()
+            .getExtensionByName(media.currentEpisode!.source!);
+        if (source == null) {
+          snackBar(
+              "Install ${media.currentEpisode?.source} First, Then Click");
+        } else {
+          navigate(() => settingsController.preferences
+                  .get('useOldPlayer', defaultValue: false)
+              ? WatchPage(
+                  episodeSrc: media.currentEpisode!.currentTrack!,
+                  episodeList: media.episodes!,
+                  anilistData: convertOfflineToMedia(media),
+                  currentEpisode: media.currentEpisode!,
+                  episodeTracks: media.currentEpisode!.videoTracks!,
+                )
+              : WatchScreen(
+                  episodeSrc: media.currentEpisode!.currentTrack!,
+                  episodeList: media.episodes!,
+                  anilistData: convertOfflineToMedia(media),
+                  currentEpisode: media.currentEpisode!,
+                  episodeTracks: media.currentEpisode!.videoTracks!,
+                ));
+        }
+      }
+    };
 
     return HistoryModel(
         media: media,

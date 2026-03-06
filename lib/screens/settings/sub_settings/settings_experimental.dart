@@ -1,13 +1,12 @@
-import 'package:nyantv/utils/logger.dart';
+import 'package:anymex/utils/logger.dart';
 
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/utils/shaders.dart';
-import 'package:nyantv/widgets/common/custom_tiles.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_dropdown.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/utils/device_ram.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/utils/shaders.dart';
+import 'package:anymex/widgets/common/custom_tiles.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_dropdown.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -15,8 +14,6 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:archive/archive.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/services.dart';
 
 class SettingsExperimental extends StatefulWidget {
   const SettingsExperimental({super.key});
@@ -28,133 +25,36 @@ class SettingsExperimental extends StatefulWidget {
 class _SettingsExperimentalState extends State<SettingsExperimental>
     with TickerProviderStateMixin {
   final settings = Get.find<Settings>();
-  final _detectedRamMB = 0.obs;
-  final _recommendedProfile = BufferProfile.medium.obs;
 
   final _shadersDownloaded = false.obs;
   final _isDownloading = false.obs;
   final _downloadProgress = 0.0.obs;
   final _currentStatus = ''.obs;
   final _enableShaders = false.obs;
-  final _autoIdleMinutes = 0.obs;
+
+  final _cacheDays = 7.obs;
 
   late AnimationController _pulseController;
   late AnimationController _progressController;
   late Animation<double> _pulseAnimation;
-
-  Widget _buildSelectableOption(
-    BuildContext context, {
-    required bool isSelected,
-    required VoidCallback onTap,
-    required String title,
-    required String description,
-    required IconData icon,
-  }) {
-    return Focus(
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            (event.logicalKey == LogicalKeyboardKey.select ||
-                event.logicalKey == LogicalKeyboardKey.enter)) {
-          onTap();
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Builder(builder: (context) {
-        final hasFocus = Focus.of(context).hasFocus;
-        return GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withOpacity(0.4)
-                  : Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerHighest
-                      .withOpacity(0.3),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: hasFocus
-                    ? Theme.of(context).colorScheme.primary
-                    : isSelected
-                        ? Theme.of(context).colorScheme.primary.withOpacity(0.7)
-                        : Theme.of(context)
-                            .colorScheme
-                            .outline
-                            .withOpacity(0.2),
-                width: hasFocus || isSelected ? 2 : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(icon,
-                    color: isSelected || hasFocus
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.5)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: isSelected || hasFocus
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.onSurface,
-                          )),
-                      Text(description,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withOpacity(0.6),
-                          )),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Icon(Icons.check_circle_rounded,
-                      color: Theme.of(context).colorScheme.primary),
-              ],
-            ),
-          ),
-        );
-      }),
-    );
-  }
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
     _checkShadersAvailability();
-    _detectDeviceRam();
     getSavedSettings();
-  }
-
-  void _detectDeviceRam() {
-    _detectedRamMB.value = DeviceRamHelper.getDeviceRamMB();
-    _recommendedProfile.value = DeviceRamHelper.getRecommendedProfile();
   }
 
   void getSavedSettings() {
     _enableShaders.value =
         settings.preferences.get('shaders_enabled', defaultValue: false);
-    _autoIdleMinutes.value = settings.autoIdleMinutes;
+    _cacheDays.value = settings.preferences.get('cache_days', defaultValue: 7);
   }
 
   void saveSettings() {
     settings.preferences.put('shaders_enabled', _enableShaders.value);
-    settings.autoIdleMinutes = _autoIdleMinutes.value;
+    settings.preferences.put('cache_days', _cacheDays.value);
   }
 
   void _initializeAnimations() {
@@ -207,7 +107,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
 
       final dio = Dio();
       await dio.download(
-        'https://github.com/NyanTV/NyanTV/raw/refs/heads/main/assets/shaders/shaders_new.zip',
+        'https://github.com/RyanYuuki/AnymeX/raw/refs/heads/main/assets/shaders/shaders_new.zip',
         tempFilePath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
@@ -267,57 +167,6 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
     _currentStatus.value = status;
     _downloadProgress.value = progress;
     _progressController.animateTo(progress);
-  }
-
-  Widget _buildBufferDetail(BuildContext context, BufferProfile profile) {
-    final config = DeviceRamHelper.getConfig(profile);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildDetailRow(
-          context,
-          'Buffer Size',
-          '${config.bufferMB}MB',
-        ),
-        _buildDetailRow(
-          context,
-          'Cache Duration',
-          '${config.cacheSecs}s',
-        ),
-        _buildDetailRow(
-          context,
-          'Max Skip',
-          '~${config.cacheSecs - 10}s',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDetailRow(BuildContext context, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              fontSize: 11,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildKeybindingItem(String key, String description) {
@@ -382,23 +231,6 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
     super.dispose();
   }
 
-  Widget _buildNavModeOption(
-    BuildContext context,
-    int mode, {
-    required String title,
-    required String description,
-    required IconData icon,
-  }) {
-    return _buildSelectableOption(
-      context,
-      isSelected: settings.navigationMode == mode,
-      onTap: () => settings.navigationMode = mode,
-      title: title,
-      description: description,
-      icon: icon,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Glow(
@@ -433,314 +265,32 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                 ],
               ),
               const SizedBox(height: 30),
-              Obx(() => NyantvExpansionTile(
-                    title: "Auto Idle",
+              Obx(() => AnymexExpansionTile(
+                    title: "Reader",
                     initialExpanded: true,
                     content: Column(
                       children: [
                         CustomSliderTile(
-                          icon: Iconsax.timer_1,
-                          title: "Auto Idle Timer",
-                          description:
-                              "Automatically start NyanDVD after inactivity",
-                          sliderValue: _autoIdleMinutes.value.toDouble(),
-                          divisions: 20,
-                          onChanged: (double value) {
-                            _autoIdleMinutes.value = value.toInt();
-                            saveSettings();
-                          },
-                          min: 0,
-                          max: 20,
-                          showOffWhenZero: true,
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest
-                                .withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            "Time in minutes",
-                            style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.6),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
+                            icon: Icons.extension,
+                            title: "Cache Duration",
+                            label: "${_cacheDays.value} days",
+                            description:
+                                "When should the image cache be cleared?",
+                            sliderValue: _cacheDays.value.toDouble(),
+                            divisions: 30,
+                            onChanged: (double value) {
+                              _cacheDays.value = value.toInt();
+                              saveSettings();
+                            },
+                            max: 30)
                       ],
                     ),
                   )),
-              GetBuilder<Settings>(
-                builder: (settings) {
-                  return NyantvExpansionTile(
-                    title: "UI Scaling",
-                    initialExpanded: true,
-                    content: Column(
-                      children: [
-                        CustomSliderTile(
-                          icon: Icons.zoom_in_outlined,
-                          title: "UI Scale Factor",
-                          label: "${(settings.uiScale * 100).toInt()}%",
-                          description:
-                              "Adjust the overall UI scale (like browser zoom)",
-                          sliderValue: settings.uiScale,
-                          divisions: 15,
-                          onChanged: (double value) {
-                            settings.uiScale = value;
-                          },
-                          min: 0.5,
-                          max: 2.0,
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest
-                                .withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            "Tip: 0.5 (50%) = Smaller, 1 (100%) = Default, 1.5 (150%) = Larger",
-                            style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.6),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              Obx(() => NyantvExpansionTile(
-                    title: "Navigation Loading",
-                    initialExpanded: true,
-                    content: Column(
-                      children: [
-                        _buildNavModeOption(
-                          context,
-                          0,
-                          title: "Legacy",
-                          description:
-                              "Rebuilds every screen on each visit. Slowest but lowest RAM usage.",
-                          icon: Iconsax.refresh,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildNavModeOption(
-                          context,
-                          1,
-                          title: "Hybrid",
-                          description:
-                              "Builds screens on first visit and caches them. Good balance for budget TVs (2GB RAM).",
-                          icon: Iconsax.cpu,
-                        ),
-                        const SizedBox(height: 8),
-                        _buildNavModeOption(
-                          context,
-                          2,
-                          title: "Preload All",
-                          description:
-                              "Builds all screens at startup. Fastest navigation but uses most RAM. Most TV Boxes / Dongles will handle this (3GB+ RAM).",
-                          icon: Iconsax.flash_1,
-                        ),
-                      ],
-                    ),
-                  )),
-              Obx(() {
-                final currentProfile = settings.tvBufferProfile.value;
-
-                return NyantvExpansionTile(
-                  title: "TV Player Buffer",
-                  initialExpanded: true,
-                  content: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primaryContainer
-                              .withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.memory,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Pick Your Buffer Profile',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Choosing more than available MIGHT crash the player!',
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.7),
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.tune,
-                                  color: Theme.of(context).colorScheme.primary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  'Buffer Profile',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Column(
-                              children: BufferProfile.values.map((profile) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 8),
-                                  child: _buildSelectableOption(
-                                    context,
-                                    isSelected: currentProfile == profile,
-                                    onTap: () =>
-                                        settings.saveTVBufferProfile(profile),
-                                    title:
-                                        DeviceRamHelper.getProfileName(profile),
-                                    description:
-                                        DeviceRamHelper.getProfileDescription(
-                                            profile),
-                                    icon: Icons.memory,
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primaryContainer
-                                    .withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    DeviceRamHelper.getProfileDescription(
-                                        currentProfile),
-                                    style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.8),
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  if (currentProfile !=
-                                      BufferProfile.medium) ...[
-                                    const SizedBox(height: 8),
-                                    _buildBufferDetail(context, currentProfile),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Higher buffer = better skip performance but uses more RAM. '
-                                'Only affects Android TV devices.',
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withOpacity(0.6),
-                                  fontSize: 11,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
               Obx(() {
                 settings.animationDuration;
-                return NyantvExpansionTile(
+                return AnymexExpansionTile(
                   title: 'Player',
-                  initialExpanded: false,
+                  initialExpanded: true,
                   content: Container(
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
@@ -1032,7 +582,7 @@ class _SettingsExperimentalState extends State<SettingsExperimental>
                                                 return Container(
                                                   margin: const EdgeInsets.only(
                                                       top: 20.0),
-                                                  child: NyantvDropdown(
+                                                  child: AnymexDropdown(
                                                       items: availProfiles
                                                           .map((e) =>
                                                               DropdownItem(

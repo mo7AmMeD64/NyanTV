@@ -1,16 +1,17 @@
 import 'dart:io';
 
-import 'package:nyantv/controllers/discord/discord_login.dart';
-import 'package:nyantv/controllers/discord/discord_rpc.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Service/online_service.dart';
-import 'package:nyantv/screens/settings/sub_settings/widgets/account_tile.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_icon_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/helper/scroll_wrapper.dart';
+import 'package:anymex/controllers/discord/discord_login.dart';
+import 'package:anymex/controllers/discord/discord_rpc.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Service/online_service.dart';
+import 'package:anymex/screens/settings/sub_settings/widgets/account_tile.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/custom_widgets/custom_icon_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/helper/scroll_wrapper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconly/iconly.dart';
@@ -26,16 +27,6 @@ class SettingsAccounts extends StatelessWidget {
         'service': serviceHandler.anilistService,
         'icon': 'anilist-icon.png',
         'title': "Anilist"
-      },
-      {
-        'service': serviceHandler.malService,
-        'icon': 'mal-icon.png',
-        'title': "MyAnimeList"
-      },
-      {
-        'service': serviceHandler.simklService,
-        'icon': 'simkl-icon.png',
-        'title': "Simkl"
       },
     ];
 
@@ -100,7 +91,7 @@ class DiscordTile extends StatelessWidget {
       final isLoggedIn = rpc.isLoggedIn;
       final userData = isLoggedIn ? rpc.profile.value : null;
 
-      return NyantvExpansionTile(
+      return AnymexExpansionTile(
         content: Column(
           children: [
             Container(
@@ -148,7 +139,7 @@ class DiscordTile extends StatelessWidget {
                             ),
                           ),
                         )
-                      : const NyantvIconWrapper(
+                      : const AnymexIconWrapper(
                           child: CircleAvatar(
                               backgroundColor: Colors.transparent,
                               radius: 16,
@@ -161,14 +152,14 @@ class DiscordTile extends StatelessWidget {
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            NyantvText(
+                            AnymexText(
                               text: userData?.displayName ?? 'Loading...',
                               variant: TextVariant.semiBold,
                             ),
                             const SizedBox(height: 5),
                             SizedBox(
                               width: 130,
-                              child: NyantvText(
+                              child: AnymexText(
                                 text: 'Connected to Discord',
                                 color: Theme.of(context).colorScheme.primary,
                                 maxLines: 2,
@@ -176,7 +167,7 @@ class DiscordTile extends StatelessWidget {
                             )
                           ],
                         )
-                      : const NyantvText(
+                      : const AnymexText(
                           text: 'Connect to Discord',
                         ),
                   const Spacer(),
@@ -187,7 +178,7 @@ class DiscordTile extends StatelessWidget {
                           : context.showDiscordLogin(
                               (token) => rpc.onLoginSuccess(token));
                     },
-                    child: NyantvIconWrapper(
+                    child: AnymexIconWrapper(
                       child: CircleAvatar(
                         backgroundColor: Colors.transparent,
                         radius: 16,

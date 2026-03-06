@@ -1,12 +1,13 @@
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/screens/profile/profile_page.dart';
-import 'package:nyantv/screens/settings/settings.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_bottomsheet.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/screens/profile/profile_page.dart';
+import 'package:anymex/screens/settings/settings.dart';
+import 'package:anymex/screens/local_source/local_source_view.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_bottomsheet.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -20,7 +21,7 @@ class SettingsSheet extends StatelessWidget {
   final serviceHandler = Get.find<ServiceHandler>();
 
   static void show(BuildContext context) {
-    NyantvSheet(
+    AnymexSheet(
       customWidget: SettingsSheet(),
     ).show(context);
   }
@@ -32,16 +33,6 @@ class SettingsSheet extends StatelessWidget {
         'name': "AniList",
         'icon': 'anilist-icon.png',
       },
-      {
-        'type': ServicesType.mal,
-        'name': "MyAnimeList",
-        'icon': 'mal-icon.png',
-      },
-      {
-        'type': ServicesType.simkl,
-        'name': "Simkl",
-        'icon': 'simkl-icon.png',
-      },
       if (serviceHandler.extensionService.installedExtensions.length > 2)
         {
           'type': ServicesType.extensions,
@@ -50,13 +41,13 @@ class SettingsSheet extends StatelessWidget {
         },
     ];
 
-    NyantvSheet.custom(
+    AnymexSheet.custom(
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const NyantvText(
+              const AnymexText(
                 text: "Select Service",
                 size: 16,
                 variant: TextVariant.semiBold,
@@ -73,7 +64,7 @@ class SettingsSheet extends StatelessWidget {
                             size: 30,
                             color: Theme.of(context).colorScheme.primary,
                           ),
-                    title: NyantvText(
+                    title: AnymexText(
                       text: service['name'] as String,
                       variant: TextVariant.semiBold,
                       color: serviceHandler.serviceType.value == service['type']
@@ -130,7 +121,7 @@ class SettingsSheet extends StatelessWidget {
                   Text(serviceHandler.profileData.value.name ?? 'Guest'),
                   if (serviceHandler.serviceType.value !=
                       ServicesType.extensions)
-                    NyantvOnTap(
+                    AnymexOnTap(
                       onTap: () {
                         if (serviceHandler.isLoggedIn.value) {
                           serviceHandler.logout();
@@ -151,7 +142,7 @@ class SettingsSheet extends StatelessWidget {
               const Expanded(
                 child: SizedBox.shrink(),
               ),
-              NyantvOnTap(
+              AnymexOnTap(
                 child: IconButton(
                     onPressed: () {
                       snackBar('This feature is not available yet.');
@@ -168,14 +159,14 @@ class SettingsSheet extends StatelessWidget {
             const SizedBox(height: 10),
             if (serviceHandler.isLoggedIn.value &&
                 serviceHandler.serviceType.value == ServicesType.anilist)
-              NyantvOnTap(
-                onTap: () {
-                  Get.back();
-                  navigate(() => const ProfilePage());
-                },
-                child: const ListTile(
-                  leading: Icon(Iconsax.user),
-                  title: Text('View Profile'),
+              AnymexOnTap(
+                child: ListTile(
+                  leading: const Icon(Iconsax.user),
+                  title: const Text('View Profile'),
+                  onTap: () {
+                    Get.back();
+                    navigate(() => const ProfilePage());
+                  },
                 ),
               ),
             Obx(() {
@@ -187,21 +178,32 @@ class SettingsSheet extends StatelessWidget {
                       title: const Text('Extensions'),
                       onTap: () {
                         Get.back();
+                        navigate(() => const SizedBox());
                       },
                     )
                   : const SizedBox.shrink();
             }),
-            NyantvOnTap(
-              onTap: () {
-                Get.back();
-                showServiceSelector(context);
-              },
-              child: const ListTile(
-                leading: Icon(HugeIcons.strokeRoundedAiSetting),
-                title: Text('Change Service'),
+            AnymexOnTap(
+              child: ListTile(
+                leading: const Icon(HugeIcons.strokeRoundedAiSetting),
+                title: const Text('Change Service'),
+                onTap: () {
+                  Get.back();
+                  showServiceSelector(context);
+                },
               ),
             ),
-            NyantvOnTap(
+            AnymexOnTap(
+              child: ListTile(
+                leading: const Icon(Iconsax.document_download),
+                title: const Text('Local Media'),
+                onTap: () {
+                  Get.back();
+                  navigate(() => const WatchOffline());
+                },
+              ),
+            ),
+            AnymexOnTap(
               child: ListTile(
                 leading: const Icon(Iconsax.setting),
                 title: const Text('Settings'),

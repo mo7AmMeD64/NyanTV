@@ -1,17 +1,16 @@
-//lib/screens/settings/settings.dart
-import 'package:nyantv/screens/settings/sub_settings/settings_about.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_accounts.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_common.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_experimental.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_extensions.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_player.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_theme.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_ui.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/widgets/common/custom_tiles.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_about.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_accounts.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_common.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_experimental.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_extensions.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_player.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_theme.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_ui.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/utils/logger.dart';
+import 'package:anymex/widgets/common/custom_tiles.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:iconly/iconly.dart';
@@ -56,7 +55,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     icon: IconlyLight.profile,
                     title: "Accounts",
                     description:
-                        "Manage your Anilist, MAL, Simkl & Discord Account!",
+                        "Manage your Anilist Account!",
                     onTap: () {
                       navigate(() => const SettingsAccounts());
                     }),

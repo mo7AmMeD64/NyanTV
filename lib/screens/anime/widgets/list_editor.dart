@@ -1,11 +1,10 @@
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/widgets/common/slider_semantics.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_button.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_dropdown.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/widgets/common/slider_semantics.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_button.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:flutter/gestures.dart';
 
 class ListEditorModal extends StatefulWidget {
   final RxString animeStatus;
@@ -33,21 +32,10 @@ class ListEditorModal extends StatefulWidget {
 
 class _ListEditorModalState extends State<ListEditorModal> {
   late TextEditingController _progressController;
-  late FocusNode _progressFocusNode;
-  final FocusNode _closeButtonFocusNode = FocusNode();
-  final FocusNode _statusDropdownFocusNode = FocusNode();
-  final FocusNode _decrementButtonFocusNode = FocusNode();
-  final FocusNode _incrementButtonFocusNode = FocusNode();
-  final FocusNode _sliderFocusNode = FocusNode();
-  final FocusNode _deleteButtonFocusNode = FocusNode();
-  final FocusNode _saveButtonFocusNode = FocusNode();
-  final GlobalKey _dropdownKey = GlobalKey();
 
   late String _localStatus;
   late double _localScore;
   late int _localProgress;
-  LogicalKeyboardKey? _sliderHeldKey;
-  bool _sliderHoldActive = false;
 
   @override
   void initState() {
@@ -61,57 +49,12 @@ class _ListEditorModalState extends State<ListEditorModal> {
     _progressController = TextEditingController(
       text: _localProgress.toString(),
     );
-    
-    _progressFocusNode = FocusNode();
-    
-    _closeButtonFocusNode.addListener(() => setState(() {}));
-    _statusDropdownFocusNode.addListener(() => setState(() {}));
-    _decrementButtonFocusNode.addListener(() => setState(() {}));
-    _progressFocusNode.addListener(() => setState(() {}));
-    _incrementButtonFocusNode.addListener(() => setState(() {}));
-    _sliderFocusNode.addListener(() => setState(() {}));
-    _deleteButtonFocusNode.addListener(() => setState(() {}));
-    _saveButtonFocusNode.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _progressController.dispose();
-    _progressFocusNode.dispose();
-    _closeButtonFocusNode.dispose();
-    _statusDropdownFocusNode.dispose();
-    _decrementButtonFocusNode.dispose();
-    _incrementButtonFocusNode.dispose();
-    _sliderFocusNode.dispose();
-    _deleteButtonFocusNode.dispose();
-    _saveButtonFocusNode.dispose();
     super.dispose();
-  }
-
-  void _startSliderHold(LogicalKeyboardKey key) {
-    if (_sliderHeldKey == key && _sliderHoldActive) return;
-    _sliderHeldKey = key;
-    _sliderHoldActive = true;
-    _runSliderHoldLoop(key);
-  }
-
-  void _stopSliderHold() {
-    _sliderHeldKey = null;
-    _sliderHoldActive = false;
-  }
-
-  void _runSliderHoldLoop(LogicalKeyboardKey key) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    while (_sliderHoldActive && _sliderHeldKey == key && mounted) {
-      setState(() {
-        if (key == LogicalKeyboardKey.arrowRight) {
-          _localScore = (_localScore + 1.0).clamp(0.0, 10.0);
-        } else {
-          _localScore = (_localScore - 1.0).clamp(0.0, 10.0);
-        }
-      });
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
   }
 
   @override
@@ -168,46 +111,23 @@ class _ListEditorModalState extends State<ListEditorModal> {
             ),
           ],
         ),
-        Focus(
-          focusNode: _closeButtonFocusNode,
-          onKeyEvent: (node, event) {
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.select ||
-                  event.logicalKey == LogicalKeyboardKey.enter) {
-                Get.back();
-                return KeyEventResult.handled;
-              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                _statusDropdownFocusNode.requestFocus();
-                return KeyEventResult.handled;
-              }
-            }
-            return KeyEventResult.ignored;
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.surfaceContainerHighest,
-              border: _closeButtonFocusNode.hasFocus
-                  ? Border.all(
-                      color: colorScheme.primary,
-                      width: 2,
-                    )
-                  : null,
-            ),
-            padding: const EdgeInsets.all(8),
-            child: IconButton(
-                color: colorScheme.onSurface,
-                onPressed: () => Get.back(),
-                icon: const Icon(Icons.close_rounded)),
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colorScheme.surfaceContainerHighest,
           ),
-        ),
+          padding: const EdgeInsets.all(8),
+          child: IconButton(
+              color: colorScheme.onSurface,
+              onPressed: () => Get.back(),
+              icon: const Icon(Icons.close_rounded)),
+        )
       ],
     );
   }
 
   Widget _buildStatusSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    //final GlobalKey<State<StatefulWidget>> dropdownKey = GlobalKey();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,75 +142,44 @@ class _ListEditorModalState extends State<ListEditorModal> {
                 ),
           ),
         ),
-        Focus(
-          focusNode: _statusDropdownFocusNode,
-          onKeyEvent: (node, event) {
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.select ||
-                  event.logicalKey == LogicalKeyboardKey.enter) {
-                final context = _dropdownKey.currentContext;
-                if (context != null) {
-                  final RenderBox box = context.findRenderObject() as RenderBox;
-                  final Offset position = box.localToGlobal(box.size.center(Offset.zero));
-                  
-                  final PointerDownEvent down = PointerDownEvent(position: position);
-                  final PointerUpEvent up = PointerUpEvent(position: position);
-                  
-                  GestureBinding.instance.handlePointerEvent(down);
-                  Future.delayed(const Duration(milliseconds: 50), () {
-                    GestureBinding.instance.handlePointerEvent(up);
-                  });
-                }
-                return KeyEventResult.handled;
-              } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                _closeButtonFocusNode.requestFocus();
-                return KeyEventResult.handled;
-              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                _decrementButtonFocusNode.requestFocus();
-                return KeyEventResult.handled;
-              }
-            }
-            return KeyEventResult.ignored;
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _statusDropdownFocusNode.hasFocus
-                    ? colorScheme.primary
-                    : colorScheme.outline.withOpacity(0.5),
-                width: _statusDropdownFocusNode.hasFocus ? 2 : 1,
-              ),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.outline.withOpacity(0.5),
             ),
-            child: NyantvDropdown(
-              key: _dropdownKey,
-              label: 'Status',
-              icon: Icons.info_rounded,
-              onChanged: (e) {
-                setState(() {
-                  _localStatus = e.value;
-                });
-              },
-              selectedItem: DropdownItem(
-                value: _localStatus,
-                text: _getStatusDisplayText(_localStatus),
-              ),
-              items: [
-                ('PLANNING', 'Planning', Icons.schedule_rounded),
-                ('CURRENT', 'Watching', Icons.play_circle_rounded),
-                ('COMPLETED', 'Completed', Icons.check_circle_rounded),
-                ('REPEATING', 'Repeating', Icons.repeat_rounded),
-                ('PAUSED', 'Paused', Icons.pause_circle_rounded),
-                ('DROPPED', 'Dropped', Icons.cancel_rounded),
-              ].map((item) {
-                return DropdownItem(value: item.$1, text: item.$2);
-              }).toList(),
+          ),
+          child: AnymexDropdown(
+            label: 'Status',
+            icon: Icons.info_rounded,
+            onChanged: (e) {
+              setState(() {
+                _localStatus = e.value;
+              });
+            },
+            selectedItem: DropdownItem(
+              value: _localStatus,
+              text: _getStatusDisplayText(_localStatus),
             ),
+            items: [
+              ('PLANNING', 'Planning', Icons.schedule_rounded),
+              ('CURRENT', 'Watching', Icons.play_circle_rounded),
+              ('COMPLETED', 'Completed', Icons.check_circle_rounded),
+              ('REPEATING', 'Repeating', Icons.repeat_rounded),
+              ('PAUSED', 'Paused', Icons.pause_circle_rounded),
+              ('DROPPED', 'Dropped', Icons.cancel_rounded),
+            ].map((item) {
+              return DropdownItem(
+                value: item.$1,
+                text: item.$2,
+              );
+            }).toList(),
           ),
         ),
       ],
     );
   }
+
   String _getStatusDisplayText(String status) {
     switch (status) {
       case 'PLANNING':
@@ -314,8 +203,8 @@ class _ListEditorModalState extends State<ListEditorModal> {
     final colorScheme = Theme.of(context).colorScheme;
 
     bool isUnknownTotal() {
-      final String total = widget.media.totalEpisodes;
-      return total == '?' || total == '??' || total.isEmpty;
+      final String? total = widget.media.totalEpisodes;
+      return total == '?' || total == '??' || total == null || total.isEmpty;
     }
 
     int? getMaxTotal() {
@@ -363,56 +252,73 @@ class _ListEditorModalState extends State<ListEditorModal> {
                   Expanded(
                     child: SizedBox(
                       height: 50,
-                      child: Focus(
-                        focusNode: _progressFocusNode,
-                        canRequestFocus: false,
-                        skipTraversal: true,
-                        child: TextFormField(
-                          controller: _progressController,
-                          enabled: false,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(6),
-                          ],
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          textInputAction: TextInputAction.done,
-                          decoration: InputDecoration(
-                            prefixIcon: Icon(
-                              Icons.play_circle_rounded,
-                              color: colorScheme.primary,
-                            ),
-                            filled: true,
-                            fillColor: colorScheme.surface,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: colorScheme.outline.withOpacity(0.5),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: colorScheme.outline.withOpacity(0.5),
-                              ),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: colorScheme.outline.withOpacity(0.5),
-                              ),
-                            ),
-                            labelText: 'Episodes Watched',
-                            labelStyle: TextStyle(
-                              color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
+                      child: TextFormField(
+                        controller: _progressController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
+                        style: Theme.of(context).textTheme.bodyLarge,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.play_circle_rounded,
+                            color: colorScheme.primary,
+                          ),
+                          filled: true,
+                          fillColor: colorScheme.surface,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.outline.withOpacity(0.5),
                             ),
                           ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.outline.withOpacity(0.5),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                          labelText: 'Episodes Watched',
+                          labelStyle: TextStyle(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
                         ),
+                        onChanged: (String value) {
+                          final int? newProgress = int.tryParse(value);
+
+                          if (newProgress == null || newProgress < 0) {
+                            return;
+                          }
+
+                          setState(() {
+                            if (hasKnownLimit) {
+                              _localProgress = newProgress <= maxTotal
+                                  ? newProgress
+                                  : maxTotal;
+                            } else {
+                              _localProgress = newProgress;
+                            }
+                          });
+                        },
+                        onEditingComplete: () {
+                          setState(() {
+                            _progressController.text =
+                                _localProgress.toString();
+                          });
+                        },
                       ),
                     ),
                   ),
@@ -434,139 +340,68 @@ class _ListEditorModalState extends State<ListEditorModal> {
     final colorScheme = Theme.of(context).colorScheme;
     final bool canDecrement = _localProgress > 0;
 
-    return Focus(
-      focusNode: _decrementButtonFocusNode,
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.select ||
-              event.logicalKey == LogicalKeyboardKey.enter) {
-            if (canDecrement) {
-              setState(() {
-                _localProgress--;
-                _progressController.text = _localProgress.toString();
-              });
-            }
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            _statusDropdownFocusNode.requestFocus();
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            _sliderFocusNode.requestFocus();
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-            _incrementButtonFocusNode.requestFocus();
-            return KeyEventResult.handled;
-          }
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Material(
-        color: canDecrement
-            ? colorScheme.secondaryContainer
-            : colorScheme.surfaceContainerHighest,
+    return Material(
+      color: canDecrement
+          ? colorScheme.secondaryContainer
+          : colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: canDecrement
-              ? () {
-                  setState(() {
-                    _localProgress--;
-                    _progressController.text = _localProgress.toString();
-                  });
-                }
-              : null,
-          child: Container(
-            width: 50,
-            height: 50,
-            alignment: Alignment.center,
-            decoration: _decrementButtonFocusNode.hasFocus
-                ? BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: colorScheme.primary,
-                      width: 2,
-                    ),
-                  )
-                : null,
-            child: Icon(
-              Icons.remove_rounded,
-              color: canDecrement
-                  ? colorScheme.onSecondaryContainer
-                  : colorScheme.onSurfaceVariant.withOpacity(0.5),
-              size: 24,
-            ),
+        onTap: canDecrement
+            ? () {
+                setState(() {
+                  _localProgress--;
+                  _progressController.text = _localProgress.toString();
+                });
+              }
+            : null,
+        child: Container(
+          width: 50,
+          height: 50,
+          alignment: Alignment.center,
+          child: Icon(
+            Icons.remove_rounded,
+            color: canDecrement
+                ? colorScheme.onSecondaryContainer
+                : colorScheme.onSurfaceVariant.withOpacity(0.5),
+            size: 24,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildIncrementButton(BuildContext context, bool hasKnownLimit, int? maxTotal) {
+  Widget _buildIncrementButton(
+      BuildContext context, bool hasKnownLimit, int? maxTotal) {
     final colorScheme = Theme.of(context).colorScheme;
     final bool canIncrement =
         !hasKnownLimit || (hasKnownLimit && _localProgress < maxTotal!);
 
-    return Focus(
-      focusNode: _incrementButtonFocusNode,
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.select ||
-              event.logicalKey == LogicalKeyboardKey.enter) {
-            if (canIncrement) {
-              setState(() {
-                _localProgress++;
-                _progressController.text = _localProgress.toString();
-              });
-            }
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            _statusDropdownFocusNode.requestFocus();
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            _sliderFocusNode.requestFocus();
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            _decrementButtonFocusNode.requestFocus();
-            return KeyEventResult.handled;
-          }
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Material(
-        color: canIncrement
-            ? colorScheme.primary
-            : colorScheme.surfaceContainerHighest,
+    return Material(
+      color: canIncrement
+          ? colorScheme.primary
+          : colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: canIncrement
-              ? () {
-                  setState(() {
-                    _localProgress++;
-                    _progressController.text = _localProgress.toString();
-                  });
-                }
-              : null,
-          child: Container(
-            width: 50,
-            height: 50,
-            alignment: Alignment.center,
-            decoration: _incrementButtonFocusNode.hasFocus
-                ? BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: colorScheme.onPrimary,
-                      width: 2,
-                    ),
-                  )
-                : null,
-            child: Icon(
-              Icons.add_rounded,
-              color: canIncrement
-                  ? colorScheme.onPrimary
-                  : colorScheme.onSurfaceVariant.withOpacity(0.5),
-              size: 24,
-            ),
+        onTap: canIncrement
+            ? () {
+                setState(() {
+                  _localProgress++;
+                  _progressController.text = _localProgress.toString();
+                });
+              }
+            : null,
+        child: Container(
+          width: 50,
+          height: 50,
+          alignment: Alignment.center,
+          child: Icon(
+            Icons.add_rounded,
+            color: canIncrement
+                ? colorScheme.onPrimary
+                : colorScheme.onSurfaceVariant.withOpacity(0.5),
+            size: 24,
           ),
         ),
       ),
@@ -649,10 +484,7 @@ class _ListEditorModalState extends State<ListEditorModal> {
             borderRadius: BorderRadius.circular(16),
             color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
             border: Border.all(
-              color: _sliderFocusNode.hasFocus
-                  ? colorScheme.primary
-                  : colorScheme.outline.withOpacity(0.5),
-              width: _sliderFocusNode.hasFocus ? 2 : 1,
+              color: colorScheme.outline.withOpacity(0.5),
             ),
           ),
           padding: const EdgeInsets.all(20),
@@ -698,56 +530,19 @@ class _ListEditorModalState extends State<ListEditorModal> {
                 ],
               ),
               const SizedBox(height: 16),
-              Focus(
-                focusNode: _sliderFocusNode,
-                onKeyEvent: (node, event) {
-                  if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                    if (event is KeyDownEvent) {
-                      _stopSliderHold();
-                      _decrementButtonFocusNode.requestFocus();
-                      return KeyEventResult.handled;
-                    }
-                  } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                    if (event is KeyDownEvent) {
-                      _stopSliderHold();
-                      _deleteButtonFocusNode.requestFocus();
-                      return KeyEventResult.handled;
-                    }
-                  } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                    if (event is KeyDownEvent && _sliderHeldKey != LogicalKeyboardKey.arrowLeft) {
-                      setState(() => _localScore = (_localScore - 0.1).clamp(0.0, 10.0));
-                      _startSliderHold(LogicalKeyboardKey.arrowLeft);
-                      return KeyEventResult.handled;
-                    } else if (event is KeyUpEvent) {
-                      _stopSliderHold();
-                      return KeyEventResult.handled;
-                    }
-                  } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                    if (event is KeyDownEvent && _sliderHeldKey != LogicalKeyboardKey.arrowRight) {
-                      setState(() => _localScore = (_localScore + 0.1).clamp(0.0, 10.0));
-                      _startSliderHold(LogicalKeyboardKey.arrowRight);
-                      return KeyEventResult.handled;
-                    } else if (event is KeyUpEvent) {
-                      _stopSliderHold();
-                      return KeyEventResult.handled;
-                    }
-                  }
-                  return KeyEventResult.ignored;
+              CustomSlider(
+                value: _localScore,
+                min: 0.0,
+                max: 10.0,
+                divisions: 100,
+                label: _localScore.toStringAsFixed(1),
+                activeColor: colorScheme.primary,
+                inactiveColor: colorScheme.surfaceContainerHighest,
+                onChanged: (double newValue) {
+                  setState(() {
+                    _localScore = newValue;
+                  });
                 },
-                child: CustomSlider(
-                  value: _localScore,
-                  min: 0.0,
-                  max: 10.0,
-                  divisions: 100,
-                  label: _localScore.toStringAsFixed(1),
-                  activeColor: colorScheme.primary,
-                  inactiveColor: colorScheme.surfaceContainerHighest,
-                  onChanged: (double newValue) {
-                    setState(() {
-                      _localScore = newValue;
-                    });
-                  },
-                ),
               ),
             ],
           ),
@@ -764,66 +559,32 @@ class _ListEditorModalState extends State<ListEditorModal> {
         Expanded(
           child: SizedBox(
             height: 56,
-            child: Focus(
-              focusNode: _deleteButtonFocusNode,
-              onKeyEvent: (node, event) {
-                if (event is KeyDownEvent) {
-                  if (event.logicalKey == LogicalKeyboardKey.select ||
-                      event.logicalKey == LogicalKeyboardKey.enter) {
-                    Navigator.pop(context);
-                    widget.onDelete(widget.media.id);
-                    return KeyEventResult.handled;
-                  } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                    _sliderFocusNode.requestFocus();
-                    return KeyEventResult.handled;
-                  } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                    _saveButtonFocusNode.requestFocus();
-                    return KeyEventResult.handled;
-                  }
-                }
-                return KeyEventResult.ignored;
+            child: AnymexButton(
+              onTap: () {
+                Navigator.pop(context);
+                widget.onDelete(widget.media.id);
               },
-              child: Container(
-                decoration: _deleteButtonFocusNode.hasFocus
-                    ? BoxDecoration(
-                        borderRadius: const BorderRadius.horizontal(
-                          left: Radius.circular(100),
-                          right: Radius.circular(10),
-                        ),
-                        border: Border.all(
-                          color: colorScheme.onTertiary,
-                          width: 2,
-                        ),
-                      )
-                    : null,
-                child: NyantvButton(
-                  onTap: () {
-                    Navigator.pop(context);
-                    widget.onDelete(widget.media.id);
-                  },
-                  color: colorScheme.tertiary,
-                  border: BorderSide.none,
-                  borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(100), right: Radius.circular(10)),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.delete_rounded,
-                        color: colorScheme.onTertiary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Delete',
-                        style: TextStyle(
-                          color: colorScheme.onTertiary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+              color: colorScheme.tertiary,
+              border: BorderSide.none,
+              borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(100), right: Radius.circular(10)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.delete_rounded,
+                    color: colorScheme.onTertiary,
+                    size: 20,
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: colorScheme.onTertiary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -832,76 +593,37 @@ class _ListEditorModalState extends State<ListEditorModal> {
         Expanded(
           child: SizedBox(
             height: 56,
-            child: Focus(
-              focusNode: _saveButtonFocusNode,
-              onKeyEvent: (node, event) {
-                if (event is KeyDownEvent) {
-                  if (event.logicalKey == LogicalKeyboardKey.select ||
-                      event.logicalKey == LogicalKeyboardKey.enter) {
-                    Get.back();
-                    widget.onUpdate(
-                      widget.media.id,
-                      _localScore,
-                      _localStatus,
-                      _localProgress,
-                    );
-                    return KeyEventResult.handled;
-                  } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                    _sliderFocusNode.requestFocus();
-                    return KeyEventResult.handled;
-                  } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                    _deleteButtonFocusNode.requestFocus();
-                    return KeyEventResult.handled;
-                  }
-                }
-                return KeyEventResult.ignored;
+            child: AnymexButton(
+              borderRadius: const BorderRadius.horizontal(
+                  right: Radius.circular(100), left: Radius.circular(10)),
+              onTap: () {
+                Get.back();
+                widget.onUpdate(
+                  widget.media.id,
+                  _localScore,
+                  _localStatus,
+                  _localProgress,
+                );
               },
-              child: Container(
-                decoration: _saveButtonFocusNode.hasFocus
-                    ? BoxDecoration(
-                        borderRadius: const BorderRadius.horizontal(
-                          right: Radius.circular(100),
-                          left: Radius.circular(10),
-                        ),
-                        border: Border.all(
-                          color: colorScheme.onPrimary,
-                          width: 2,
-                        ),
-                      )
-                    : null,
-                child: NyantvButton(
-                  borderRadius: const BorderRadius.horizontal(
-                      right: Radius.circular(100), left: Radius.circular(10)),
-                  onTap: () {
-                    Get.back();
-                    widget.onUpdate(
-                      widget.media.id,
-                      _localScore,
-                      _localStatus,
-                      _localProgress,
-                    );
-                  },
-                  color: colorScheme.primary,
-                  border: BorderSide.none,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.save_rounded,
-                        color: colorScheme.onPrimary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Save Changes',
-                        style: TextStyle(
-                          color: colorScheme.onPrimary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+              color: colorScheme.primary,
+              border: BorderSide.none,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.save_rounded,
+                    color: colorScheme.onPrimary,
+                    size: 20,
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Save Changes',
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

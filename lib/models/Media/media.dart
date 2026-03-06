@@ -1,17 +1,13 @@
+import 'package:anymex/utils/logger.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Media/character.dart';
-import 'package:nyantv/models/Media/relation.dart';
-import 'package:nyantv/models/Offline/Hive/chapter.dart';
-import 'package:nyantv/models/Offline/Hive/offline_media.dart';
-import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
 
-String? _parseDate(dynamic value) {
-  if (value == null) return null;
-  final str = value.toString();
-  return str.length >= 10 ? str.substring(0, 10) : str;
-}
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Media/character.dart';
+import 'package:anymex/models/Media/relation.dart';
+import 'package:anymex/models/Offline/Hive/chapter.dart';
+import 'package:anymex/models/Offline/Hive/offline_media.dart';
+import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
 
 class Media {
   String id;
@@ -35,7 +31,6 @@ class Media {
   ItemType mediaType;
   List<DEpisode>? mediaContent;
   List<Chapter>? altMediaContent;
-  String? totalChapters;
   List<String> genres;
   List<String>? studios;
   List<Character>? characters;
@@ -69,7 +64,6 @@ class Media {
       this.popularity = '?',
       this.format = '?',
       this.aired = '?',
-      this.totalChapters = '?',
       this.genres = const [],
       this.studios,
       this.characters,
@@ -83,153 +77,6 @@ class Media {
       this.sourceName,
       DateTime? createdAt})
       : createdAt = DateTime.now();
-
-  factory Media.fromMAL(Map<String, dynamic> json) {
-    final node = json['node'] ?? {};
-
-    return Media(
-      id: node['id']?.toString() ?? '0',
-      title: node['title'] ?? '??',
-      romajiTitle: node['alternative_titles']?['en'] ?? '??',
-      description: node['synopsis'] ?? '??',
-      poster: node['main_picture']?['medium'] ?? '??',
-      cover: node['main_picture']?['large'] ?? '??',
-      totalEpisodes: node['num_episodes']?.toString() ?? '??',
-      type: node['media_type'] ?? '??',
-      season: node['start_season']?['season'] ?? '??',
-      premiered: node['start_date'] ?? '??',
-      duration: node['average_episode_duration']?.toString() ?? '??',
-      status: node['status'] ?? '??',
-      rating: node['mean']?.toString() ?? '??',
-      popularity: node['popularity']?.toString() ?? '??',
-      format: node['media_type'] ?? '??',
-      aired: node['start_date'] ?? '??',
-      totalChapters: node['num_chapters']?.toString() ?? '??',
-      genres: (node['genres'] as List<dynamic>?)
-              ?.map((genre) => genre['name']?.toString() ?? '??')
-              .toList() ??
-          [],
-      studios: (node['studios'] as List<dynamic>?)
-          ?.map((studio) => studio['name']?.toString() ?? '??')
-          .toList(),
-      characters: [],
-      relations: [],
-      recommendations: [],
-      nextAiringEpisode: null,
-      rankings: [],
-      mediaContent: [],
-      mediaType: node['media_type'] == 'tv' ? ItemType.anime : ItemType.manga,
-      serviceType: ServicesType.mal,
-    );
-  }
-
-  factory Media.fromFullMAL(Map<String, dynamic> json) {
-    final node = json;
-
-    return Media(
-      id: node['id']?.toString() ?? '0',
-      title: node['title'] ?? '??',
-      romajiTitle: node['alternative_titles']?['en'] ?? '??',
-      description: node['synopsis'] ?? '??',
-      poster: node['main_picture']?['medium'] ?? '??',
-      cover: node['main_picture']?['large'] ?? '??',
-      totalEpisodes: node['num_episodes']?.toString() ?? '??',
-      type: node['media_type']?.toUpperCase() ?? '??',
-      season: node['start_season']?['season'] ?? '??',
-      premiered: node['start_date'] ?? '??',
-      duration: node['average_episode_duration']?.toString() ?? '??',
-      status: node['status']?.replaceAll('_', ' ')?.toUpperCase() ?? '??',
-      rating: node['mean']?.toString() ?? '??',
-      popularity: node['popularity']?.toString() ?? '??',
-      format: node['media_type'] ?? '??',
-      aired: node['start_date'] ?? '??',
-      totalChapters: node['num_chapters']?.toString() ?? '??',
-      genres: (node['genres'] as List<dynamic>?)
-              ?.map((genre) => genre['name']?.toString() ?? '??')
-              .toList() ??
-          [],
-      studios: (node['studios'] as List<dynamic>?)
-          ?.map((studio) => studio['name']?.toString() ?? '??')
-          .toList(),
-      characters: [],
-      recommendations: (node['recommendations'] as List<dynamic>)
-          .map((e) => Media.fromMAL(e))
-          .toList(),
-      nextAiringEpisode: null,
-      rankings: [],
-      mediaContent: [],
-      mediaType: node['media_type'] == 'tv' ? ItemType.anime : ItemType.manga,
-      serviceType: ServicesType.mal,
-    );
-  }
-
-  factory Media.fromSimkl(Map<String?, dynamic> json, bool isMovie) {
-    ItemType type = ItemType.anime;
-
-    return Media(
-      id: '${json['ids']?['simkl_id']?.toString() ?? json['ids']?['simkl']?.toString()}*${isMovie ? "MOVIE" : "SERIES"}',
-      title: json['title'] ?? 'Unknown Title',
-      romajiTitle: json['title'] ?? 'Unknown Romaji Title',
-      description: json['overview'] ?? 'No description available.',
-      poster: json['poster'] != null
-          ? 'https://wsrv.nl/?url=https://simkl.in/posters/${json['poster']}_m.jpg'
-          : '',
-      cover: json['fanart'] != null
-          ? 'https://wsrv.nl/?url=https://simkl.in/fanart/${json['fanart']}_medium.jpg'
-          : null,
-      totalEpisodes: json['total_episodes']?.toString() ?? '1',
-      type: json['type']?.toUpperCase() ?? 'UNKNOWN',
-      premiered: json['released'] ??
-          _parseDate(json['first_aired']) ??
-          'Unknown release date',
-      duration: json['runtime'] != null
-          ? '${json['runtime']} minutes'
-          : 'Unknown runtime',
-      status: json['status']?.toUpperCase() ?? 'UNKNOWN',
-      rating: json['ratings']?['simkl']?['rating']?.toString() ??
-          json['ratings']?['imdb']?['rating']?.toString() ??
-          ' N/A',
-      popularity: json['rank']?.toString() ?? '0',
-      mediaType: type,
-      aired: json['released'] ??
-          _parseDate(json['first_aired']) ??
-          'Unknown air date',
-      totalChapters: '0',
-      genres: (json['genres'] as List<dynamic>?)
-              ?.map((genre) => genre.toString())
-              .toList() ??
-          [],
-      recommendations: (json['users_recommendations'] as List<dynamic>?)
-              ?.map((e) {
-                try {
-                  return Media.fromSmallSimkl(e, isMovie);
-                } catch (error) {
-                  return null;
-                }
-              })
-              .where((e) => e != null)
-              .toList()
-              .cast<Media>() ??
-          [],
-      serviceType: ServicesType.simkl,
-    );
-  }
-
-  factory Media.fromSmallSimkl(Map<String?, dynamic> json, bool isMovie) {
-    ItemType type = ItemType.anime;
-    return Media(
-        id:
-            '${json['ids']?['simkl']?.toString()}*${isMovie ? "MOVIE" : "SERIES"}',
-        title: json['title'] ?? 'Unknown Title',
-        poster: json['poster'] != null
-            ? 'https://simkl.in/posters/${json['poster']}_m.jpg'
-            : '',
-        type: isMovie ? 'MOVIE' : 'SERIES',
-        rating: '0.0',
-        mediaType: type,
-        serviceType: ServicesType.simkl,
-        aired: json['year']?.toString() ?? 'Unknown air date');
-  }
 
   factory Media.froDMedia(DMedia anime, ItemType type) {
     return Media(
@@ -285,7 +132,6 @@ class Media {
           .map((character) => Character.fromJson(character))
           .toList(),
       relations: (json['relations']['edges'] as List)
-          .where((relation) => relation['node']?['type'] == 'ANIME')
           .map((relation) => Relation.fromJson(relation))
           .toList(),
       recommendations: (json['recommendations']['edges'] as List)

@@ -1,10 +1,9 @@
-import 'package:nyantv/constants/contants.dart';
-import 'package:nyantv/constants/themes.dart';
+import 'package:anymex/constants/contants.dart';
+import 'package:anymex/constants/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
-import 'package:nyantv/widgets/common/glow.dart';
 
 class ThemeProvider extends ChangeNotifier {
   bool isLightMode;
@@ -13,13 +12,13 @@ class ThemeProvider extends ChangeNotifier {
   late ThemeData _lightTheme;
   late ThemeData _darkTheme;
   late String currentThemeMode;
-  NyantvThemeColors _seedColor;
+  Color _seedColor;
   late int selectedVariantIndex;
 
   List<String> availThemeModes = ["default", "material", "custom"];
 
   ThemeProvider()
-      : _seedColor = const NyantvThemeColors(Colors.indigo),
+      : _seedColor = Colors.indigo,
         isLightMode =
             Hive.box("themeData").get("isLightMode", defaultValue: false),
         isSystemMode =
@@ -38,7 +37,7 @@ class ThemeProvider extends ChangeNotifier {
 
   void _determineSeedColor() {
     if (currentThemeMode == "default") {
-      _seedColor = const NyantvThemeColors(Colors.indigo);
+      _seedColor = Colors.indigo;
     } else if (currentThemeMode == "material") {
       loadDynamicTheme();
     } else {
@@ -52,9 +51,9 @@ class ThemeProvider extends ChangeNotifier {
     currentThemeMode = "material";
     Hive.box("themeData").put("themeMode", "material");
     final corePalette = await DynamicColorPlugin.getCorePalette();
-    _seedColor = NyantvThemeColors(
-      corePalette != null ? Color(corePalette.primary.get(40)) : Colors.indigo,
-    );
+    _seedColor = corePalette != null
+        ? Color(corePalette.primary.get(40))
+        : Colors.indigo;
     _updateTheme();
   }
 
@@ -95,7 +94,7 @@ class ThemeProvider extends ChangeNotifier {
   void setDefaultTheme() {
     currentThemeMode = "default";
     Hive.box("themeData").put("themeMode", "default");
-    _seedColor = const NyantvThemeColors(Colors.indigo);
+    _seedColor = Colors.indigo;
     _updateTheme();
   }
 
@@ -132,21 +131,26 @@ class ThemeProvider extends ChangeNotifier {
     isOled = false;
     selectedVariantIndex = 0;
     currentThemeMode = "default";
-    _seedColor = const NyantvThemeColors(Colors.indigo);
+    _seedColor = Colors.indigo;
+
     _updateTheme();
     notifyListeners();
   }
 
   void _updateTheme() {
-    Glow.clearColorSchemeCache();
-    final variant = dynamicSchemeVariantList[selectedVariantIndex];
     _lightTheme = lightMode.copyWith(
       scaffoldBackgroundColor: isOled ? Colors.white : Colors.transparent,
-      colorScheme: buildColorScheme(_seedColor, Brightness.light, variant: variant),
+      colorScheme: ColorScheme.fromSeed(
+          seedColor: _seedColor,
+          brightness: Brightness.light,
+          dynamicSchemeVariant: dynamicSchemeVariantList[selectedVariantIndex]),
     );
     _darkTheme = darkMode.copyWith(
       scaffoldBackgroundColor: isOled ? Colors.black : Colors.transparent,
-      colorScheme: buildColorScheme(_seedColor, Brightness.dark, variant: variant),
+      colorScheme: ColorScheme.fromSeed(
+          seedColor: _seedColor,
+          brightness: Brightness.dark,
+          dynamicSchemeVariant: dynamicSchemeVariantList[selectedVariantIndex]),
     );
     syncStatusBar();
     notifyListeners();

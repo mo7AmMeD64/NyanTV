@@ -1,13 +1,14 @@
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/screens/anime/details_page.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/header.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/screens/anime/details_page.dart';
+import 'package:anymex/screens/manga/details_page.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/header.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
 import 'package:flutter/material.dart';
 
 class RecentlyOpenedAnimeCard extends StatelessWidget {
@@ -37,9 +38,9 @@ class RecentlyOpenedAnimeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return NyantvOnTap(
+    return AnymexOnTap(
       onTap: () {
-        if (serviceHandler.serviceType.value == ServicesType.simkl) {
+        if (serviceHandler.serviceType.value == false) {
           navigate(() =>
               AnimeDetailsPage(media: media, tag: media.createdAt.toString()));
           return;
@@ -54,7 +55,7 @@ class RecentlyOpenedAnimeCard extends StatelessWidget {
         width: getResponsiveSize(context,
             mobileSize: MediaQuery.of(context).size.width / 1.5,
             desktopSize: MediaQuery.of(context).size.width / 3),
-        child: NyantvCard(
+        child: AnymexCard(
           shape: RoundedRectangleBorder(
             side: BorderSide(
               color: colorScheme.primary.withOpacity(0.2),
@@ -100,7 +101,7 @@ class RecentlyOpenedAnimeCard extends StatelessWidget {
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: NyantvText(
+                                      child: AnymexText(
                                         text: media.title,
                                         size: 14,
                                         variant: TextVariant.bold,
@@ -127,7 +128,7 @@ class RecentlyOpenedAnimeCard extends StatelessWidget {
                                               size: 12,
                                             ),
                                             const SizedBox(width: 2),
-                                            NyantvText(
+                                            AnymexText(
                                               text: media.rating,
                                               color: colorScheme.onPrimary,
                                               size: 11,
@@ -147,7 +148,7 @@ class RecentlyOpenedAnimeCard extends StatelessWidget {
                                   children: [
                                     // Time opened text
                                     Expanded(
-                                      child: NyantvText(
+                                      child: AnymexText(
                                         text: 'Opened ${_getTimeAgo()}',
                                         size: 11,
                                         color: colorScheme.onSurfaceVariant,
@@ -166,7 +167,7 @@ class RecentlyOpenedAnimeCard extends StatelessWidget {
                                           borderRadius: BorderRadius.circular(
                                               4.multiplyRadius()),
                                         ),
-                                        child: NyantvText(
+                                        child: AnymexText(
                                           text: media.format.toUpperCase(),
                                           size: 10,
                                           color: colorScheme.onSurfaceVariant,

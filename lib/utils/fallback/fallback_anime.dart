@@ -1,4 +1,4 @@
-import 'package:nyantv/models/Media/media.dart';
+import 'package:anymex/models/Media/media.dart';
 
 dynamic fallbackAnilistData = {
   "data": {

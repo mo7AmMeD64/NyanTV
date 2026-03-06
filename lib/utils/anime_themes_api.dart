@@ -1,4 +1,4 @@
-import 'package:nyantv/models/animethemes/anime_theme.dart';
+import 'package:anymex/models/animethemes/anime_theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

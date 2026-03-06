@@ -1,10 +1,9 @@
-import 'package:nyantv/models/player/player_adaptor.dart';
-import 'package:nyantv/models/ui/ui_adaptor.dart';
-import 'package:nyantv/screens/onboarding/welcome_dialog.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/utils/shaders.dart';
-import 'package:nyantv/utils/updater.dart';
-import 'package:nyantv/utils/device_ram.dart';
+import 'package:anymex/models/player/player_adaptor.dart';
+import 'package:anymex/models/ui/ui_adaptor.dart';
+import 'package:anymex/screens/onboarding/welcome_dialog.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/utils/shaders.dart';
+import 'package:anymex/utils/updater.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
@@ -28,125 +27,47 @@ class Settings extends GetxController {
   RxBool isTV = false.obs;
   final _selectedShader = ''.obs;
   final _selectedProfile = 'MID-END'.obs;
-  final Rx<BufferProfile> tvBufferProfile = BufferProfile.medium.obs;
   final mpvPath = ''.obs;
-  DateTime? _lastUpdateCheck;
-  static const _updateCheckCooldown = Duration(hours: 1);
-
-  // Flag to track initialization
-  bool _isInitialized = false;
 
   String get selectedShader => _selectedShader.value;
 
   set selectedShader(String value) {
     _selectedShader.value = value;
-    if (_isInitialized) {
-      preferences.put('selected_shader', value);
-    }
+    preferences.put('selected_shader', value);
   }
 
   String get selectedProfile => _selectedProfile.value;
 
   set selectedProfile(String value) {
     _selectedProfile.value = value;
-    if (_isInitialized) {
-      preferences.put('selected_profile', value);
-    }
-  }
-
-  void saveTVBufferProfile(BufferProfile profile) {
-    tvBufferProfile.value = profile;
-    if (_isInitialized) {
-      preferences.put('tv_buffer_profile', profile.index);
-    }
-  }
-
-  double get uiScale {
-    if (!_isInitialized) return 0.7;
-    final value = preferences.get('ui_scale', defaultValue: 0.7);
-    if (value <= 0.0 || value > 3.0) {
-      return 1.0;
-    }
-    return value;
-  }
-
-  set uiScale(double value) {
-    if (_isInitialized) {
-      preferences.put('ui_scale', value);
-      update();
-    }
-  }
-
-  int get autoIdleMinutes {
-    if (!_isInitialized) return 0;
-    return preferences.get('auto_idle_minutes', defaultValue: 0);
-  }
-
-  set autoIdleMinutes(int value) {
-    if (_isInitialized) {
-      preferences.put('auto_idle_minutes', value);
-      update();
-    }
+    preferences.put('selected_profile', value);
   }
 
   @override
   void onInit() {
     super.onInit();
-
-    // Initialize Hive box
-    try {
-      preferences = Hive.box('preferences');
-      _isInitialized = true;
-    } catch (e) {
-      print('Error initializing preferences box: $e');
-      rethrow;
-    }
-
-    final savedProfile = preferences.get('tv_buffer_profile',
-        defaultValue: BufferProfile.medium.index);
-    if (savedProfile >= 0 && savedProfile < BufferProfile.values.length) {
-      tvBufferProfile.value = BufferProfile.values[savedProfile];
-    } else {
-      tvBufferProfile.value = BufferProfile.medium;
-    }
-
     var uiBox = Hive.box<UISettings>("UiSettings");
     var playerBox = Hive.box<PlayerSettings>("PlayerSettings");
     uiSettings = Rx<UISettings>(uiBox.get('settings') ?? UISettings());
     playerSettings =
         Rx<PlayerSettings>(playerBox.get('settings') ?? PlayerSettings());
-
-    _selectedShader.value =
-        preferences.get('selected_shader', defaultValue: '');
-    _selectedProfile.value =
+    preferences = Hive.box('preferences');
+    selectedShader = preferences.get('selected_shader', defaultValue: '');
+    selectedProfile =
         preferences.get('selected_profile', defaultValue: 'MID-END');
-
     isTv().then((e) {
-      isTV.value = true; //e;
+      isTV.value = e;
     });
-
-    _navigationMode.value = preferences.get('navigation_mode', defaultValue: 2);
-
-    // Initialize player shaders
     PlayerShaders.createMpvConfigFolder();
     PlayerShaders.getMpvPath().then((e) {
       mpvPath.value = e;
     });
   }
 
-  void checkForUpdates(BuildContext context, {bool manualCheck = false}) {
-    if (!manualCheck) {
-      final now = DateTime.now();
-      if (_lastUpdateCheck != null &&
-          now.difference(_lastUpdateCheck!) < _updateCheckCooldown) {
-        return;
-      }
-      _lastUpdateCheck = now;
-    }
-
-    canShowUpdate.value = true;
-    UpdateManager()
-        .checkForUpdates(context, canShowUpdate, manualCheck: manualCheck);
+  void checkForUpdates(BuildContext context) {
+    canShowUpdate.value
+        ? UpdateManager().checkForUpdates(context, canShowUpdate)
+        : null;
   }
 
   void showWelcomeDialog(BuildContext context) {
@@ -162,14 +83,6 @@ class Settings extends GetxController {
   void _setUISetting<T>(void Function(UISettings? settings) setter) {
     uiSettings.update(setter);
     saveUISettings();
-  }
-
-  final _navigationMode = 2.obs;
-
-  int get navigationMode => _navigationMode.value;
-  set navigationMode(int value) {
-    _navigationMode.value = value;
-    if (_isInitialized) preferences.put('navigation_mode', value);
   }
 
   T _getPlayerSetting<T>(T Function(PlayerSettings settings) getter) {
@@ -261,6 +174,10 @@ class Settings extends GetxController {
       _setUISetting((s) => s?.animationDuration = value);
 
   // Player Settings
+  bool get defaultPortraitMode =>
+      _getPlayerSetting((s) => s.defaultPortraitMode);
+  set defaultPortraitMode(bool value) =>
+      _setPlayerSetting((s) => s?.defaultPortraitMode = value);
 
   double get speed => _getPlayerSetting((s) => s.speed);
   set speed(double value) => _setPlayerSetting((s) => s?.speed = value);
@@ -330,17 +247,14 @@ class Settings extends GetxController {
   set autoSkipOnce(bool value) =>
       _setPlayerSetting((s) => s?.autoSkipOnce = value);
 
-  bool get autoSkipFiller => _getPlayerSetting((s) => s.autoSkipFiller);
-  set autoSkipFiller(bool value) =>
-      _setPlayerSetting((s) => s?.autoSkipFiller = value);
-
-  bool get autoSkipRecap => _getPlayerSetting((s) => s.autoSkipRecap);
-  set autoSkipRecap(bool value) =>
-      _setPlayerSetting((s) => s?.autoSkipRecap = value);
+  bool get enableSwipeControls =>
+      _getPlayerSetting((s) => s.enableSwipeControls);
+  set enableSwipeControls(bool value) =>
+      _setPlayerSetting((s) => s?.enableSwipeControls = value);
 
   int get markAsCompleted => _getPlayerSetting((s) => s.markAsCompleted);
   set markAsCompleted(int value) =>
-      _setPlayerSetting((s) => s?.markAsCompleted = value);
+      _getPlayerSetting((s) => s.markAsCompleted = value);
 
   void updateHomePageCard(String key, bool value) {
     final currentCards = Map<String, bool>.from(uiSettings.value.homePageCards);

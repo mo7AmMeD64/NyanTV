@@ -1,5 +1,4 @@
-//lib/screens/search/widgets/search_widgets.dart
-import 'package:nyantv/screens/search/widgets/search_filter_selector.dart';
+import 'package:anymex/screens/search/widgets/search_filter_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -664,6 +663,9 @@ class _FuturisticFilterSheetState extends State<FuturisticFilterSheet>
   }
 
   Widget _buildActionButtons() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Row(
       children: [
         Expanded(

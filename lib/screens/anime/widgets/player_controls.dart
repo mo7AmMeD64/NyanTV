@@ -1,1 +1,0 @@
-// lib/screens/anime/widgets/player_controls.dart

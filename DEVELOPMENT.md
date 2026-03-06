@@ -4,11 +4,11 @@ Looking to contribute? Great! Here's some actions that are required to get start
 
 ## Flutter
 
-The bread and butter! Flutter is an open source framework for building beautiful, natively compiled, multi-platform applications from a single codebase. It's also how we make NyanTV.  
+The bread and butter! Flutter is an open source framework for building beautiful, natively compiled, multi-platform applications from a single codebase. It's also how we make AnymeX.  
 Follow the installation guide based on your development platform: [Install | Flutter](https://docs.flutter.dev/get-started/install)
 
 > [!NOTE]  
-> This project currently uses Flutter SDK 3.32.8.  
+> This project currently uses Flutter SDK 3.27.0.  
 > If you'd like to use multiple versions on your machine, a suggestion is to use [fvm](https://fvm.app/) to manage your different versions
 
 ## Java JDK
@@ -37,9 +37,11 @@ To do so, create a `.env` file with the following content:
 ```env
 AL_CLIENT_ID: 0
 AL_CLIENT_SECRET: 0
+SIMKL_CLIENT_ID: 0
+SIMKL_CLIENT_SECRET: 0
 MAL_CLIENT_ID: 0
 MAL_CLIENT_SECRET: 0
-CALLBACK_SCHEME: nyantv://callback
+CALLBACK_SCHEME: anymex://callback
 ```
 
 You can however create your own API keys and populate the values as necessary.
@@ -49,7 +51,21 @@ You can however create your own API keys and populate the values as necessary.
 | Key         | Value             |
 | ------------| ----------------- |
 | Name        | *any*             |
-| Redirect URL| nyantv://callback |
+| Redirect URL| anymex://callback |
+
+### Simlk
+
+| Key         | Value             |
+| ------------| ----------------- |
+| tbd         | *tbd*             |
+| tbd         | tbd               |
+
+### My Anime List
+
+| Key         | Value             |
+| ------------| ----------------- |
+| tbd         | *tbd*             |
+| tbd         | tbd               |
 
 ## Run the App
 
@@ -70,4 +86,4 @@ We'd also recommend reading and parsing the error output, as Flutter is quite ve
 
 ## Community
 
-Feel free to reach out on [Telegram](https://t.me/NyanSupport) / [Discord](https://discord.gg/y2vaFPXs4F) / [Stoat](https://stoat.chat/invite/fKzse8yy), we're always happy to assist someone who's trying to contribute to the project.
+Feel free to reach out on Discord, we're always happy to assist someone who's trying to contribute to the project.

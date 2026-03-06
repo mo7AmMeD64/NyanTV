@@ -1,4 +1,4 @@
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
 
 class TrackedMedia {
   String? id;
@@ -62,150 +62,14 @@ class TrackedMedia {
                 .toString());
   }
 
-  factory TrackedMedia.fromSimklShow(Map<String, dynamic> json) {
-    final show = json['show'];
-    final ids = show['ids'] ?? {};
 
-    return TrackedMedia(
-      id: '${ids['simkl']}*SERIES',
-      title: show['title'],
-      poster: show['poster'] != null
-          ? "https://wsrv.nl/?url=https://simkl.in/posters/${show['poster']}_m.jpg"
-          : '?',
-      episodeCount: json['watched_episodes_count']?.toString(),
-      totalEpisodes: json['total_episodes_count']?.toString(),
-      watchingStatus: Simkl.simklShowToAL(json['status']),
-      type: "show",
-      servicesType: ServicesType.simkl,
-      mediaStatus:
-          json['not_aired_episodes_count'] == 0 ? "completed" : "airing",
-      rating: show['ratings']?['imdb']?['rating']?.toString() ??
-          show['ratings']?['simkl']?['rating']?.toString() ??
-          '?',
-      score: null,
-      format: null,
-      mediaListId: '${ids['simkl']}*SERIES',
-    );
-  }
 
-  factory TrackedMedia.fromSimklMovie(Map<String, dynamic> json) {
-    final show = json['movie'];
-    final ids = show['ids'] ?? {};
-    return TrackedMedia(
-      id: '${ids['simkl']}*MOVIE',
-      title: show['title'],
-      servicesType: ServicesType.simkl,
-      poster: show['poster'] != null
-          ? "https://wsrv.nl/?url=https://simkl.in/posters/${show['poster']}_m.jpg"
-          : '?',
-      episodeCount:
-          Simkl.simklMovieToAL(json['status']) != 'COMPLETED' ? "0" : '1',
-      totalEpisodes: '1',
-      watchingStatus: Simkl.simklMovieToAL(json['status']),
-      type: "movie",
-      mediaStatus:
-          json['not_aired_episodes_count'] == 0 ? "COMPLETED" : "AIRING",
-      rating: show['ratings']?['imdb']?['rating']?.toString() ??
-          show['ratings']?['simkl']?['rating']?.toString() ??
-          '?',
-      score: null,
-      format: null,
-      mediaListId: '${ids['simkl']}*MOVIE',
-    );
-  }
 
-  factory TrackedMedia.fromMAL(Map<String, dynamic> json) {
-    return TrackedMedia(
-      id: json['node']['id']?.toString(),
-      title: json['node']['title'],
-      servicesType: ServicesType.mal,
-      poster: json['node']['main_picture']['large'],
-      chapterCount:
-          json['node']?['list_status']?['num_chapters_read']?.toString() ?? '?',
-      episodeCount: json['list_status']?['num_chapters_read']?.toString() ??
-          json['list_status']?['num_episodes_watched']?.toString() ??
-          '?',
-      totalEpisodes: json['node']?['num_episodes']?.toString() ??
-          json['node']?['num_chapters']?.toString() ??
-          '?',
-      rating: json['node']?['mean']?.toString() ?? '?',
-      watchingStatus: returnConvertedStatus(json['list_status']['status']),
-      score: json['list_status']['score']?.toString(),
-      type: null,
-      mediaListId: json['node']['id']?.toString(),
-    );
-  }
-}
 
-class Simkl {
-  static String simklShowToAL(String simklStatus) {
-    switch (simklStatus) {
-      case 'watching':
-        return 'CURRENT';
-      case 'completed':
-        return 'COMPLETED';
-      case 'hold':
-        return 'PAUSED';
-      case 'dropped':
-        return 'DROPPED';
-      case 'plantowatch':
-        return 'PLANNING';
-      default:
-        return 'ALL';
-    }
-  }
 
-  static String simklMovieToAL(String simklStatus) {
-    switch (simklStatus) {
-      case 'watching':
-        return 'CURRENT';
-      case 'completed':
-        return 'COMPLETED';
-      case 'hold':
-        return 'PAUSED';
-      case 'dropped':
-        return 'DROPPED';
-      case 'plantowatch':
-        return 'PLANNING';
-      default:
-        return 'ALL';
-    }
-  }
 
-  static String alToSimklShow(String anilistStatus) {
-    switch (anilistStatus) {
-      case 'CURRENT':
-        return 'watching';
-      case 'COMPLETED':
-        return 'completed';
-      case 'PAUSED':
-        return 'hold';
-      case 'DROPPED':
-        return 'dropped';
-      case 'PLANNING':
-        return 'plantowatch';
-      default:
-        return 'all';
-    }
-  }
 
-  static String alToSimklMovie(String anilistStatus) {
-    switch (anilistStatus) {
-      case 'CURRENT':
-        return 'watching';
-      case 'COMPLETED':
-        return 'completed';
-      case 'PAUSED':
-        return 'hold';
-      case 'DROPPED':
-        return 'dropped';
-      case 'PLANNING':
-        return 'plantowatch';
-      default:
-        return 'all';
-    }
-  }
-}
+
 
 String getAniListStatusEquivalent(String status) {
   switch (status.toLowerCase()) {
@@ -226,8 +90,7 @@ String getAniListStatusEquivalent(String status) {
 
 String returnConvertedStatus(String status) {
   switch (status) {
-    case 'watching':
-    case 'reading':
+    case 'watching' || 'reading':
       return 'CURRENT';
     case 'completed':
       return 'COMPLETED';
@@ -235,27 +98,9 @@ String returnConvertedStatus(String status) {
       return 'PAUSED';
     case 'dropped':
       return 'DROPPED';
-    case 'plan_to_watch':
-    case 'plan_to_read':
+    case 'plan_to_watch' || 'plan_to_read':
       return 'PLANNING';
     default:
       return 'ALL';
-  }
-}
-
-String getMALStatusEquivalent(String status, {bool isAnime = true}) {
-  switch (status.toUpperCase()) {
-    case 'CURRENT':
-      return isAnime ? 'watching' : 'reading';
-    case 'COMPLETED':
-      return 'completed';
-    case 'PAUSED':
-      return 'on_hold';
-    case 'DROPPED':
-      return 'dropped';
-    case 'PLANNING':
-      return isAnime ? 'plan_to_watch' : 'plan_to_read';
-    default:
-      return 'unknown';
   }
 }

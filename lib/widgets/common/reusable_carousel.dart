@@ -1,19 +1,20 @@
+import 'package:anymex/controllers/settings/settings.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
-import 'package:nyantv/screens/anime/details_page.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/animation/slide_scale.dart';
-import 'package:nyantv/widgets/common/cards/base_card.dart';
-import 'package:nyantv/widgets/common/cards/card_gate.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
+import 'package:anymex/screens/anime/details_page.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/animation/slide_scale.dart';
+import 'package:anymex/widgets/common/cards/base_card.dart';
+import 'package:anymex/widgets/common/cards/card_gate.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:flutter/material.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_progress.dart';
 import 'package:get/get.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
 class ReusableCarousel extends StatefulWidget {
@@ -59,7 +60,7 @@ class _ReusableCarouselState extends State<ReusableCarousel> {
           _buildHeaderTitle(),
           const SizedBox(height: 10),
           widget.isLoading
-              ? const Center(child: NyantvProgressIndicator())
+              ? const Center(child: AnymexProgressIndicator())
               : _buildCarouselList(),
         ],
       ),
@@ -93,15 +94,15 @@ class _ReusableCarouselState extends State<ReusableCarousel> {
       children: [
         _buildHeaderTitle(),
         const SizedBox(height: 15, width: double.infinity),
-        const SizedBox(
+        SizedBox(
           height: 280,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Icon(Icons.movie_filter_rounded),
-              SizedBox(height: 10, width: double.infinity),
-              NyantvText(
+              const SizedBox(height: 10, width: double.infinity),
+              AnymexText(
                 text: "Lowkey time for a binge sesh 🎬",
                 variant: TextVariant.semiBold,
               ),
@@ -136,7 +137,7 @@ class _ReusableCarouselState extends State<ReusableCarousel> {
     final tag = '${itemData.hashCode}-${itemData.id}';
 
     return Obx(() {
-      final child = NyantvOnTap(
+      final child = AnymexOnTap(
         onTap: () => _navigateToDetailsPage(itemData, tag),
         child: settingsController.enableAnimation
             ? SlideAndScaleAnimation(child: _buildCard(itemData, tag))
@@ -157,7 +158,7 @@ class _ReusableCarouselState extends State<ReusableCarousel> {
 
   void _navigateToDetailsPage(CarouselData itemData, String tag) {
     final controller = Get.find<SourceController>();
-    const ItemType mediaType = ItemType.anime;
+    final ItemType mediaType = ItemType.anime;
     final media = Media.fromCarouselData(itemData, mediaType);
 
     final Widget page = AnimeDetailsPage(

@@ -1,28 +1,30 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:convert';
-import 'package:nyantv/utils/logger.dart';
+import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/screens/other_features.dart';
+import 'package:anymex/utils/logger.dart';
 import 'dart:math' show min;
-import 'package:nyantv/controllers/cacher/cache_controller.dart';
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/services/anilist/kitsu.dart';
-import 'package:nyantv/controllers/services/anilist/anilist_auth.dart';
-import 'package:nyantv/controllers/services/anilist/anilist_queries.dart';
-import 'package:nyantv/controllers/services/widgets/widgets_builders.dart';
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Anilist/anilist_profile.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/models/Service/base_service.dart';
-import 'package:nyantv/models/Service/online_service.dart';
-import 'package:nyantv/screens/home_page.dart';
-import 'package:nyantv/screens/library/online/anime_list.dart';
-import 'package:nyantv/utils/fallback/fallback_anime.dart' as fb;
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/common/reusable_carousel.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/cacher/cache_controller.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/services/anilist/kitsu.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/controllers/services/anilist/anilist_auth.dart';
+import 'package:anymex/controllers/services/anilist/anilist_queries.dart';
+import 'package:anymex/controllers/services/widgets/widgets_builders.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Anilist/anilist_profile.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/models/Service/base_service.dart';
+import 'package:anymex/models/Service/online_service.dart';
+import 'package:anymex/screens/home_page.dart';
+import 'package:anymex/screens/library/online/anime_list.dart';
+import 'package:anymex/utils/fallback/fallback_anime.dart' as fb;
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/common/reusable_carousel.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -33,19 +35,16 @@ Map<String, dynamic> _parseJson(String body) {
   return jsonDecode(body) as Map<String, dynamic>;
 }
 
-Map<String, dynamic> _parseAnilistHome(String body) {
-  return jsonDecode(body)['data'] as Map<String, dynamic>;
-}
-
 class AnilistData extends GetxController implements BaseService, OnlineService {
   final anilistAuth = Get.find<AnilistAuth>();
 
   // Anime Data
-  RxList<Media> upcomingAnime = <Media>[].obs;
-  RxList<Media> popularAnime = <Media>[].obs;
-  RxList<Media> trendingAnime = <Media>[].obs;
-  RxList<Media> latestAnime = <Media>[].obs;
-  RxList<Media> recentlyUpdatedAnime = <Media>[].obs;
+  RxList<Media> upcomingAnimes = <Media>[].obs;
+  RxList<Media> popularAnimes = <Media>[].obs;
+  RxList<Media> trendingAnimes = <Media>[].obs;
+  RxList<Media> latestAnimes = <Media>[].obs;
+  RxList<Media> recentlyUpdatedAnimes = <Media>[].obs;
+
 
   @override
   RxList<Widget> homeWidgets(BuildContext context) {
@@ -56,12 +55,17 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
         .toList();
     final isDesktop = Get.width > 600;
     final recAnimes =
-        (popularAnime + trendingAnime + latestAnime).removeDupes();
-    final ids = [animeList.map((e) => e.id).toSet()];
+        (popularAnimes + trendingAnimes + latestAnimes).removeDupes();
+    final ids = [
+      animeList.map((e) => e.id).toSet()
+    ];
     return [
       if (anilistAuth.isLoggedIn.value) ...[
         LayoutBuilder(builder: (context, constraints) {
           final width = isDesktop ? 300.0 : constraints.maxWidth / 2 - 40;
+          final overflow = constraints.maxWidth < 900;
+          final overflowSecond =
+              !isDesktop ? false : constraints.maxWidth < 600;
           return Wrap(
             alignment: WrapAlignment.center,
             spacing: 15,
@@ -71,7 +75,7 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
                 height: !isDesktop ? 70 : 90,
                 buttonText: "ANIME LIST",
                 backgroundImage:
-                    trendingAnime.firstWhere((e) => e.cover != null).cover ??
+                    trendingAnimes.firstWhere((e) => e.cover != null).cover ??
                         '',
                 borderRadius: 16.multiplyRadius(),
                 onPressed: () {
@@ -88,7 +92,9 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
           return Column(
             children: acceptedLists.map((e) {
               return ReusableCarousel(
-                data: filterListByLabel(anilistAuth.animeList, e),
+                data: filterListByLabel(
+                    anilistAuth.animeList,
+                    e),
                 title: e,
                 variant: DataVariant.anilist,
                 type: ItemType.anime,
@@ -100,7 +106,7 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
       Column(
         children: [
           ReusableCarousel(
-            title: "Recommended Anime",
+            title: "Recommended Animes",
             data: isLoggedIn.value
                 ? recAnimes.where((e) => !ids[0].contains(e.id)).toList()
                 : recAnimes,
@@ -114,12 +120,12 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
   @override
   RxList<Widget> animeWidgets(BuildContext context) {
     return [
-      buildBigCarousel(trendingAnime, false),
-      buildSection('Recently Updated', recentlyUpdatedAnime),
-      buildSection('Trending Anime', trendingAnime),
-      buildSection('Popular Anime', popularAnime),
-      buildSection('Recently Completed', latestAnime),
-      buildSection('Upcoming Anime', upcomingAnime),
+      buildBigCarousel(trendingAnimes, false),
+      buildSection('Recently Updated', recentlyUpdatedAnimes),
+      buildSection('Trending Animes', trendingAnimes),
+      buildSection('Popular Animes', popularAnimes),
+      buildSection('Recently Completed', latestAnimes),
+      buildSection('Upcoming Animes', upcomingAnimes),
     ].obs;
   }
 
@@ -130,11 +136,12 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
   }
 
   void _initFallback() {
-    if (trendingAnime.isEmpty) {
-      upcomingAnime.value = fb.upcomingAnimes;
-      popularAnime.value = fb.popularAnimes;
-      trendingAnime.value = fb.trendingAnimes;
-      latestAnime.value = fb.latestAnimes;
+    if (trendingAnimes.isEmpty) {
+      upcomingAnimes.value = fb.upcomingAnimes;
+      popularAnimes.value = fb.popularAnimes;
+      trendingAnimes.value = fb.trendingAnimes;
+      latestAnimes.value = fb.latestAnimes;
+
     }
   }
 
@@ -250,20 +257,23 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
     );
 
     if (response.statusCode == 200) {
-      final responseData = await compute(_parseAnilistHome, response.body);
-      upcomingAnime.value =
+      final responseData = json.decode(response.body)['data'];
+      upcomingAnimes.value =
           parseMediaList(responseData['upcomingAnimes']['media']);
-      popularAnime.value =
+      popularAnimes.value =
           parseMediaList(responseData['popularAnimes']['media']);
-      trendingAnime.value =
+      trendingAnimes.value =
           parseMediaList(responseData['trendingAnimes']['media']);
-      latestAnime.value = parseMediaList(responseData['latestAnimes']['media']);
-      recentlyUpdatedAnime.value =
+      latestAnimes.value =
+          parseMediaList(responseData['latestAnimes']['media']);
+      recentlyUpdatedAnimes.value =
           parseMediaList(responseData['recentlyUpdatedAnimes']['media']);
     } else {
       throw Exception('Failed to load AniList data: ${response.statusCode}');
     }
   }
+
+
 
   List<Media> parseMediaList(List<dynamic> mediaList) {
     return mediaList
@@ -357,7 +367,7 @@ class AnilistData extends GetxController implements BaseService, OnlineService {
       'isAdult': isAdult,
     };
 
-    const String commonFields = '''
+    final String commonFields = '''
     id
     title {
       english
@@ -435,7 +445,8 @@ averageScore
         return [];
       }
     } catch (e) {
-      Logger.i('Error occurred while fetching anime data: $e');
+      Logger.i(
+          'Error occurred while fetching anime data: $e');
       return [];
     }
   }
@@ -480,7 +491,7 @@ averageScore
     } catch (e) {
       Logger.i('Error occurred while fetching details: $e');
     }
-    return Media(serviceType: ServicesType.simkl);
+    return Media(serviceType: ServicesType.anilist);
   }
 
   @override
@@ -519,6 +530,7 @@ averageScore
   @override
   void setCurrentMedia(String id, {bool isManga = false}) =>
       anilistAuth.setCurrentMedia(id, isManga: false);
+
 
   @override
   Future<void> login() async => anilistAuth.login();

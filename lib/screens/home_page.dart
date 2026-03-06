@@ -1,24 +1,24 @@
 // ignore_for_file: invalid_use_of_protected_member, deprecated_member_use
-// lib/screens/home_page.dart
-import 'package:nyantv/widgets/header.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
+
+import 'package:anymex/widgets/header.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 
-import 'package:nyantv/controllers/cacher/cache_controller.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/widgets/common/scroll_aware_app_bar.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_button.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_textspan.dart';
-import 'package:nyantv/utils/tv_scroll_mixin.dart';
-import 'package:nyantv/widgets/history/tap_history_cards.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/cacher/cache_controller.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/widgets/common/scroll_aware_app_bar.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_button.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/custom_widgets/custom_textspan.dart';
+import 'package:anymex/widgets/history/tap_history_cards.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/utils/tv_scroll_mixin.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -34,20 +34,19 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
   final ValueNotifier<bool> _isAppBarVisibleExternally =
       ValueNotifier<bool>(true);
 
-  static const double _tvScrollStep = 120.0;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.find<Settings>().checkForUpdates(context);
+      Get.find<Settings>().showWelcomeDialog(context);
     });
     _scrollController = ScrollController();
     initTVScroll();
   }
 
-  @override
   ScrollController get scrollController => _scrollController;
+
 
   @override
   void dispose() {
@@ -55,30 +54,6 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
     _isAppBarVisibleExternally.dispose();
     disposeTVScroll();
     super.dispose();
-  }
-
-  KeyEventResult _handleTVKeyEvent(FocusNode node, KeyEvent event) {
-    if (!Get.find<Settings>().isTV.value) return KeyEventResult.ignored;
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    if (event.logicalKey != LogicalKeyboardKey.arrowUp) {
-      return KeyEventResult.ignored;
-    }
-
-    if (_scrollController.hasClients && _scrollController.offset > 0) {
-      final target = (_scrollController.offset - _tvScrollStep).clamp(
-        0.0,
-        _scrollController.position.maxScrollExtent,
-      );
-      _scrollController.animateTo(
-        target,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOut,
-      );
-    }
-
-    return KeyEventResult.ignored;
   }
 
   @override
@@ -110,24 +85,19 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
         extendBodyBehindAppBar: true,
         body: Stack(
           children: [
-            Focus(
-              onKeyEvent: _handleTVKeyEvent,
-              skipTraversal: true,
-              canRequestFocus: false,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                physics: getTVScrollPhysics(),
-                child: _buildScrollContent(
-                  context,
-                  cacheController,
-                  serviceHandler,
-                  isDesktop,
-                  isMobile,
-                  textAlignment,
-                  statusBarHeight,
-                  appBarHeight,
-                  bottomNavBarHeight,
-                ),
+            SingleChildScrollView(
+              controller: _scrollController,
+              physics: getTVScrollPhysics(),
+              child: _buildScrollContent(
+                context,
+                cacheController,
+                serviceHandler,
+                isDesktop,
+                isMobile,
+                textAlignment,
+                statusBarHeight,
+                appBarHeight,
+                bottomNavBarHeight,
               ),
             ),
             if (!isDesktop)
@@ -160,7 +130,7 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
       ),
     );
   }
-
+  
   Widget _buildScrollContent(
     BuildContext context,
     CacheController cacheController,
@@ -173,8 +143,9 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
     double bottomNavBarHeight,
   ) {
     return Column(
-      crossAxisAlignment:
-          isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      crossAxisAlignment: isMobile
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         SizedBox(
           height: isDesktop ? 10 : statusBarHeight + appBarHeight,
@@ -183,18 +154,20 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
         Obx(
           () => Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: NyantvTextSpans(
+            child: AnymexTextSpans(
               fontSize: 27,
               spans: [
-                const NyantvTextSpan(
-                    text: 'Hey ', size: 30, variant: TextVariant.bold),
-                NyantvTextSpan(
+                const AnymexTextSpan(
+                    text: 'Hey ',
+                    size: 30,
+                    variant: TextVariant.bold),
+                AnymexTextSpan(
                     text:
                         '${serviceHandler.isLoggedIn.value ? serviceHandler.profileData.value.name : 'Guest'}',
                     size: 30,
                     color: Theme.of(context).colorScheme.primary,
                     variant: TextVariant.bold),
-                const NyantvTextSpan(
+                const AnymexTextSpan(
                     text: ', what are we doing today?',
                     size: 30,
                     variant: TextVariant.bold),
@@ -204,14 +177,15 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
           ),
         ),
         Column(
-          crossAxisAlignment:
-              isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          crossAxisAlignment: isMobile
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Find your favorite ${Get.find<ServiceHandler>().serviceType.value == ServicesType.simkl ? "movies & shows" : "anime"}!',
+                'Find your favourite anime !',
                 style: TextStyle(
                   color: Theme.of(context)
                       .colorScheme
@@ -223,8 +197,8 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
             ),
             const SizedBox(height: 30),
             Obx(() {
-              final children =
-                  List<Widget>.from(serviceHandler.homeWidgets(context));
+              final children = List<Widget>.from(
+                  serviceHandler.homeWidgets(context));
               final data = cacheController.getStoredAnime();
               if (data.isNotEmpty && children.length > 2) {
                 children.insert(
@@ -235,10 +209,13 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
                       height: 100,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: cacheController.getStoredAnime().length,
+                        itemCount:
+                            cacheController.getStoredAnime().length,
                         itemBuilder: (context, i) {
-                          final media = cacheController.getStoredAnime()[i];
-                          return RecentlyOpenedAnimeCard(media: media);
+                          final media =
+                              cacheController.getStoredAnime()[i];
+                          return RecentlyOpenedAnimeCard(
+                              media: media);
                         },
                       ),
                     ),
@@ -253,10 +230,13 @@ class _HomePageState extends State<HomePage> with TVScrollMixin {
                       height: 100,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: cacheController.getStoredAnime().length,
+                        itemCount:
+                            cacheController.getStoredAnime().length,
                         itemBuilder: (context, i) {
-                          final media = cacheController.getStoredAnime()[i];
-                          return RecentlyOpenedAnimeCard(media: media);
+                          final media =
+                              cacheController.getStoredAnime()[i];
+                          return RecentlyOpenedAnimeCard(
+                              media: media);
                         },
                       ),
                     ),
@@ -343,7 +323,7 @@ class ImageButton extends StatelessWidget {
             ),
           ),
           Positioned.fill(
-            child: NyantvButton(
+            child: AnymexButton(
               onTap: onPressed,
               padding: EdgeInsets.zero,
               color: Colors.transparent,

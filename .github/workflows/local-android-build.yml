@@ -1,0 +1,91 @@
+name: Local Android Build
+on: [push]
+
+env:
+  FLUTTER_VERSION: "3.32.8"
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "adopt"
+          java-version: "17"
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      
+      - name: Setup Android
+        env:
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: androiddebugkey
+        run: |
+          cd $GITHUB_WORKSPACE
+          
+          # Create debug keystore
+          mkdir -p android/app
+          keytool -genkeypair \
+            -alias androiddebugkey \
+            -keypass android \
+            -keystore android/app/anymex.jks \
+            -storepass android \
+            -dname "CN=Debug,O=Android,C=US" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000
+          
+          # Create key.properties
+          cat > android/key.properties << EOF
+          storePassword=android
+          keyPassword=android
+          keyAlias=androiddebugkey
+          storeFile=anymex.jks
+          EOF
+      
+      - name: Setup Environment
+        env:
+          AL_CLIENT_ID: ${{ secrets.AL_CLIENT_ID }}
+          AL_CLIENT_SECRET: ${{ secrets.AL_CLIENT_SECRET }}
+          SIMKL_CLIENT_ID: ${{ secrets.SIMKL_CLIENT_ID }}
+          SIMKL_CLIENT_SECRET: ${{ secrets.SIMKL_CLIENT_SECRET }}
+          MAL_CLIENT_ID: ${{ secrets.MAL_CLIENT_ID }}
+          MAL_CLIENT_SECRET: ${{ secrets.MAL_CLIENT_SECRET }}
+          CALLBACK_SCHEME: ${{ secrets.CALLBACK_SCHEME }}
+        run: |
+          cat > .env << EOF
+          AL_CLIENT_ID=$AL_CLIENT_ID
+          AL_CLIENT_SECRET=$AL_CLIENT_SECRET
+          SIMKL_CLIENT_ID=$SIMKL_CLIENT_ID
+          SIMKL_CLIENT_SECRET=$SIMKL_CLIENT_SECRET
+          MAL_CLIENT_ID=$MAL_CLIENT_ID
+          MAL_CLIENT_SECRET=$MAL_CLIENT_SECRET
+          CALLBACK_SCHEME=$CALLBACK_SCHEME
+          EOF
+      
+      - name: Build Android
+        run: |
+          flutter pub get
+          dart run flutter_native_splash:create
+          flutter build apk --split-per-abi --no-tree-shake-icons --release
+          flutter build apk --release --no-tree-shake-icons
+          
+          # Rename APKs
+          cd build/app/outputs/flutter-apk
+          mv app-armeabi-v7a-release.apk AnymeX-Android-armeabi-v7a.apk || true
+          mv app-arm64-v8a-release.apk AnymeX-Android-arm64-v8a.apk || true
+          mv app-x86_64-release.apk AnymeX-Android-x86_64.apk || true
+          mv app-release.apk AnymeX-Android-universal.apk || true
+      
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: build/app/outputs/flutter-apk/AnymeX-Android-*.apk

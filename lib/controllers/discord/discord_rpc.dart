@@ -1,16 +1,16 @@
-// discord_rpc.dart
+// discord_rpc_controller.dart
 import 'dart:async';
 import 'dart:io';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/utils/extension_utils.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Offline/Hive/chapter.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/utils/extension_utils.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_discord_rpc_fork/flutter_discord_rpc.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 enum DiscordKeys { token, profile }
@@ -96,8 +96,8 @@ class DiscordProfile {
   }
 }
 
-class DiscordRPCController extends GetxController with WidgetsBindingObserver {
-  static const String _applicationId = '1470114715978961099';
+class DiscordRPCController extends GetxController {
+  static const String _applicationId = '1435544312296505394';
   static const String _gatewayUrl =
       'wss://gateway.discord.gg/?v=10&encoding=json';
   static const String _apiBaseUrl = 'https://discord.com/api/v10';
@@ -121,76 +121,16 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
   bool get isLoading => _isLoading.value;
   DiscordProfile? get userProfile => profile.value;
 
-  Timer? _reconnectTimer;
-  int _missedHeartbeats = 0;
-  static const int _maxMissedHeartbeats = 3;
-  bool _isReconnecting = false;
-
   static DiscordRPCController get instance => Get.find<DiscordRPCController>();
 
   @override
   Future<void> onInit() async {
     super.onInit();
-    WidgetsBinding.instance.addObserver(this);
     await _loadToken();
     if (_token.value.isNotEmpty) {
       await _loadProfile();
       await connect();
     }
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-
-    switch (state) {
-      case AppLifecycleState.resumed:
-        print('App resumed - checking Discord connection');
-        _checkAndReconnect();
-        break;
-
-      case AppLifecycleState.paused:
-        print('App paused - clearing presence');
-        _missedHeartbeats = 0;
-        // Optional: Presence clearen wenn App in Hintergrund geht
-        clearPresence();
-        break;
-
-      case AppLifecycleState.inactive:
-        print('App inactive');
-        break;
-
-      case AppLifecycleState.detached:
-        print('App detached - disconnecting Discord');
-        _disconnect();
-        break;
-
-      case AppLifecycleState.hidden:
-        print('App hidden');
-        break;
-    }
-  }
-
-  Future<void> _checkAndReconnect() async {
-    if (!_isConnected.value && _token.value.isNotEmpty && !_isReconnecting) {
-      // attempting reconnect
-      await _reconnect();
-    }
-  }
-
-  Future<void> _reconnect() async {
-    if (_isReconnecting) {
-      // Already reconnecting
-      return;
-    }
-
-    _isReconnecting = true;
-    await _disconnect();
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    await connect();
-    _isReconnecting = false;
   }
 
   Future<void> _loadToken() async {
@@ -319,19 +259,8 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
     } catch (e) {
       print('Failed to connect to Discord Gateway: $e');
       _isConnected.value = false;
-      snackBar('Failed to connect to Discord, reconnecting..');
-      _scheduleReconnect();
+      snackBar('Failed to connect to Discord');
     }
-  }
-
-  void _scheduleReconnect() {
-    if (_token.value.isEmpty || _isReconnecting) return;
-
-    Future.delayed(const Duration(seconds: 5), () {
-      if (!_isConnected.value && _token.value.isNotEmpty) {
-        _reconnect();
-      }
-    });
   }
 
   void _handleGatewayMessage(dynamic message) {
@@ -345,13 +274,11 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
         _heartbeatInterval = data['d']['heartbeat_interval'];
         _identify();
         _startHeartbeat();
-        _startConnectionMonitor();
         break;
       case 0: // Dispatch
         final event = data['t'];
         if (event == 'READY') {
           _isConnected.value = true;
-          _missedHeartbeats = 0;
           print('Discord Gateway Ready (Mobile)');
           updateBrowsingPresence(
             activity: 'Browsing Stuff',
@@ -361,7 +288,6 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
         break;
       case 11: // Heartbeat ACK
         print('Heartbeat acknowledged');
-        _missedHeartbeats = 0;
         break;
     }
   }
@@ -373,8 +299,8 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
         'token': _token.value,
         'properties': {
           '\$os': Platform.operatingSystem,
-          '\$browser': 'NyanTV',
-          '\$device': 'NyanTV Mobile',
+          '\$browser': 'AnymeX',
+          '\$device': 'AnymeX Mobile',
         },
         'presence': {
           'status': 'online',
@@ -391,28 +317,9 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
     if (_heartbeatInterval != null) {
       _heartbeatTimer = Timer.periodic(
         Duration(milliseconds: _heartbeatInterval!),
-        (_) {
-          _sendHeartbeat();
-          _missedHeartbeats++;
-
-          if (_missedHeartbeats >= _maxMissedHeartbeats) {
-            _reconnect();
-          }
-        },
+        (_) => _sendHeartbeat(),
       );
     }
-  }
-
-  void _startConnectionMonitor() {
-    _reconnectTimer?.cancel();
-    _reconnectTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) async {
-        if (!_isConnected.value && _token.value.isNotEmpty) {
-          await _reconnect();
-        }
-      },
-    );
   }
 
   void _sendHeartbeat() {
@@ -423,32 +330,21 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
     _gatewaySocket?.add(jsonEncode(payload));
   }
 
-  Future<String> _processImageUrl(String? url, {int retries = 3}) async {
+  Future<String> _processImageUrl(String? url) async {
     try {
       if (Platform.isAndroid || Platform.isIOS) {
-        for (int i = 0; i < retries; i++) {
-          try {
-            final processedUrl = await urlToDcAsset(url ?? _getAppIconUrl())
-                .timeout(const Duration(seconds: 5));
+        final processedUrl = await urlToDcAsset(url ?? _getAppIconUrl());
+        print('Processed image URL: $processedUrl');
+        return processedUrl;
+      }
 
-            if (processedUrl.startsWith('mp:')) {
-              return processedUrl;
-            }
-
-            if (i < retries - 1) {
-              await Future.delayed(Duration(seconds: 2 * (i + 1)));
-            }
-          } catch (_) {
-            if (i < retries - 1) {
-              await Future.delayed(Duration(seconds: 2 * (i + 1)));
-            }
-          }
-        }
+      if (url == null || url.isEmpty) {
         return _getAppIconUrl();
       }
 
-      return url ?? _getAppIconUrl();
+      return url;
     } catch (e) {
+      print('Error processing image URL: $e');
       return _getAppIconUrl();
     }
   }
@@ -486,30 +382,14 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-
-    if (hours > 0) {
-      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    } else {
-      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
-  }
-
+// Fixed updateAnimePresence method
   Future<void> updateAnimePresence({
     required Media anime,
     required Episode episode,
     required String totalEpisodes,
   }) async {
-    print('=== updateAnimePresence called ===');
-    print('Connected: $_isConnected');
-    print('Episode: ${episode.number}');
-    print('Anime: ${anime.title}');
-
     if (!_isConnected.value) {
-      print('Discord not connected - skipping update');
+      print('Discord not connected');
       return;
     }
 
@@ -523,45 +403,42 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
         DateTime.now().add(Duration(seconds: totalSeconds - currentSeconds));
     final episodeNumber = episode.number.toString();
     final episodeName = episode.title ?? 'Episode $episodeNumber';
-    final posterUrl = anime.poster;
+    final coverUrl = anime.cover ?? anime.poster;
     final anilistUrl = 'https://anilist.co/anime/${anime.id}';
     final animeTitle = anime.title;
 
-    final stateText =
-        'Episode $episodeNumber ${!episodeName.toLowerCase().contains('episode') ? '– $episodeName' : ''}';
-
     if (isMobile) {
-      final largeImage = await _processImageUrl(posterUrl);
-      final smallImage = await _processImageUrl(_getAppIconUrl());
-
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {
           'since': null,
           'activities': [
             {
-              'name': 'NyanTV',
-              'application_id': _applicationId,
-              'type': 3,
+              'name': 'AnymeX',
+              'type': 3, // Watching
               'details': animeTitle,
-              'state': stateText,
+              'state':
+                  'Episode $episodeNumber ${!episodeName.toLowerCase().contains('episode') ? '– $episodeName' : ''}',
               'timestamps': {
                 'start': startTime.millisecondsSinceEpoch,
                 'end': endTime.millisecondsSinceEpoch,
               },
               'assets': {
-                'large_image': largeImage,
+                'large_image': await _processImageUrl(coverUrl),
                 'large_text': animeTitle,
-                'small_image': smallImage,
-                'small_text': 'NyanTV',
+                'small_image': await _processImageUrl(_getAppIconUrl()),
+                'small_text': 'AnymeX',
               },
-              'buttons': ['View on AL', 'Watch on NyanTV'],
+              'buttons': [
+                'View Anime',
+                'Watch on AnymeX',
+              ],
               'metadata': {
                 'button_urls': [
                   anilistUrl,
-                  'https://github.com/NyanTV/NyanTV/'
+                  'https://github.com/RyanYuuki/AnymeX/',
                 ],
-              },
+              }
             }
           ],
           'status': 'online',
@@ -570,44 +447,41 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
       });
       _gatewaySocket?.add(presencePayload);
       print('Anime presence updated successfully (Mobile)');
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (_isConnected.value) {
-          _gatewaySocket?.add(presencePayload);
-        }
-      });
     } else {
       try {
         await _discordRPC!.setActivity(
           activity: RPCActivity(
             details: animeTitle,
-            state: '$stateText - $totalEpisodes',
+            state:
+                'Episode $episodeNumber ${!episodeName.toLowerCase().contains('episode') ? '– $episodeName' : ''} - $totalEpisodes',
             activityType: ActivityType.watching,
             timestamps: RPCTimestamps(
               start: startTime.millisecondsSinceEpoch,
               end: endTime.millisecondsSinceEpoch,
             ),
             assets: RPCAssets(
-              largeImage: await _processImageUrl(posterUrl),
+              largeImage: await _processImageUrl(coverUrl),
               largeText: animeTitle,
               smallImage: await _processImageUrl(_getAppIconUrl()),
-              smallText: 'NyanTV',
+              smallText: 'AnymeX',
             ),
             buttons: [
-              RPCButton(label: 'View on AL', url: anilistUrl),
+              RPCButton(label: 'View Anime', url: anilistUrl),
               const RPCButton(
-                label: 'Watch on NyanTV',
-                url: 'https://github.com/NyanTV/NyanTV/',
+                label: 'Watch on AnymeX',
+                url: 'https://github.com/RyanYuuki/AnymeX/',
               ),
             ],
           ),
         );
-        print('Anime presence updated successfully (Desktop)');
+        print('Anime presence updated successfully');
       } catch (e) {
         print('Error updating anime presence: $e');
       }
     }
   }
 
+// Fixed updateAnimePresencePaused method
   Future<void> updateAnimePresencePaused({
     required Media anime,
     required Episode episode,
@@ -619,7 +493,7 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
     }
 
     final episodeNumber = episode.number.toString();
-    final posterUrl = anime.poster;
+    final coverUrl = anime.cover ?? anime.poster;
     final anilistUrl = 'https://anilist.co/anime/${anime.id}';
     final animeTitle = anime.title;
 
@@ -632,33 +506,32 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
         : '';
 
     if (isMobile) {
-      final largeImage = await _processImageUrl(posterUrl);
-      final smallImage = await _processImageUrl(_getAppIconUrl());
-
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {
           'since': null,
           'activities': [
             {
-              'name': 'NyanTV',
-              'application_id': _applicationId,
-              'type': 3,
+              'name': 'AnymeX',
+              'type': 3, // Watching
               'details': animeTitle,
-              'state': 'Paused: Ep $episodeNumber$timeDisplay',
+              'state': 'Episode $episodeNumber$timeDisplay (Paused)',
               'assets': {
-                'large_image': largeImage,
+                'large_image': await _processImageUrl(coverUrl),
                 'large_text': animeTitle,
-                'small_image': smallImage,
-                'small_text': 'NyanTV',
+                'small_image': await _processImageUrl(_getAppIconUrl()),
+                'small_text': 'AnymeX',
               },
-              'buttons': ['View on AL', 'Watch on NyanTV'],
+              'buttons': [
+                'View Anime',
+                'Watch on AnymeX',
+              ],
               'metadata': {
                 'button_urls': [
                   anilistUrl,
-                  'https://github.com/NyanTV/NyanTV/'
+                  'https://github.com/RyanYuuki/AnymeX/',
                 ],
-              },
+              }
             }
           ],
           'status': 'online',
@@ -667,34 +540,29 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
       });
       _gatewaySocket?.add(presencePayload);
       print('Paused anime presence updated successfully (Mobile)');
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (_isConnected.value) {
-          _gatewaySocket?.add(presencePayload);
-        }
-      });
     } else {
       try {
         await _discordRPC!.setActivity(
           activity: RPCActivity(
             details: animeTitle,
-            state: 'Paused: Ep $episodeNumber$timeDisplay',
+            state: 'Episode $episodeNumber$timeDisplay (Paused)',
             activityType: ActivityType.watching,
             assets: RPCAssets(
-              largeImage: await _processImageUrl(posterUrl),
+              largeImage: await _processImageUrl(coverUrl),
               largeText: animeTitle,
               smallImage: await _processImageUrl(_getAppIconUrl()),
-              smallText: 'NyanTV',
+              smallText: 'AnymeX',
             ),
             buttons: [
-              RPCButton(label: 'View on AL', url: anilistUrl),
+              RPCButton(label: 'View Anime', url: anilistUrl),
               const RPCButton(
-                label: 'Watch on NyanTV',
-                url: 'https://github.com/NyanTV/NyanTV/',
+                label: 'Watch on AnymeX',
+                url: 'https://github.com/RyanYuuki/AnymeX/',
               ),
             ],
           ),
         );
-        print('Paused anime presence updated successfully (Desktop)');
+        print('Paused anime presence updated successfully');
       } catch (e) {
         print('Error updating paused anime presence: $e');
       }
@@ -712,36 +580,34 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
     final animeTitle = media.title;
     final type = media.mediaType.name.capitalizeFirst ?? '';
 
-    final stateText = 'Viewing $type Details';
-
     if (isMobile) {
-      final largeImage = await _processImageUrl(media.poster);
-      final smallImage = await _processImageUrl(_getAppIconUrl());
-
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {
           'since': null,
           'activities': [
             {
-              'name': 'NyanTV',
-              'application_id': _applicationId,
+              'name': 'AnymeX',
               'type': 0,
               'details': animeTitle,
-              'state': stateText,
+              'state': 'Viewing $type',
               'assets': {
-                'large_image': largeImage,
+                'large_image':
+                    await _processImageUrl(media.cover ?? media.poster),
                 'large_text': animeTitle,
-                'small_image': smallImage,
-                'small_text': 'NyanTV',
+                'small_image': await _processImageUrl(_getAppIconUrl()),
+                'small_text': 'AnymeX',
               },
-              'buttons': ['View on AL', 'Watch on NyanTV'],
+              'buttons': [
+                'View $type',
+                '${media.mediaType.isAnime ? 'Watch' : 'Read'} on AnymeX',
+              ],
               'metadata': {
                 'button_urls': [
                   anilistUrl,
-                  'https://github.com/NyanTV/NyanTV/'
+                  'https://github.com/RyanYuuki/AnymeX',
                 ],
-              },
+              }
             }
           ],
           'status': 'online',
@@ -750,38 +616,44 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
       });
       _gatewaySocket?.add(presencePayload);
       print('Media presence updated successfully (Mobile)');
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (_isConnected.value) {
-          _gatewaySocket?.add(presencePayload);
-        }
-      });
     } else {
       try {
         await _discordRPC!.setActivity(
           activity: RPCActivity(
             details: animeTitle,
-            state: stateText,
+            state: 'Viewing $type',
             activityType: ActivityType.watching,
             assets: RPCAssets(
-              largeImage: await _processImageUrl(media.poster),
+              largeImage: await _processImageUrl(media.cover ?? media.poster),
               largeText: animeTitle,
               smallImage: await _processImageUrl(_getAppIconUrl()),
-              smallText: 'NyanTV',
+              smallText: 'AnymeX',
             ),
             buttons: [
-              RPCButton(label: 'View on AL', url: anilistUrl),
-              RPCButton(
-                label:
-                    '${media.mediaType.isAnime ? 'Watch' : 'Read'} on NyanTV',
-                url: 'https://github.com/NyanTV/NyanTV/',
+              RPCButton(label: 'View $type', url: anilistUrl),
+              const RPCButton(
+                label: 'Watch on AnymeX',
+                url: 'https://github.com/RyanYuuki/AnymeX/',
               ),
             ],
           ),
         );
-        print('Media presence updated successfully (Desktop)');
+        print('Media presence updated successfully');
       } catch (e) {
         print('Error updating media presence: $e');
       }
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    } else {
+      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     }
   }
 
@@ -795,27 +667,28 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
     }
 
     if (isMobile) {
-      final largeImage = await _processImageUrl(_getAppIconUrl());
-
       final presencePayload = jsonEncode({
         'op': 3,
         'd': {
           'since': null,
           'activities': [
             {
-              'name': 'NyanTV',
-              'application_id': _applicationId,
+              'name': 'AnymeX',
               'type': 0,
               'details': activity ?? 'Browsing Stuff',
               'state': details ?? 'Idle',
               'assets': {
-                'large_image': largeImage,
-                'large_text': 'Anime Streaming & Tracking',
+                'large_image': await _processImageUrl(_getAppIconUrl()),
+                'large_text': 'AnymeX - Anime & Manga',
               },
-              'buttons': ['Download NyanTV'],
+              'buttons': [
+                'Download AnymeX',
+              ],
               'metadata': {
-                'button_urls': ['https://github.com/NyanTV/NyanTV/'],
-              },
+                'button_urls': [
+                  'https://github.com/RyanYuuki/AnymeX/',
+                ],
+              }
             }
           ],
           'status': 'online',
@@ -824,11 +697,6 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
       });
       _gatewaySocket?.add(presencePayload);
       print('Browsing presence updated successfully (Mobile)');
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (_isConnected.value) {
-          _gatewaySocket?.add(presencePayload);
-        }
-      });
     } else {
       try {
         await _discordRPC!.setActivity(
@@ -838,11 +706,11 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
             activityType: ActivityType.playing,
             assets: RPCAssets(
               largeImage: await _processImageUrl(_getAppIconUrl()),
-              largeText: 'Anime Streaming & Tracking',
+              largeText: 'AnymeX - Anime & Manga',
             ),
           ),
         );
-        print('Browsing presence updated successfully (Desktop)');
+        print('Browsing presence updated successfully');
       } catch (e) {
         print('Error updating browsing presence: $e');
       }
@@ -866,11 +734,11 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
         },
       };
       _gatewaySocket?.add(jsonEncode(payload));
-      print('Presence cleared successfully (Mobile)');
+      print('Presence cleared successfully');
     } else {
       try {
         await _discordRPC!.clearActivity();
-        print('Presence cleared successfully (Desktop)');
+        print('Presence cleared successfully');
       } catch (e) {
         print('Error clearing presence: $e');
       }
@@ -878,7 +746,7 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
   }
 
   String _getAppIconUrl() {
-    return 'https://raw.githubusercontent.com/NyanTV/NyanTV/main/assets/images/logo.png';
+    return 'https://raw.githubusercontent.com/RyanYuuki/AnymeX/main/assets/images/logo.png';
   }
 
   Future<void> pause() async {
@@ -889,11 +757,9 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
   Future<void> _disconnect() async {
     if (isMobile) {
       _heartbeatTimer?.cancel();
-      _reconnectTimer?.cancel();
       await _gatewaySocket?.close();
       _gatewaySocket = null;
       _sequenceNumber = null;
-      _missedHeartbeats = 0;
     } else {
       if (_discordRPC != null) {
         try {
@@ -921,9 +787,6 @@ class DiscordRPCController extends GetxController with WidgetsBindingObserver {
 
   @override
   void onClose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _reconnectTimer?.cancel();
-    _heartbeatTimer?.cancel();
     _disconnect();
     super.onClose();
   }

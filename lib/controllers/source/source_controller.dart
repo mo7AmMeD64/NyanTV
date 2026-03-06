@@ -1,24 +1,24 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: unnecessary_null_comparison, invalid_use_of_protected_member
 
-import 'package:nyantv/screens/search/source_search_page.dart';
-import 'package:nyantv/utils/extension_utils.dart';
-import 'package:nyantv/utils/logger.dart';
+import 'package:anymex/screens/search/source_search_page.dart';
+import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/utils/extension_utils.dart';
+import 'package:anymex/utils/logger.dart';
 import 'dart:async';
 import 'dart:io';
-import 'package:nyantv/controllers/cacher/cache_controller.dart';
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/controllers/services/widgets/widgets_builders.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Service/base_service.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/utils/storage_provider.dart';
-import 'package:nyantv/widgets/common/search_bar.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/cacher/cache_controller.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/controllers/services/widgets/widgets_builders.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Service/base_service.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/utils/storage_provider.dart';
+import 'package:anymex/widgets/common/search_bar.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_progress.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 
@@ -58,7 +58,7 @@ class SourceController extends GetxController implements BaseService {
       Logger.i('Settings Aniyomi repo: $val');
       activeAniyomiAnimeRepo = val;
     } else {
-      Logger.i('Settings Mangayomi repo: $val');
+      Logger.i('Settings Anime repo: $val');
       activeAnimeRepo = val;
     }
   }
@@ -68,7 +68,7 @@ class SourceController extends GetxController implements BaseService {
       Logger.i('Getting Aniyomi repo');
       return activeAniyomiAnimeRepo;
     } else {
-      Logger.i('Getting Mangayomi repo');
+      Logger.i('Getting Anime repo');
       return activeAnimeRepo;
     }
   }
@@ -93,39 +93,13 @@ class SourceController extends GetxController implements BaseService {
 
   void _initialize() async {
     isar = await StorageProvider().initDB(null);
-    await DartotsuExtensionBridge().init(isar, 'NyanTV');
+    await DartotsuExtensionBridge().init(isar, 'AnymeX');
 
     await initExtensions();
 
     if (Get.find<ServiceHandler>().serviceType.value ==
         ServicesType.extensions) {
       fetchHomePage();
-    }
-
-    if (Get.context != null) {
-      checkForUpdates(Get.context!);
-    }
-  }
-
-
-  Future<void> checkForUpdates(BuildContext context) async {
-    try {
-      await fetchRepos();
-      final updates = <Source>[];
-      for (final source in installedExtensions) {
-        final available =
-            availableExtensions.firstWhereOrNull((s) => s.id == source.id);
-        if (available != null &&
-            (available.version ?? '') != (source.version ?? '')) {
-          updates.add(available);
-        }
-      }
-
-      if (updates.isNotEmpty) {
-        snackString("Updates available for ${updates.length} extensions");
-      }
-    } catch (e) {
-      Logger.e('Error checking for updates: $e');
     }
   }
 
@@ -228,7 +202,6 @@ class SourceController extends GetxController implements BaseService {
     if (Platform.isAndroid) {
       Get.put(AniyomiExtensions(), tag: 'AniyomiExtensions');
     }
-    Get.put(MangayomiExtensions(), tag: 'MangayomiExtensions');
     for (var type in extenionTypes) {
       await type
           .getManager()
@@ -253,7 +226,7 @@ class SourceController extends GetxController implements BaseService {
 
   void _initializeEmptySections() {
     final offlineStorage = Get.find<OfflineStorageController>();
-    _animeSections.value = [const Center(child: NyantvProgressIndicator())];
+    _animeSections.value = [const Center(child: AnymexProgressIndicator())];
     _homeSections.value = [
       Obx(
         () => buildSection(
@@ -337,7 +310,7 @@ class SourceController extends GetxController implements BaseService {
   @override
   Future<Media> fetchDetails(FetchDetailsParams params) async {
     final id = params.id;
-    final data = await activeSource.value!.methods.getDetail(DMedia(url: id));
+    final data = await activeSource.value!.methods.getDetail(DMedia.withUrl(id));
 
     if (serviceHandler.serviceType.value != ServicesType.extensions) {
       cacheController.addCache(data.toJson());

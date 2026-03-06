@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:nyantv/screens/anime/watch/controls/widgets/control_button.dart';
+import 'package:anymex/screens/anime/watch/controls/widgets/control_button.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nyantv/screens/anime/watch/controller/player_controller.dart';
+import 'package:anymex/screens/anime/watch/controller/player_controller.dart';
 
 class CenterControls extends StatelessWidget {
   const CenterControls({super.key});
@@ -48,133 +48,19 @@ class CenterControls extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Focus(
-          focusNode: controller.prevEpisodeFocusNode,
-          child: ControlButton(
-            icon: Icons.skip_previous_rounded,
-            onPressed: () => controller.navigator(false),
-            tooltip: 'Previous Episode',
-          ),
+        ControlButton(
+          icon: Icons.skip_previous_rounded,
+          onPressed: () => controller.navigator(false),
+          tooltip: 'Previous Episode',
         ),
         const SizedBox(width: 32),
-        
-        Focus(
-          focusNode: controller.pauseFocusNode,
-          child: Obx(() => GestureDetector(
-            onTap: controller.togglePlayPause,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: controller.pauseFocusNode.hasFocus
-                    ? theme.colorScheme.primary.withOpacity(0.2)
-                    : Colors.transparent,
-                border: controller.pauseFocusNode.hasFocus
-                    ? Border.all(
-                        color: theme.colorScheme.primary,
-                        width: 2.0,
-                      )
-                    : null,
-              ),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 100),
-                transitionBuilder: (child, animation) {
-                  return ScaleTransition(
-                    scale: animation,
-                    child: child,
-                  );
-                },
-                child: controller.isBuffering.value
-                    ? const ExpressiveLoadingIndicator()
-                    : Icon(
-                        controller.isPlaying.value
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        key: ValueKey(controller.isPlaying.value),
-                        size: 42,
-                      ),
-              ),
-            ),
-          )),
-        ),
-        const SizedBox(width: 32),
-        
-        Focus(
-          focusNode: controller.nextEpisodeFocusNode,
-          child: ControlButton(
-            icon: Icons.skip_next_rounded,
-            onPressed: () => controller.navigator(true),
-            tooltip: 'Next Episode',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDesktopLayout(ThemeData theme) {
-    final controller = Get.find<PlayerController>();
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Prev Episode Button mit Focus
-        Opacity(
-          opacity: controller.canGoBackward.value ? 1 : 0.5,
-          child: Focus(
-            focusNode: controller.prevEpisodeFocusNode,
-            child: ControlButton(
-              icon: Icons.skip_previous_rounded,
-              onPressed: controller.canGoBackward.value
-                  ? () => controller.navigator(false)
-                  : null,
-              tooltip: 'Previous Episode',
-            ),
-          ),
-        ),
-        const SizedBox(width: 28),
-        
-        // Rewind Button mit Focus
-        Focus(
-          child: ControlButton(
-            icon: Icons.replay_30_rounded,
-            onPressed: () {
-              final currentPos = controller.currentPosition.value;
-              final newPos = currentPos - const Duration(seconds: 30);
-              controller.seekTo(newPos.isNegative ? Duration.zero : newPos);
-            },
-            tooltip: 'Replay 30s',
-          ),
-        ),
-        const SizedBox(width: 32),
-        
-        // Play/Pause Button mit Fokus (Default-Fokus)
-        Obx(() => Focus(
-          focusNode: controller.pauseFocusNode,
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
+        Obx(() => GestureDetector(
               onTap: controller.togglePlayPause,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOutCubic,
-                width: 92,
-                height: 92,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: controller.pauseFocusNode.hasFocus
-                      ? theme.colorScheme.primary.withOpacity(0.2)
-                      : Colors.transparent,
-                  border: controller.pauseFocusNode.hasFocus
-                      ? Border.all(
-                          color: theme.colorScheme.primary,
-                          width: 2.0,
-                        )
-                      : null,
-                ),
+                width: 80,
+                height: 80,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 100),
                   transitionBuilder: (child, animation) {
@@ -194,38 +80,94 @@ class CenterControls extends StatelessWidget {
                         ),
                 ),
               ),
-            ),
-          ),
-        )),
+            )),
         const SizedBox(width: 32),
-        
-        // Forward Button mit Focus
-        Focus(
+        ControlButton(
+          icon: Icons.skip_next_rounded,
+          onPressed: () => controller.navigator(true),
+          tooltip: 'Next Episode',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout(ThemeData theme) {
+    final controller = Get.find<PlayerController>();
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Opacity(
+          opacity: controller.canGoBackward.value ? 1 : 0.5,
           child: ControlButton(
-            icon: Icons.forward_30_rounded,
-            onPressed: () {
-              final currentPos = controller.currentPosition.value;
-              final duration = controller.episodeDuration.value;
-              final newPos = currentPos + const Duration(seconds: 30);
-              controller.seekTo(newPos > duration ? duration : newPos);
-            },
-            tooltip: 'Forward 30s',
+            icon: Icons.skip_previous_rounded,
+            onPressed: () => controller.navigator(false),
+            tooltip: 'Previous Episode',
           ),
         ),
         const SizedBox(width: 28),
-        
-        // Next Episode Button mit Focus
+        ControlButton(
+          icon: Icons.replay_30_rounded,
+          onPressed: () {
+            final currentPos = controller.currentPosition.value;
+            final newPos = currentPos - const Duration(seconds: 30);
+            controller.seekTo(newPos.isNegative ? Duration.zero : newPos);
+          },
+          tooltip: 'Replay 30s',
+        ),
+        const SizedBox(width: 32),
+        Obx(() => MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: controller.togglePlayPause,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOutCubic,
+                  width: 92,
+                  height: 92,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 100),
+                    transitionBuilder: (child, animation) {
+                      return ScaleTransition(
+                        scale: animation,
+                        child: child,
+                      );
+                    },
+                    child: controller.isBuffering.value
+                        ? const ExpressiveLoadingIndicator()
+                        : Icon(
+                            controller.isPlaying.value
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            key: ValueKey(controller.isPlaying.value),
+                            size: 42,
+                          ),
+                  ),
+                ),
+              ),
+            )),
+        const SizedBox(width: 32),
+        ControlButton(
+          icon: Icons.forward_30_rounded,
+          onPressed: () {
+            final currentPos = controller.currentPosition.value;
+            final duration = controller.episodeDuration.value;
+            final newPos = currentPos + const Duration(seconds: 30);
+            controller.seekTo(newPos > duration ? duration : newPos);
+          },
+          tooltip: 'Forward 30s',
+        ),
+        const SizedBox(width: 28),
         Opacity(
           opacity: controller.canGoForward.value ? 1 : 0.5,
-          child: Focus(
-            focusNode: controller.nextEpisodeFocusNode,
-            child: ControlButton(
-              icon: Icons.skip_next_rounded,
-              onPressed: controller.canGoForward.value
-                  ? () => controller.navigator(true)
-                  : null,
-              tooltip: 'Next Episode',
-            ),
+          child: ControlButton(
+            icon: Icons.skip_next_rounded,
+            onPressed: () => controller.navigator(true),
+            tooltip: 'Next Episode',
           ),
         ),
       ],

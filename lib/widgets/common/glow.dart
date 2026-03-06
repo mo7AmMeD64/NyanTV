@@ -2,9 +2,9 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
@@ -36,34 +36,26 @@ class Glow extends StatelessWidget {
     this.disabled = false,
   });
 
-  static final Map<String, ColorScheme> _colorSchemeCache = {};
-
-  ColorScheme _resolveTheme(BuildContext context, Settings settings) {
-    if (color.isEmpty || !settings.usePosterColor) {
-      return Theme.of(context).colorScheme;
-    }
-    final brightness = Theme.of(context).brightness;
-    final cacheKey = '$color-$brightness';
-    return _colorSchemeCache.putIfAbsent(cacheKey, () => ColorScheme.fromSeed(
-      brightness: brightness,
-      seedColor: Color(int.parse(color.replaceAll('#', '0xFF'))),
-    ));
-  }
-
-  static void clearColorSchemeCache() {
-  _colorSchemeCache.clear();
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (disabled) return child;
-
     final settings = Get.find<Settings>();
-    final theme = _resolveTheme(context, settings);
+    final theme = color.isNotEmpty && settings.usePosterColor
+        ? ColorScheme.fromSeed(
+            brightness: Theme.of(context).brightness,
+            seedColor: Color(
+              int.parse(color.replaceAll('#', '0xFF')),
+            ),
+          )
+        : Theme.of(context).colorScheme;
     final isDesktop = !Platform.isAndroid && !Platform.isIOS;
     final ch = isDesktop
-        ? Padding(padding: const EdgeInsets.only(top: 40), child: child)
+        ? Padding(
+            padding: const EdgeInsets.only(top: 40),
+            child: child,
+          )
         : child;
+
+    if (disabled) return child;
 
     return Obx(() {
       settings.liquidBackgroundPath;
@@ -485,8 +477,14 @@ BoxShadow lightGlowingShadow(BuildContext context) {
   }
 }
 
-Widget placeHolderWidget(BuildContext context) {
-  return Container(
-    color: Theme.of(context).colorScheme.surfaceContainer,
+Shimmer placeHolderWidget(BuildContext context) {
+  return Shimmer.fromColors(
+    baseColor: Theme.of(context).colorScheme.surfaceContainer,
+    highlightColor: Theme.of(context).colorScheme.primary,
+    child: Container(
+      width: 80,
+      height: 80,
+      color: Theme.of(context).colorScheme.secondaryContainer,
+    ),
   );
 }

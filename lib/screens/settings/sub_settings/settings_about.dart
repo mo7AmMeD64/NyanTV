@@ -1,7 +1,7 @@
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/screens/settings/sub_settings/widgets/about_deps.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/screens/settings/sub_settings/widgets/about_deps.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -9,8 +9,6 @@ import 'package:iconsax/iconsax.dart';
 import 'package:package_info_plus/package_info_plus.dart' show PackageInfo;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
-import 'package:nyantv/controllers/discord/discord_rpc.dart';
-import 'package:nyantv/screens/nyan_dvd.dart';
 
 Future<void> launchUrlHelper(String link) async {
   final url = Uri.parse(link);
@@ -65,7 +63,7 @@ class AboutPage extends StatelessWidget {
                                   ? snapshot.data!.version
                                   : '';
                               return ProfileInfo(
-                                username: "NyanTV",
+                                username: "AnymeX",
                                 version: "v$version",
                                 subtitle: "",
                               );
@@ -74,18 +72,18 @@ class AboutPage extends StatelessWidget {
                           InfoCard(
                             onTap: () async {
                               await launchUrlHelper(
-                                  'https://github.com/hoemotion');
+                                  'https://github.com/RyanYuuki');
                             },
                             leading: const CircleAvatar(
                               backgroundImage: NetworkImage(
-                                  'https://avatars.githubusercontent.com/u/86238378?s=400&u=7f67531c27c5ebbbcde943f9576a0bfdb98909c8&v=4'),
+                                  'https://avatars.githubusercontent.com/u/108048963?s=400&u=7f67531c27c5ebbbcde943f9576a0bfdb98909c8&v=4'),
                             ),
                             title: "Developer",
-                            subtitle: "hoemotion",
+                            subtitle: "RyanYuuki",
                             trailing: IconButton(
                               onPressed: () async {
                                 await launchUrlHelper(
-                                    'https://github.com/hoemotion');
+                                    'https://github.com/RyanYuuki');
                               },
                               icon: const Icon(Iconsax.code5),
                               color: theme.colorScheme.primary,
@@ -145,14 +143,14 @@ class AboutPage extends StatelessWidget {
                 items: [
                   CustomListTile(
                     onTap: () async {
-                      await launchUrlHelper('https://t.me/NyanSupport');
+                      await launchUrlHelper('https://t.me/AnymeX_Discussion');
                     },
                     leading: const Icon(HugeIcons.strokeRoundedTelegram),
                     title: "Telegram",
                   ),
                   CustomListTile(
                     onTap: () async {
-                      await launchUrlHelper('https://discord.gg/y2vaFPXs4F');
+                      await launchUrlHelper('https://discord.gg/5gAHhMvTcx');
                     },
                     leading: const Icon(HugeIcons.strokeRoundedDiscord),
                     title: "Discord",
@@ -160,17 +158,10 @@ class AboutPage extends StatelessWidget {
                   CustomListTile(
                     onTap: () async {
                       await launchUrlHelper(
-                          'https://stoat.chat/invite/fKzse8yy');
+                          'https://www.reddit.com/r/AnymeX_/');
                     },
-                    leading: CircleAvatar(
-                      backgroundColor: theme.colorScheme.surfaceContainer,
-                      radius: 15,
-                      child: Image.asset(
-                        'assets/images/stoat-icon.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    title: "Stoat",
+                    leading: const Icon(HugeIcons.strokeRoundedReddit),
+                    title: "Reddit",
                   ),
                 ],
               ),
@@ -189,7 +180,8 @@ class AboutPage extends StatelessWidget {
                 items: [
                   CustomListTile(
                     onTap: () async {
-                      await launchUrlHelper('https://github.com/NyanTV/NyanTV');
+                      await launchUrlHelper(
+                          'https://github.com/RyanYuuki/AnymeX');
                     },
                     leading: const Icon(HugeIcons.strokeRoundedGithub),
                     title: "GitHub",
@@ -197,8 +189,17 @@ class AboutPage extends StatelessWidget {
                   ),
                   CustomListTile(
                     onTap: () async {
+                      await launchUrlHelper('https://ko-fi.com/ryanyuuki7');
+                    },
+                    leading: const Icon(HugeIcons.strokeRoundedCoffee01),
+                    title: "Ko-fi",
+                    subtitle:
+                        "Consider donating to support the maintainer of AnymeX",
+                  ),
+                  CustomListTile(
+                    onTap: () async {
                       await launchUrlHelper(
-                          'https://github.com/NyanTV/NyanTV/issues');
+                          'https://github.com/RyanYuuki/AnymeX/issues');
                     },
                     leading: const Icon(Icons.bug_report),
                     title: "Features/Issues",
@@ -223,34 +224,10 @@ class AboutPage extends StatelessWidget {
                   CustomListTile(
                     onTap: () async {
                       snackBar('Checking for updates!');
-                      Get.find<Settings>()
-                          .checkForUpdates(context, manualCheck: true);
+                      Get.find<Settings>().checkForUpdates(context);
                     },
                     leading: const Icon(Icons.system_update),
                     title: "Check for Updates",
-                  ),
-                  CustomListTile(
-                    onTap: () {
-                      DiscordRPCController.instance.updateBrowsingPresence(
-                        activity: 'NyanDVD',
-                        details: 'Idle',
-                      );
-                      Get.to(
-                        () => const InitialisingScreen(
-                          dvdMode: true,
-                          child: SizedBox.shrink(),
-                        ),
-                        transition: Transition.fadeIn,
-                      )?.then((_) {
-                        DiscordRPCController.instance.updateBrowsingPresence(
-                          activity: 'Browsing Stuff',
-                          details: 'Idle',
-                        );
-                      });
-                    },
-                    leading: const Icon(Icons.tv_rounded),
-                    title: 'NyanDVD',
-                    subtitle: 'The most important feature.',
                   ),
                 ],
               ),

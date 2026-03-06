@@ -1,11 +1,11 @@
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/media_items/media_item.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/media_items/media_item.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:flutter/material.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_progress.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 
@@ -98,7 +98,7 @@ class _AnimeListState extends State<AnimeList> {
                           filterListByStatus(animeList, tab);
 
                       return Tab(
-                          child: NyantvText(
+                          child: AnymexText(
                         text: '$tab (${filteredAnimeList.length})',
                         variant: TextVariant.bold,
                       ));
@@ -107,7 +107,7 @@ class _AnimeListState extends State<AnimeList> {
                       final filteredAnimeList =
                           filterListByStatus(animeList, tab);
                       return Tab(
-                          child: NyantvText(
+                          child: AnymexText(
                         text: '$tab (${filteredAnimeList.length})',
                         variant: TextVariant.bold,
                       ));
@@ -123,7 +123,6 @@ class _AnimeListState extends State<AnimeList> {
                           animeData: isItemsReversed
                               ? animeList.reversed.toList()
                               : animeList,
-                          listTitle: widget.title,
                         ))
                     .toList()
                 : tabs
@@ -132,7 +131,6 @@ class _AnimeListState extends State<AnimeList> {
                           animeData: isItemsReversed
                               ? animeList.reversed.toList()
                               : animeList,
-                          listTitle: widget.title,
                         ))
                     .toList(),
           ),
@@ -145,13 +143,11 @@ class _AnimeListState extends State<AnimeList> {
 class AnimeListContent extends StatelessWidget {
   final String tabType;
   final List<TrackedMedia>? animeData;
-  final String? listTitle;
 
   const AnimeListContent({
     super.key,
     required this.tabType,
     required this.animeData,
-    this.listTitle,
   });
 
   int getResponsiveCrossAxisCount(double screenWidth, {int itemWidth = 150}) {
@@ -161,14 +157,13 @@ class AnimeListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (animeData == null) {
-      return const Center(child: NyantvProgressIndicator());
+      return const Center(child: AnymexProgressIndicator());
     }
 
     final filteredAnimeList = filterListByStatus(animeData!, tabType);
 
     if (filteredAnimeList.isEmpty) {
-      return Center(
-          child: Text('No ${listTitle ?? "items"} found for $tabType'));
+      return Center(child: Text('No anime found for $tabType'));
     }
 
     return GridView.builder(
@@ -183,7 +178,7 @@ class AnimeListContent extends StatelessWidget {
       itemCount: filteredAnimeList.length,
       itemBuilder: (context, index) {
         final item = filteredAnimeList[index];
-        return GridAnimeCard(data: item);
+        return GridAnimeCard(data: item, isManga: false);
       },
     );
   }

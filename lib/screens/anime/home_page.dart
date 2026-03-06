@@ -1,13 +1,29 @@
 // ignore_for_file: invalid_use_of_protected_member
-import 'package:nyantv/widgets/header.dart';
+
+import 'package:anymex/widgets/header.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
-import 'package:nyantv/utils/tv_scroll_mixin.dart';
+import 'package:flutter/services.dart';
+import 'package:anymex/utils/tv_scroll_mixin.dart';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
+
+import 'package:anymex/controllers/cacher/cache_controller.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/widgets/common/scroll_aware_app_bar.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_button.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/custom_widgets/custom_textspan.dart';
+import 'package:anymex/widgets/history/tap_history_cards.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 
 class AnimeHomePage extends StatefulWidget {
-  const AnimeHomePage({super.key});
+  const AnimeHomePage({
+    super.key,
+  });
 
   @override
   State<AnimeHomePage> createState() => _AnimeHomePageState();
@@ -15,32 +31,27 @@ class AnimeHomePage extends StatefulWidget {
 
 class _AnimeHomePageState extends State<AnimeHomePage> with TVScrollMixin {
   late ScrollController _scrollController;
-  final ValueNotifier<bool> _isAppBarVisible = ValueNotifier<bool>(true);
-
-  @override
-  ScrollController get scrollController => _scrollController;
+  final ValueNotifier<bool> _isAppBarVisibleExternally =
+      ValueNotifier<bool>(true);
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    initTVScroll();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.find<Settings>().checkForUpdates(context);
-      _scrollController.addListener(() {
-        final statusBarHeight = MediaQuery.of(context).padding.top;
-        const appBarHeight = kToolbarHeight + 20;
-        final threshold = statusBarHeight + appBarHeight;
-        _isAppBarVisible.value = _scrollController.offset < threshold;
-      });
+      Get.find<Settings>().showWelcomeDialog(context);
     });
+    _scrollController = ScrollController();
+    initTVScroll();
   }
+
+  ScrollController get scrollController => _scrollController;
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _isAppBarVisible.dispose();
+    _isAppBarVisibleExternally.dispose();
+    
     disposeTVScroll();
     super.dispose();
   }
@@ -78,22 +89,28 @@ class _AnimeHomePageState extends State<AnimeHomePage> with TVScrollMixin {
               ],
             ),
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: _isAppBarVisible,
-            builder: (context, isVisible, _) => Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: isVisible
-                  ? Container(
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      padding: EdgeInsets.only(
-                        top: statusBarHeight,
-                        bottom: 10,
-                      ),
-                      child: const Header(type: PageType.anime),
-                    )
-                  : const SizedBox.shrink(),
+          CustomAnimatedAppBar(
+            isVisible: _isAppBarVisibleExternally,
+            scrollController: _scrollController,
+            headerContent: const Header(type: PageType.anime),
+            visibleStatusBarStyle: SystemUiOverlayStyle(
+              statusBarIconBrightness:
+                  Theme.of(context).brightness == Brightness.light
+                      ? Brightness.dark
+                      : Brightness.light,
+              statusBarBrightness: Theme.of(context).brightness,
+              statusBarColor: Colors.transparent,
+            ),
+            hiddenStatusBarStyle: SystemUiOverlayStyle(
+              statusBarIconBrightness:
+                  Theme.of(context).brightness == Brightness.light
+                      ? Brightness.light
+                      : Brightness.dark,
+              statusBarBrightness:
+                  Theme.of(context).brightness == Brightness.light
+                      ? Brightness.dark
+                      : Brightness.light,
+              statusBarColor: Colors.transparent,
             ),
           ),
         ],

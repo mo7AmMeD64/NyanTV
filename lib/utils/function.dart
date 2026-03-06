@@ -1,14 +1,15 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
+import 'package:nyantv/stubs/extension_stubs.dart';
 
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Media/relation.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/models/Offline/Hive/offline_media.dart';
-import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
-import 'package:nyantv/models/models_convertor/carousel_mapper.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Media/relation.dart';
+import 'package:anymex/models/Offline/Hive/chapter.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/models/Offline/Hive/offline_media.dart';
+import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
+import 'package:anymex/models/models_convertor/carousel_mapper.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -91,9 +92,9 @@ Future<void> snackString(
   }
 }
 
-Episode DEpisodeToEpisodeFunc(DEpisode chapter) {
+Episode DEpisodeToEpisode(DEpisode chapter) {
   return Episode(
-    number: chapter.episodeNumber?.toString() ?? "",
+    number: chapter.episodeNumber,
     link: chapter.url,
     title: chapter.name,
     thumbnail: null,
@@ -308,16 +309,16 @@ List<TrackedMedia> filterListByLabel(
     if (label == "Completed Movie" && anime.watchingStatus == 'COMPLETED') {
       return true;
     }
-    if (label == "Paused Anime" && anime.watchingStatus == 'PAUSED') {
+    if (label == "Paused Animes" && anime.watchingStatus == 'PAUSED') {
       return true;
     }
-    if (label == "Dropped Anime" && anime.watchingStatus == 'DROPPED') {
+    if (label == "Dropped Animes" && anime.watchingStatus == 'DROPPED') {
       return true;
     }
-    if (label == "Planning Anime" && anime.watchingStatus == 'PLANNING') {
+    if (label == "Planning Animes" && anime.watchingStatus == 'PLANNING') {
       return true;
     }
-    if (label == "Rewatching Anime" && anime.watchingStatus == 'REPEATING') {
+    if (label == "Rewatching Animes" && anime.watchingStatus == 'REPEATING') {
       return true;
     }
 

@@ -1,34 +1,26 @@
-import 'package:nyantv/utils/logger.dart';
+import 'package:anymex/utils/logger.dart';
 
-import 'package:nyantv/controllers/cacher/cache_controller.dart';
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/controllers/services/anilist/anilist_data.dart';
-import 'package:nyantv/controllers/services/mal/mal_service.dart';
-import 'package:nyantv/controllers/services/simkl/simkl_service.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Anilist/anilist_profile.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Service/base_service.dart';
-import 'package:nyantv/models/Service/online_service.dart';
+import 'package:anymex/controllers/cacher/cache_controller.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/controllers/services/anilist/anilist_data.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Anilist/anilist_profile.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Service/base_service.dart';
+import 'package:anymex/models/Service/online_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 
 enum ServicesType {
   anilist,
-  mal,
-  simkl,
   extensions;
 
   BaseService get service {
     switch (this) {
       case ServicesType.anilist:
         return Get.find<AnilistData>();
-      case ServicesType.mal:
-        return Get.find<MalService>();
-      case ServicesType.simkl:
-        return Get.find<SimklService>();
       case ServicesType.extensions:
         return Get.find<SourceController>();
     }
@@ -38,10 +30,6 @@ enum ServicesType {
     switch (this) {
       case ServicesType.anilist:
         return Get.find<AnilistData>();
-      case ServicesType.mal:
-        return Get.find<MalService>();
-      case ServicesType.simkl:
-        return Get.find<SimklService>();
       default:
         return Get.find<AnilistData>();
     }
@@ -53,18 +41,12 @@ final serviceHandler = Get.find<ServiceHandler>();
 class ServiceHandler extends GetxController {
   final serviceType = ServicesType.anilist.obs;
   final anilistService = Get.find<AnilistData>();
-  final malService = Get.find<MalService>();
-  final simklService = Get.find<SimklService>();
   final extensionService = Get.find<SourceController>();
 
   BaseService get service {
     switch (serviceType.value) {
       case ServicesType.anilist:
         return anilistService;
-      case ServicesType.mal:
-        return malService;
-      case ServicesType.simkl:
-        return simklService;
       case ServicesType.extensions:
         return extensionService;
     }
@@ -74,10 +56,6 @@ class ServiceHandler extends GetxController {
     switch (serviceType.value) {
       case ServicesType.anilist:
         return anilistService;
-      case ServicesType.mal:
-        return malService;
-      case ServicesType.simkl:
-        return simklService;
       default:
         return anilistService;
     }
@@ -96,9 +74,7 @@ class ServiceHandler extends GetxController {
   Future<void> login() => onlineService.login();
   Future<void> logout() => onlineService.logout();
   Future<void> autoLogin() => Future.wait([
-        malService.autoLogin(),
         anilistService.autoLogin(),
-        simklService.autoLogin(),
       ]);
   @override
   Future<void> refresh() => onlineService.refresh();

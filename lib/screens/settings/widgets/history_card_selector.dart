@@ -1,11 +1,11 @@
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/screens/library/widgets/history_model.dart';
-import 'package:nyantv/screens/settings/widgets/history_card_gate.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_chip.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_dialog.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/screens/library/widgets/history_model.dart';
+import 'package:anymex/screens/settings/widgets/history_card_gate.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_chip.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_dialog.dart';
+import 'package:anymex/widgets/custom_widgets/custom_expansion_tile.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
@@ -31,7 +31,7 @@ void showHistoryCardStyleSelector(BuildContext context) {
     builder: (dialogContext) {
       return Obx(
         () {
-          return NyantvDialog(
+          return AnymexDialog(
               padding: const EdgeInsets.all(10),
               title: 'Card Style',
               onConfirm: () {
@@ -75,6 +75,7 @@ class _HistoryCardSelectorState extends State<HistoryCardSelector> {
       progress: 243034,
       totalProgress: 1420061,
       progressTitle: 'Sabito and Makomo',
+      isManga: false,
       calculatedProgress: 0.1711433522926128,
       progressText: '19:37 left',
       date: '2025-03-13');
@@ -103,7 +104,7 @@ class _HistoryCardSelectorState extends State<HistoryCardSelector> {
           ),
         ),
         10.height(),
-        NyantvCard(
+        AnymexCard(
           enableAnimation: true,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -130,7 +131,7 @@ class _HistoryCardSelectorState extends State<HistoryCardSelector> {
   Widget _buildStyleChip(HistoryCardStyle style) {
     final bool isSelected = style == _selectedStyle;
 
-    return NyantvChip(
+    return AnymexChip(
       isSelected: isSelected,
       label: style.name.capitalize!,
       onSelected: (bool selected) {

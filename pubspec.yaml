@@ -1,10 +1,12 @@
-name: nyantv
-description: "A multi-service Tracking Client"
+name: anymex
+description: "An Anilist Client"
 publish_to: "GitHub"
-version: 0.2.2+44
+version: 3.0.3+25
+
 environment:
   sdk: ">=3.4.4 <4.0.0"
   flutter: ">=3.0.0"
+
 dependencies:
   algorithmic: ^0.0.11
   blur: ^4.0.0
@@ -62,11 +64,10 @@ dependencies:
   smooth_page_indicator: ^1.2.0+3
   super_sliver_list: ^0.4.1
   share_plus: ^11.0.0
-  url_launcher: 6.1.11
+  url_launcher: any
   volume_controller: ^3.4.0
   screen_brightness: ^2.1.7
   window_manager: ^0.4.3
-  wakelock_plus: ^1.2.8
   app_links: ^6.4.0
   preload_page_view: ^0.2.0
   archive: any
@@ -76,7 +77,7 @@ dependencies:
   flutter_staggered_animations: ^1.1.1
   material_symbols_icons: ^4.2867.0
   fuzzywuzzy: ^1.2.0
-  expressive_loading_indicator: any
+  expressive_loading_indicator: ^0.0.1
   photo_view: ^0.15.0
   rxdart: any
   ffi: any
@@ -88,6 +89,7 @@ dependencies:
     git:
       url: https://github.com/Schnitzel5/flutter-discord-rpc.git
       ref: main
+
 dev_dependencies:
   build_runner: ^2.4.11
   change_app_package_name: ^1.4.0
@@ -96,8 +98,10 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.14.2
   inno_bundle: ^0.7.4
+
 # dependency_overrides:
 #   path: ^1.9.1
+
 flutter_launcher_icons:
   android: false
   ios: false
@@ -109,13 +113,15 @@ flutter_launcher_icons:
   macos:
     generate: false
     image_path: "assets/images/logo.png"
+
 flutter_native_splash:
   fullscreen: true
-  color: "#623bfa"
+  color: "#000000"
   image: assets/images/logo.png
   android_12:
-    color: "#623bfa"
+    color: "#000000"
     image: assets/images/logo.png
+
 flutter:
   uses-material-design: true
   assets:
@@ -132,9 +138,11 @@ flutter:
     - family: Poppins-Bold
       fonts:
         - asset: assets/fonts/Poppins/Poppins-Bold.ttf
+
 inno_bundle:
-  id: 1E872EE2-D856-43CC-AD79-14E9B7D7E985
-  publisher: hoemotion
-  name: NyanTV
-  version: 0.2.2
+  id: 8fbd47cb-d6e1-5343-a9f6-61661647c94c
+  publisher: Ryan Yuuki
+  name: AnymeX
+  version: 3.0.3
   admin: auto
+  installer_icon: ./anymex.ico

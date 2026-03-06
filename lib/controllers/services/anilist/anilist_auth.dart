@@ -1,26 +1,21 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:convert';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/database/comments_db.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Anilist/anilist_profile.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/utils/string_extensions.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/utils/logger.dart';
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/database/comments_db.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Anilist/anilist_profile.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/utils/string_extensions.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
-
-Map<String, dynamic> _parseAnilistAnimeList(String body) {
-  return jsonDecode(body) as Map<String, dynamic>;
-}
 
 class AnilistAuth extends GetxController {
   RxBool isLoggedIn = false.obs;
@@ -33,7 +28,9 @@ class AnilistAuth extends GetxController {
   RxList<TrackedMedia> currentlyWatching = <TrackedMedia>[].obs;
   RxList<TrackedMedia> animeList = <TrackedMedia>[].obs;
 
+
   Future<void> tryAutoLogin() async {
+    isLoggedIn.value = false;
     final token = await storage.get('auth_token');
     if (token != null) {
       await fetchUserProfile();
@@ -52,11 +49,7 @@ class AnilistAuth extends GetxController {
     try {
       final result = await FlutterWebAuth2.authenticate(
         url: url,
-        callbackUrlScheme: 'nyantv',
-        options: const FlutterWebAuth2Options(
-          preferEphemeral: false,
-          timeout: 120,
-        ),
+        callbackUrlScheme: 'anymex',
       );
 
       final code = Uri.parse(result).queryParameters['code'];
@@ -66,7 +59,6 @@ class AnilistAuth extends GetxController {
       }
     } catch (e) {
       Logger.i('Error during login: $e');
-      await tryAutoLogin();
     }
   }
 
@@ -289,13 +281,24 @@ class AnilistAuth extends GetxController {
       );
 
       if (response.statusCode == 200) {
-        final data = await compute(_parseAnilistAnimeList, response.body);
+        final data = json.decode(response.body);
         if (data['data'] != null &&
             data['data']['MediaListCollection'] != null) {
           final lists =
               data['data']['MediaListCollection']['lists'] as List<dynamic>;
+
           final animeListt =
               lists.expand((list) => list['entries'] as List<dynamic>).toList();
+
+          currentlyWatching.value = animeListt
+              .where((animeEntry) => animeEntry['status'] == 'CURRENT')
+              .map((animeEntry) => TrackedMedia.fromJson(animeEntry))
+              .toList()
+              .reversed
+              .toList()
+              .removeDupes();
+
+          currentlyWatching.value = currentlyWatching.value.removeDupes();
 
           animeList.value = animeListt
               .map((animeEntry) => TrackedMedia.fromJson(animeEntry))
@@ -303,10 +306,6 @@ class AnilistAuth extends GetxController {
               .reversed
               .toList()
               .removeDupes();
-
-          currentlyWatching.value =
-              animeList.where((e) => e.watchingStatus == 'CURRENT').toList();
-
           Logger.i("Anime List Fetched Successfully!");
         } else {
           Logger.i('Unexpected response structure: ${response.body}');
@@ -519,6 +518,7 @@ class AnilistAuth extends GetxController {
     }
   }
 
+
   TrackedMedia returnAvailAnime(String id) {
     return animeList.value
         .firstWhere((el) => el.id == id, orElse: () => TrackedMedia());
@@ -528,8 +528,11 @@ class AnilistAuth extends GetxController {
     final savedAnime = offlineStorage.getAnimeById(id);
     final number = savedAnime?.currentEpisode?.number.toInt() ?? 0;
     currentMedia.value = animeList.value.firstWhere((el) => el.id == id,
-        orElse: () => TrackedMedia(episodeCount: number.toString()));
+        orElse: () => TrackedMedia(
+            episodeCount: number.toString(),
+            chapterCount: number.toString()));
   }
+
 
   Future<void> logout() async {
     await storage.delete('auth_token');

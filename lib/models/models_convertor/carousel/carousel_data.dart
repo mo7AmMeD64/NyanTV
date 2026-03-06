@@ -1,4 +1,4 @@
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
 
 class CarouselData {
   String? id;

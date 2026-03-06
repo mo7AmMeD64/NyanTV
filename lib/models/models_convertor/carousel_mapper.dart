@@ -1,16 +1,13 @@
+import 'package:anymex/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Anilist/anilist_media_user.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Media/relation.dart';
-import 'package:nyantv/models/Offline/Hive/offline_media.dart';
-import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
-import 'package:nyantv/utils/function.dart';
+import 'package:anymex/models/Anilist/anilist_media_user.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Media/relation.dart';
+import 'package:anymex/models/Offline/Hive/offline_media.dart';
+import 'package:anymex/models/models_convertor/carousel/carousel_data.dart';
+import 'package:anymex/utils/function.dart';
 
-extension DMediaMapper on DMedia {
-  CarouselData toCarouselData({
-    DataVariant variant = DataVariant.extension,
-  }) {
+) {
     return CarouselData(
         id: url,
         title: title,
@@ -53,16 +50,15 @@ extension RelationMapper on Relation {
 }
 
 extension TrackedMediaMapper on TrackedMedia {
-  CarouselData toCarouselData({DataVariant variant = DataVariant.anilist}) {
+  CarouselData toCarouselData(
+      {DataVariant variant = DataVariant.anilist}) {
     return CarouselData(
-      id: id.toString(),
-      title: title,
-      poster: poster,
-      servicesType: servicesType,
-      extraData: "${episodeCount ?? "??"} | ${releasedEpisodes != null ? releasedEpisodes ?? "??" : totalEpisodes ?? "??"}",
-      source: (rating != null && rating != '0.0' && rating != '?' && rating != '0') ? rating : null, // ← rating statt score
-      releasing: mediaStatus == "RELEASING",
-    );
+        id: id.toString(),
+        title: title,
+        poster: poster,
+        servicesType: servicesType,
+        extraData: "${episodeCount ?? "??"} | ${releasedEpisodes != null ? releasedEpisodes ?? "??" : totalEpisodes ?? "??"}",
+        releasing: mediaStatus == "RELEASING");
   }
 }
 

@@ -1,16 +1,13 @@
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/main.dart';
-import 'dart:async';
+import 'package:anymex/utils/logger.dart';
 import 'dart:io';
 
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/screens/settings/sub_settings/settings_accounts.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/common/custom_tiles.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/non_widgets/settings_sheet.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/screens/settings/sub_settings/settings_accounts.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/common/custom_tiles.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/non_widgets/settings_sheet.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,45 +16,63 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:iconly/iconly.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-int? _cachedSdkInt;
-
-Future<int> _getSdkInt() async {
-  if (_cachedSdkInt != null) return _cachedSdkInt!;
-  final androidInfo = await DeviceInfoPlugin().androidInfo;
-  _cachedSdkInt = androidInfo.version.sdkInt;
-  return _cachedSdkInt!;
-}
-
 Future<bool> _requestStoragePermissions() async {
   if (!Platform.isAndroid) return true;
+
   try {
-    final sdkInt = await _getSdkInt();
+    final deviceInfo = DeviceInfoPlugin();
+    final androidInfo = await deviceInfo.androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+
+    Logger.i('Android SDK version: $sdkInt');
+
     if (sdkInt >= 33) {
-      final statuses = await [Permission.photos, Permission.videos].request();
+      final permissions = [
+        Permission.photos,
+        Permission.videos,
+      ];
+
+      Map<Permission, PermissionStatus> statuses = await permissions.request();
+
       if (await Permission.manageExternalStorage.isDenied) {
         final manageStorageStatus =
             await Permission.manageExternalStorage.request();
         if (manageStorageStatus.isPermanentlyDenied) {
-          snackBar("Go to Settings > Permissions to enable storage");
+          await openAppSettings();
           return false;
         }
       }
-      return statuses.values.every((s) =>
-          s == PermissionStatus.granted || s == PermissionStatus.limited);
+
+      return statuses.values.every((status) =>
+          status == PermissionStatus.granted ||
+          status == PermissionStatus.limited);
     } else if (sdkInt >= 30) {
       final status = await Permission.manageExternalStorage.request();
+
       if (status.isPermanentlyDenied) {
-        snackBar("Go to Settings > Permissions to enable storage");
+        await openAppSettings();
         return false;
       }
+
       return status.isGranted;
     } else if (sdkInt >= 23) {
-      final statuses = await [Permission.storage].request();
-      final allGranted = statuses.values.every((s) => s.isGranted);
-      if (!allGranted && statuses.values.any((s) => s.isPermanentlyDenied)) {
-        snackBar("Go to Settings > Permissions to enable storage");
-        return false;
+      final permissions = [
+        Permission.storage,
+      ];
+
+      Map<Permission, PermissionStatus> statuses = await permissions.request();
+
+      bool allGranted = statuses.values.every((status) => status.isGranted);
+
+      if (!allGranted) {
+        bool permanentlyDenied =
+            statuses.values.any((status) => status.isPermanentlyDenied);
+        if (permanentlyDenied) {
+          await openAppSettings();
+          return false;
+        }
       }
+
       return allGranted;
     } else {
       return true;
@@ -69,56 +84,19 @@ Future<bool> _requestStoragePermissions() async {
 }
 
 void showWelcomeDialogg(BuildContext context) {
-  isWelcomeDialogOpen.value = true;
   showGeneralDialog(
     context: context,
-    barrierDismissible: false,
-    barrierLabel: "Welcome To NyanTV",
+    barrierDismissible: true,
+    barrierLabel: "Welcome To AnymeX",
     pageBuilder: (context, animation1, animation2) {
       final settings = Get.find<Settings>();
       final RxBool storagePermissionGranted = false.obs;
       final RxBool installPermissionGranted = false.obs;
-      if (Platform.isAndroid) {
-        Permission.manageExternalStorage.status.then(
-          (s) => storagePermissionGranted.value = s.isGranted,
-        );
-        Permission.requestInstallPackages.status.then(
-          (s) => installPermissionGranted.value = s.isGranted,
-        );
-      }
-      final RxBool performanceMode = (!settings.enableAnimation).obs;
-      final RxBool disableGradient = settings.disableGradient.obs;
-      final serviceHandler = Get.find<ServiceHandler>();
-      serviceHandler.changeService(ServicesType.anilist);
 
       Future<void> requestStoragePermission() async {
-        await _requestStoragePermissions();
-
-        final completer = Completer<void>();
-        late final AppLifecycleListener listener;
-        listener = AppLifecycleListener(
-          onResume: () {
-            if (!completer.isCompleted) completer.complete();
-            listener.dispose();
-          },
-        );
-        await completer.future.timeout(
-          const Duration(seconds: 60),
-          onTimeout: () => listener.dispose(),
-        );
-
-        bool granted = false;
-        for (int i = 0; i < 6; i++) {
-          await Future.delayed(const Duration(milliseconds: 400));
-          final status = await Permission.manageExternalStorage.status;
-          if (status.isGranted) {
-            granted = true;
-            break;
-          }
-        }
-
-        storagePermissionGranted.value = granted;
-        if (!granted) {
+        final status = await _requestStoragePermissions();
+        storagePermissionGranted.value = status;
+        if (!status) {
           snackBar("Storage permission is required to download updates");
         }
       }
@@ -131,9 +109,8 @@ void showWelcomeDialogg(BuildContext context) {
         }
       }
 
-      return PopScope(
-        canPop: false,
-        child: Material(
+      return Obx(() {
+        return Material(
           color: Theme.of(context).colorScheme.surface,
           child: Center(
             child: Container(
@@ -141,7 +118,8 @@ void showWelcomeDialogg(BuildContext context) {
                   mobileSize: MediaQuery.of(context).size.width - 20,
                   desktopSize: MediaQuery.of(context).size.width * 0.4),
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
+                maxHeight: MediaQuery.of(context).size.height *
+                    0.8, // Limit max height
               ),
               decoration: BoxDecoration(
                 color: Theme.of(context).dialogBackgroundColor,
@@ -168,7 +146,7 @@ void showWelcomeDialogg(BuildContext context) {
                     ),
                     child: const Center(
                       child: Text(
-                        'Welcome To NyanTV',
+                        'Welcome To AnymeX',
                         style: TextStyle(fontFamily: 'Poppins-SemiBold'),
                       ),
                     ),
@@ -176,173 +154,147 @@ void showWelcomeDialogg(BuildContext context) {
                   Flexible(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(6.0),
-                      child: Obx(() => Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              CustomSwitchTile(
-                                icon: HugeIcons.strokeRoundedCpu,
-                                title: "Performance Mode",
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CustomSwitchTile(
+                              icon: HugeIcons.strokeRoundedCpu,
+                              title: "Performance Mode",
+                              description:
+                                  "Disable Animations to get smoother experience",
+                              switchValue: !settings.enableAnimation,
+                              onChanged: (val) {
+                                settings.enableAnimation = !val;
+                              }),
+                          CustomSwitchTile(
+                              icon: HugeIcons.strokeRoundedBounceRight,
+                              title: "Disable Gradient",
+                              description:
+                                  "Disable Gradient, might give you smoother experience",
+                              switchValue: settings.disableGradient,
+                              onChanged: (val) {
+                                settings.disableGradient = val;
+                              }),
+                          if (Platform.isAndroid) ...[
+                            CustomSwitchTile(
+                                icon: HugeIcons.strokeRoundedFolderSecurity,
+                                title: "Storage Permission",
                                 description:
-                                    "Disable Animations to get smoother experience",
-                                switchValue: performanceMode.value,
+                                    "Allow storage access to download updates",
+                                switchValue: storagePermissionGranted.value,
                                 onChanged: (val) {
-                                  performanceMode.value = val;
-                                  settings.enableAnimation = !val;
-                                },
-                              ),
-                              CustomSwitchTile(
-                                icon: HugeIcons.strokeRoundedBounceRight,
-                                title: "Disable Gradient",
+                                  if (val) {
+                                    requestStoragePermission();
+                                  }
+                                }),
+                            CustomSwitchTile(
+                                icon: HugeIcons.strokeRoundedDownload01,
+                                title: "Install Permission",
                                 description:
-                                    "Disable Gradient, might give you smoother experience",
-                                switchValue: disableGradient.value,
+                                    "Allow installing updates for the app",
+                                switchValue: installPermissionGranted.value,
                                 onChanged: (val) {
-                                  disableGradient.value = val;
-                                  settings.disableGradient = val;
-                                },
-                              ),
-                              if (Platform.isAndroid) ...[
-                                CustomSwitchTile(
-                                  icon: HugeIcons.strokeRoundedFolderSecurity,
-                                  title: "Storage Permission",
-                                  description:
-                                      "Allow storage access to download updates",
-                                  switchValue: storagePermissionGranted.value,
-                                  onChanged: (val) {
-                                    if (val) {
-                                      storagePermissionGranted.value = true;
-                                      requestStoragePermission();
-                                    } else {
-                                      storagePermissionGranted.value = false;
-                                    }
-                                  },
-                                ),
-                                CustomSwitchTile(
-                                  icon: HugeIcons.strokeRoundedDownload01,
-                                  title: "Install Permission",
-                                  description:
-                                      "Allow installing updates for the app",
-                                  switchValue: installPermissionGranted.value,
-                                  onChanged: (val) {
-                                    if (val) {
-                                      installPermissionGranted.value = true;
-                                      requestInstallPermission();
-                                    } else {
-                                      installPermissionGranted.value = false;
-                                    }
-                                  },
-                                ),
-                              ],
-                              CustomTile(
-                                description:
-                                    'Change Service to whichever you prefer! like AL, MAL or Simkl',
-                                icon: HugeIcons.strokeRoundedAiSetting,
-                                title: 'Change Service',
-                                onTap: () {
-                                  SettingsSheet().showServiceSelector(context);
-                                },
-                              ),
-                              Container(
-                                height: 50,
-                                padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerLowest,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .surfaceContainer,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12)),
-                                        ),
-                                        onPressed: () {
-                                          isWelcomeDialogOpen.value = false;
-                                          Hive.box('themeData')
-                                              .put('isFirstTime', false);
-                                          Navigator.of(context).pop();
-                                          navigate(
-                                              () => const SettingsAccounts());
-                                        },
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              'Login',
-                                              style: TextStyle(
-                                                fontFamily: 'Poppins-SemiBold',
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .inverseSurface,
-                                              ),
-                                            ),
-                                            const Spacer(),
-                                            _buildIcon(
-                                                context, 'anilist-icon.png'),
-                                            _buildIcon(context, 'mal-icon.png'),
-                                            _buildIcon(
-                                                context, 'simkl-icon.png'),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
+                                  if (val) {
+                                    requestInstallPermission();
+                                  }
+                                }),
+                          ],
+                          CustomTile(
+                            description:
+                                'You may choose AL as Service',
+                            icon: HugeIcons.strokeRoundedAiSetting,
+                            title: 'Choose Service',
+                            onTap: () {
+                              SettingsSheet().showServiceSelector(context);
+                            },
+                          ),
+                          Container(
+                            height: 50,
+                            padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                            decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
                                         backgroundColor: Theme.of(context)
                                             .colorScheme
                                             .surfaceContainer,
                                         shape: RoundedRectangleBorder(
                                             borderRadius:
-                                                BorderRadius.circular(12)),
-                                      ),
-                                      onPressed: () {
-                                        isWelcomeDialogOpen.value = false;
-                                        Hive.box('themeData')
-                                            .put('isFirstTime', false);
-                                        Get.back();
-                                      },
-                                      label: Text(
-                                        'Skip',
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins-SemiBold',
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .inverseSurface,
+                                                BorderRadius.circular(12))),
+                                    onPressed: () {
+                                      Hive.box('themeData')
+                                          .put('isFirstTime', false);
+                                      Navigator.of(context).pop();
+                                      navigate(() => const SettingsAccounts());
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Login',
+                                          style: TextStyle(
+                                              fontFamily: 'Poppins-SemiBold',
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .inverseSurface),
                                         ),
-                                      ),
-                                      icon: Icon(
-                                        IconlyBold.arrow_right,
+                                        const Spacer(),
+                                        _buildIcon(context, 'anilist-icon.png'),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainer,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(12))),
+                                  onPressed: () {
+                                    Hive.box('themeData')
+                                        .put('isFirstTime', false);
+                                    Get.back();
+                                  },
+                                  label: Text(
+                                    'Skip',
+                                    style: TextStyle(
+                                        fontFamily: 'Poppins-SemiBold',
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .inverseSurface,
-                                      ),
-                                      iconAlignment: IconAlignment.end,
-                                    ),
-                                  ],
+                                            .inverseSurface),
+                                  ),
+                                  icon: Icon(IconlyBold.arrow_right,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .inverseSurface),
+                                  iconAlignment: IconAlignment.end,
                                 ),
-                              ),
-                            ],
-                          )),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-        ),
-      );
+        );
+      });
     },
-  ).then((_) => isWelcomeDialogOpen.value = false);
+  );
 }
 
 Widget _buildIcon(BuildContext context, String url) {

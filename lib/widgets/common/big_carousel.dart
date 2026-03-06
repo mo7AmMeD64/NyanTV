@@ -1,13 +1,13 @@
 import 'dart:math';
 
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/screens/anime/details_page.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/screens/anime/details_page.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/gestures.dart';
@@ -16,7 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-enum CarouselType { anime, simkl }
+enum CarouselType { anime }
 
 class BigCarousel extends StatefulWidget {
   final List<Media> data;
@@ -29,10 +29,10 @@ class BigCarousel extends StatefulWidget {
   });
 
   @override
-  BigCarouselState createState() => BigCarouselState();
+  _BigCarouselState createState() => _BigCarouselState();
 }
 
-class BigCarouselState extends State<BigCarousel> {
+class _BigCarouselState extends State<BigCarousel> {
   int activeIndex = 0;
   final CarouselSliderController controller = CarouselSliderController();
 
@@ -53,7 +53,7 @@ class BigCarouselState extends State<BigCarousel> {
                 }
               }
             },
-            child: NyantvOnTapAdv(
+            child: AnymexOnTapAdv(
               onKeyEvent: (node, event) {
                 if (event is KeyDownEvent) {
                   if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
@@ -172,7 +172,7 @@ class BigCarouselState extends State<BigCarousel> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: NyantvText(
+                                    child: AnymexText(
                                       text: anime.description
                                               .replaceAll(
                                                   RegExp(r'<[^>]*>'), '')

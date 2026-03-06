@@ -1,9 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
-import 'package:nyantv/screens/anime/watch/controller/player_utils.dart';
+import 'package:anymex/screens/anime/watch/controller/player_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nyantv/screens/anime/watch/controller/player_controller.dart';
+import 'package:anymex/screens/anime/watch/controller/player_controller.dart';
 
 enum SliderStyle {
   regular,
@@ -35,9 +35,6 @@ class _ProgressSliderState extends State<ProgressSlider> {
       final position = controller.currentPosition.value.inMilliseconds;
       final buffer = controller.bufferred.value.inMilliseconds;
       final fullDuration = Duration(milliseconds: duration);
-      final maxValue = duration > 0 ? duration.toDouble() : 1.0;
-      final clampedPosition = position.toDouble().clamp(0.0, maxValue);
-      final clampedBuffer = buffer.toDouble().clamp(0.0, maxValue);
 
       return SizedBox(
         height: 27,
@@ -53,9 +50,9 @@ class _ProgressSliderState extends State<ProgressSlider> {
                     : Duration(milliseconds: duration).inSeconds ~/ 10,
             focusNode: FocusNode(canRequestFocus: false, skipTraversal: true),
             min: 0,
-            value: clampedPosition,
-            max: maxValue,
-            secondaryTrackValue: clampedBuffer,
+            value: position.toDouble(),
+            max: duration.toDouble(),
+            secondaryTrackValue: buffer.toDouble(),
             onChangeStart: (v) => controller.isSeeking.value = true,
             onChanged: (v) =>
                 controller.seekTo(Duration(milliseconds: v.toInt())),

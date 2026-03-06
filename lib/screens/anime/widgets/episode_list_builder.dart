@@ -1,34 +1,32 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member, prefer_const_constructors, unnecessary_null_comparison
-// lib/screens/anime/widgets/episode_list_builder.dart
 import 'dart:async';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/database/data_keys/general.dart';
-import 'package:nyantv/models/Offline/Hive/video.dart' as hive;
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/screens/anime/watch_page.dart';
-import 'package:nyantv/screens/anime/widgets/episode/normal_episode.dart';
-import 'package:nyantv/screens/anime/widgets/episode_range.dart';
-import 'package:nyantv/screens/anime/widgets/track_dialog.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/utils/string_extensions.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_button.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_chip.dart';
-import 'package:nyantv/widgets/header.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:nyantv/stubs/extension_stubs.dart' hide Video;
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/database/data_keys/general.dart';
+import 'package:anymex/models/Offline/Hive/video.dart' as hive;
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/screens/anime/watch/watch_view.dart';
+import 'package:anymex/screens/anime/watch_page.dart';
+import 'package:anymex/screens/anime/widgets/episode/normal_episode.dart';
+import 'package:anymex/screens/anime/widgets/episode_range.dart';
+import 'package:anymex/screens/anime/widgets/track_dialog.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/utils/string_extensions.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_button.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_chip.dart';
+import 'package:anymex/widgets/header.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
-import 'package:flutter/services.dart';
 
 class EpisodeListBuilder extends StatefulWidget {
   const EpisodeListBuilder({
@@ -113,8 +111,6 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
   void _handleEpisodeSelection(Episode episode) async {
     selectedEpisode.value = episode;
     streamList.clear();
-    FocusScope.of(context).unfocus();
-    await Future.delayed(const Duration(milliseconds: 10));
     fetchServers(episode);
   }
 
@@ -188,52 +184,22 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
                 final isSelected =
                     selectedEpisode.value.number == episode.number;
 
-                return Focus(
-                  canRequestFocus: true,
-                  autofocus: index == 0,
-                  onKeyEvent: (node, event) {
-                    if (event is KeyDownEvent &&
-                        (event.logicalKey == LogicalKeyboardKey.select ||
-                        event.logicalKey == LogicalKeyboardKey.enter)) {
-                      _handleEpisodeSelection(episode);
-                      return KeyEventResult.handled;
-                    }
-                    return KeyEventResult.ignored;
-                  },
-                  child: Builder(
-                    builder: (context) {
-                      final isFocused = Focus.of(context).hasFocus;
-                      
-                      return Opacity(
-                        opacity: completedEpisode
-                            ? 0.5
-                            : currentEpisode
-                                ? 0.8
-                                : 1,
-                        child: Container(
-                          decoration: isFocused
-                              ? BoxDecoration(
-                                  border: Border.all(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    width: 3,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                )
-                              : null,
-                          child: BetterEpisode(
-                            episode: episode,
-                            isSelected: isSelected,
-                            layoutType: isAnify.value
-                                ? EpisodeLayoutType.detailed
-                                : EpisodeLayoutType.compact,
-                            fallbackImageUrl:
-                                episode.thumbnail ?? widget.anilistData!.poster,
-                            offlineEpisodes: offlineEpisodes,
-                            onTap: () => _handleEpisodeSelection(episode),
-                          ),
-                        ),
-                      );
-                    },
+                return Opacity(
+                  opacity: completedEpisode
+                      ? 0.5
+                      : currentEpisode
+                          ? 0.8
+                          : 1,
+                  child: BetterEpisode(
+                    episode: episode,
+                    isSelected: isSelected,
+                    layoutType: isAnify.value
+                        ? EpisodeLayoutType.detailed
+                        : EpisodeLayoutType.compact,
+                    fallbackImageUrl:
+                        episode.thumbnail ?? widget.anilistData!.poster,
+                    offlineEpisodes: offlineEpisodes,
+                    onTap: () => _handleEpisodeSelection(episode),
                   ),
                 );
               });
@@ -287,7 +253,6 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
   }
 
   Widget _buildUniversalScraper(String url) {
-    Logger.i("universal");
     return FutureBuilder<List<Video>>(
       future: _scrapeVideoStreams(url),
       builder: (context, snapshot) {
@@ -346,7 +311,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
           containers.forEach(container => container.click());
         """);
           } catch (e) {
-            Logger.i('JavaScript execution error: $e');
+            print('JavaScript execution error: $e');
           }
 
           await Future.delayed(Duration(seconds: 5));
@@ -358,7 +323,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
         shouldInterceptRequest: (controller, request) async {
           final requestUrl = request.url.toString();
           final headers = request.headers ?? {};
-          Logger.i('Intercepted request: $requestUrl');
+          print('Intercepted request: $requestUrl');
 
           if (_isVideoStream(requestUrl)) {
             final video = Video(
@@ -372,10 +337,10 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
             final baseUrl = requestUrl.split('?')[0];
             if (!foundVideos.any((v) => v.url.split('?')[0] == baseUrl)) {
               foundVideos.add(video);
-              Logger.i(
+              print(
                   'Added video stream: $requestUrl (Quality: ${video.quality})');
             } else {
-              Logger.i('Skipped duplicate stream: $requestUrl');
+              print('Skipped duplicate stream: $requestUrl');
             }
           }
 
@@ -389,7 +354,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
 
       await headlessWebView?.run();
     } catch (e) {
-      Logger.i('Headless WebView error: $e');
+      print('Headless WebView error: $e');
       if (!completer.isCompleted) {
         completer.complete(foundVideos);
       }
@@ -399,7 +364,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
     scrapingTimer?.cancel();
     await headlessWebView?.dispose();
 
-    Logger.i('Final video count: ${result.length}');
+    print('Final video count: ${result.length}');
     return result;
   }
 
@@ -467,7 +432,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
           ),
           10.height(),
           if (!fromSrc)
-            NyantvChip(
+            AnymexChip(
               showCheck: false,
               isSelected: true,
               label: 'Using Universal Scrapper',
@@ -490,13 +455,13 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
       mainAxisSize: MainAxisSize.min,
       children: [
         10.height(),
-        NyantvText(
+        AnymexText(
           text: "Error Occured",
           variant: TextVariant.bold,
           size: 18,
         ),
         20.height(),
-        NyantvText(
+        AnymexText(
           text: "Server-chan is taking a nap!",
           variant: TextVariant.semiBold,
           size: 18,
@@ -508,7 +473,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
             color: Colors.red.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: NyantvText(
+          child: AnymexText(
             text: errorMessage,
             variant: TextVariant.regular,
             size: 14,
@@ -521,11 +486,10 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
   }
 
   Widget _buildEmptyState() {
-    Logger.i("list_builder");
     return const SizedBox(
       height: 200,
       child: Center(
-        child: NyantvText(
+        child: AnymexText(
           text: "No servers available",
           variant: TextVariant.bold,
           size: 16,
@@ -545,7 +509,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
           Container(
             padding: const EdgeInsets.all(10),
             alignment: Alignment.center,
-            child: const NyantvText(
+            child: const AnymexText(
               text: "Choose Server",
               size: 18,
               variant: TextVariant.bold,
@@ -557,20 +521,39 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
               onTap: () async {
                 Get.back();
                 if (General.shouldAskForTrack.get(true) == false) {
-                  navigate(() => WatchPage(
+                  navigate(() => settingsController.preferences
+                          .get('useOldPlayer', defaultValue: false)
+                      ? WatchPage(
                           episodeSrc: e,
                           episodeList: widget.episodeList,
                           anilistData: widget.anilistData!,
                           currentEpisode: selectedEpisode.value,
                           episodeTracks: streamList,
                           shouldTrack: true,
+                        )
+                      : WatchScreen(
+                          episodeSrc: e,
+                          episodeList: widget.episodeList,
+                          anilistData: widget.anilistData!,
+                          currentEpisode: selectedEpisode.value,
+                          episodeTracks: streamList,
                         ));
                   return;
                 }
                 final shouldTrack = await showTrackingDialog(context);
 
                 if (shouldTrack != null) {
-                  navigate(() => WatchPage(
+                  navigate(() => settingsController.preferences
+                          .get('useOldPlayer', defaultValue: false)
+                      ? WatchPage(
+                          episodeSrc: e,
+                          episodeList: widget.episodeList,
+                          anilistData: widget.anilistData!,
+                          currentEpisode: selectedEpisode.value,
+                          episodeTracks: streamList,
+                          shouldTrack: shouldTrack,
+                        )
+                      : WatchScreen(
                           episodeSrc: e,
                           episodeList: widget.episodeList,
                           anilistData: widget.anilistData!,
@@ -586,7 +569,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
                 child: ListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 2.5, horizontal: 10),
-                  title: NyantvText(
+                  title: AnymexText(
                     text: e.quality.toUpperCase(),
                     variant: TextVariant.bold,
                     size: 16,
@@ -600,7 +583,7 @@ class _EpisodeListBuilderState extends State<EpisodeListBuilder> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   trailing: const Icon(Iconsax.play5),
-                  subtitle: NyantvText(
+                  subtitle: AnymexText(
                     text: sourceController.activeSource.value!.name!
                         .toUpperCase(),
                     variant: TextVariant.semiBold,
@@ -692,7 +675,7 @@ class ContinueEpisodeButton extends StatelessWidget {
                 ),
               ),
               Positioned.fill(
-                child: NyantvButton(
+                child: AnymexButton(
                   onTap: onPressed,
                   padding: EdgeInsets.zero,
                   border: BorderSide(color: Colors.transparent),

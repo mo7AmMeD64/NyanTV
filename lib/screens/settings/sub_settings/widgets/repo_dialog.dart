@@ -1,9 +1,10 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
+import 'package:nyantv/stubs/extension_stubs.dart';
 
-import 'package:nyantv/controllers/source/source_controller.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 class GitHubRepoDialog extends StatefulWidget {
@@ -41,7 +42,9 @@ class _GitHubRepoDialogState extends State<GitHubRepoDialog> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
       setState(() {
-        _controller.text = sourceController.activeAnimeRepo;
+        _controller.text = widget.type == ItemType.anime
+            ? sourceController.activeAnimeRepo
+            : sourceController.activeNovelRepo;
       });
     });
   }

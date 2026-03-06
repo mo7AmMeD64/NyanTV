@@ -1,30 +1,31 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
-// lib/screens/anime/watch/controller/player_controller.dart
 import 'dart:async';
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
-import 'package:nyantv/controllers/discord/discord_rpc.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Media/media.dart' as nyantv;
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/models/Offline/Hive/video.dart' as model;
-import 'package:nyantv/models/player/player_adaptor.dart';
-import 'package:nyantv/screens/anime/watch/controller/player_utils.dart';
-import 'package:nyantv/screens/anime/watch/controls/widgets/bottom_sheet.dart';
-import 'package:nyantv/screens/anime/watch/subtitles/model/online_subtitle.dart';
-import 'package:nyantv/screens/anime/watch/controller/tv_remote_handler.dart';
-import 'package:nyantv/utils/aniskip.dart' as aniskip;
-import 'package:nyantv/utils/color_profiler.dart';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/utils/string_extensions.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_titlebar.dart';
-import 'package:nyantv/widgets/non_widgets/nyantv_toast.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'dart:math' as math;
+import 'package:anymex/controllers/discord/discord_rpc.dart';
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Media/media.dart' as anymex;
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/models/Offline/Hive/video.dart' as model;
+import 'package:anymex/models/player/player_adaptor.dart';
+import 'package:anymex/screens/anime/watch/controller/player_utils.dart';
+import 'package:anymex/screens/anime/watch/controls/widgets/bottom_sheet.dart';
+import 'package:anymex/screens/anime/watch/subtitles/model/online_subtitle.dart';
+import 'package:anymex/utils/aniskip.dart' as aniskip;
+import 'package:anymex/utils/color_profiler.dart';
+import 'package:anymex/utils/logger.dart';
+import 'package:anymex/utils/string_extensions.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_titlebar.dart';
+import 'package:anymex/widgets/non_widgets/anymex_toast.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:anymex/main.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:rxdart/rxdart.dart' show ThrottleExtensions;
@@ -53,18 +54,13 @@ extension PlayerControllerExtensions on PlayerController {
 class PlayerController extends GetxController with WidgetsBindingObserver {
   Rx<Episode> currentEpisode = Rx<Episode>(Episode(number: '1'));
   final List<Episode> episodeList;
-  final nyantv.Media anilistData;
+  final anymex.Media anilistData;
   RxList<model.Video> episodeTracks = RxList();
   final isOffline = false.obs;
 
   final String? folderName;
   final String? itemName;
   final String? offlineVideoPath;
-  TVRemoteHandler? _tvRemoteHandler;
-  TVRemoteHandler get tvRemoteHandler => _tvRemoteHandler!;
-  final FocusNode pauseFocusNode = FocusNode();
-  final FocusNode prevEpisodeFocusNode = FocusNode();
-  final FocusNode nextEpisodeFocusNode = FocusNode();
 
   PlayerController(model.Video video, Episode episode, this.episodeList,
       this.anilistData, List<model.Video> episodes,
@@ -84,7 +80,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
     required String videoPath,
     required Episode episode,
     required List<Episode> episodeList,
-    required nyantv.Media anilistData,
+    required anymex.Media anilistData,
   }) {
     final offlineVideo = model.Video(
       videoPath,
@@ -186,6 +182,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
   Timer? _volumeTimer;
   Timer? _brightnessTimer;
   Timer? _controlsTimer;
+  bool _wasControlsVisible = false;
   bool isLeftLandscaped = true;
 
   final Rx<BoxFit> videoFit = Rx<BoxFit>(BoxFit.contain);
@@ -203,10 +200,6 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
     _initOrientations();
     _initializePlayer();
     _updateRpc();
-    
-    if (settings.isTV.value) {
-      _initTVRemoteHandler();
-    }
     if (!isOffline.value) {
       _initializeAniSkip();
     }
@@ -217,44 +210,12 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
     _initializeSwipeStuffs();
     _initializeControlsAutoHide();
     updateNavigatorState();
-    pauseFocusNode.addListener(() {
-    });
     ever(selectedVideo, (_) {
       final audios = selectedVideo.value?.audios ?? [];
       embeddedAudioTracks.value = audios
           .map((e) => AudioTrack.uri(e.file ?? '', title: e.label))
           .toList();
     });
-  }
-
-  void _initTVRemoteHandler() {
-    _tvRemoteHandler = TVRemoteHandler(
-      player: player, 
-      context: Get.context!,
-      seekDuration: settings.seekDuration,
-      onSeek: (position) {
-        player.seek(position);
-        currentPosition.value = position;
-      },
-      onToggleMenu: () {
-        toggleControls();
-      },
-      onExitPlayer: () {
-        Get.back();
-      },
-      getCurrentPosition: () => currentPosition.value,
-      getVideoDuration: () => episodeDuration.value,
-      isMenuVisible: () => showControls.value,
-      isLocked: () => false,
-      
-      onPlayPause: () => player.playOrPause(),
-      onSkipSegments: (isLeft, amount) {
-        final skipSeconds = isLeft ? -amount : amount;
-        final newPos = Duration(seconds: currentPosition.value.inSeconds + skipSeconds);
-        player.seek(newPos);
-      },
-      onMenuInteraction: () => _resetAutoHideTimer(),
-    );
   }
 
   Future<void> _updateRpc() async {
@@ -306,7 +267,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
   Future<void> _initOrientations() async {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     ever(isFullScreen,
-        (isFullScreen) => NyantvTitleBar.setFullScreen(isFullScreen));
+        (isFullScreen) => AnymexTitleBar.setFullScreen(isFullScreen));
 
     final orientation = await _getClosestLandscapeOrientation();
 
@@ -408,7 +369,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
       
       // Erstelle ein sicheres Cache-Verzeichnis
       final tempDir = Directory.systemTemp;
-      final cacheDir = Directory('${tempDir.path}/nyantv_tv_cache');
+      final cacheDir = Directory('${tempDir.path}/anymex_tv_cache');
       if (!cacheDir.existsSync()) {
         cacheDir.createSync(recursive: true);
       }
@@ -422,8 +383,8 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
             "gpu-context": "android",
             
             // Hardware acceleration - DEAKTIVIERT für TV Kompatibilität
-            "hwdec": "auto-safe",//"no",
-            //"hwdec-codecs": "none",         // Keine Hardware Decoder
+            "hwdec": "no",                  // Wichtig: Kein Hardware Decoding auf TV
+            "hwdec-codecs": "none",         // Keine Hardware Decoder
             
             // Cache-Einstellungen mit explizitem Pfad
             "cache": "yes",
@@ -443,14 +404,14 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
             "video-sync": "display-resample",
             "interpolation": "no",
             "video-latency-hacks": "yes",
-            //"scale": "spline36",
-            //"cscale": "spline36",
-            //"dscale": "spline36",
-            //"tscale": "oversample",
+            "scale": "spline36",
+            "cscale": "spline36",
+            "dscale": "spline36",
+            "tscale": "oversample",
             
             // Audio optimiert
             "audio-buffer": "0.5",
-            "audio-client-name": "Nyantv TV",
+            "audio-client-name": "Anymex TV",
             
             // Performance
             "vd-lavc-fast": "yes",
@@ -469,14 +430,14 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
         player,
         configuration: const VideoControllerConfiguration(
           androidAttachSurfaceAfterVideoParameters: false, // Wichtig für TV!
-          enableHardwareAcceleration: true,
+          enableHardwareAcceleration: false,               // Deaktiviert für TV
         ),
       );
       
     } else {
       // Standard-Konfiguration für Mobile/Desktop
       player = Player(
-        configuration: const PlayerConfiguration(
+        configuration: PlayerConfiguration(
           options: {
             "hwdec": "mediacodec-copy",
             "gpu-context": "android",
@@ -793,10 +754,10 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
     }
 
     try {
-      // STUB: PlayerBottomSheets.showLoader();
+      PlayerBottomSheets.showLoader();
       final data = await sourceController.activeSource.value!.methods
           .getVideoList(
-// STUB:               d.DEpisode(episodeNumber: episode.number, url: episode.link));
+              d.DEpisode(episodeNumber: episode.number, url: episode.link));
       episodeTracks.value = data.map((e) => model.Video.fromVideo(e)).toList();
 
       final previousTrack = selectedVideo.value;
@@ -805,7 +766,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
       _extractSubtitles();
       await _switchMedia(
           selectedVideo.value!.url, selectedVideo.value?.headers);
-      // STUB: PlayerBottomSheets.hideLoader();
+      PlayerBottomSheets.hideLoader();
     } catch (e) {
       Logger.i(e.toString());
     } finally {
@@ -930,15 +891,10 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
     if (!isOffline.value) {
       DiscordRPCController.instance.updateMediaPresence(media: anilistData);
     }
-    _tvRemoteHandler?.dispose();
-
     for (final subscription in _subscriptions) {
       subscription.cancel();
     }
     _loadTimeoutTimer?.cancel();
-    pauseFocusNode.dispose();
-    prevEpisodeFocusNode.dispose();
-    nextEpisodeFocusNode.dispose();
     player.dispose();
     _seekDebounce?.cancel();
     _brightnessTimer?.cancel();
@@ -951,9 +907,11 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
   void _revertOrientations() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     if (!Platform.isAndroid && !Platform.isIOS) {
-      NyantvTitleBar.setFullScreen(false);
+      AnymexTitleBar.setFullScreen(false);
     }
     SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight
     ]);
@@ -1021,6 +979,59 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
   void toggleFullScreen() {
     isFullScreen.value = !isFullScreen.value;
     onUserInteraction();
+  }
+
+  void onVerticalDragStart(BuildContext context, DragStartDetails details) {
+    if (settings.enableSwipeControls) {
+      _controlsTimer?.cancel();
+      _cancelAutoHideTimer();
+
+      _wasControlsVisible = showControls.value;
+
+      if (showControls.value) {
+        toggleControls(val: false);
+      }
+    }
+  }
+
+  void onVerticalDragUpdate(BuildContext context, DragUpdateDetails e) {
+    if (!settings.enableSwipeControls) return;
+
+    final size = MediaQuery.of(context).size;
+    final position = e.localPosition;
+    if (position.dy < size.height * 0.2 || position.dy > size.height * 0.8) {
+      return;
+    }
+
+    const sensitivity = 200.0;
+
+    final delta = e.delta.dy;
+    if (position.dx <= size.width / 2) {
+      final bright = brightness.value - delta / sensitivity;
+      setBrightness(bright.clamp(0.0, 1.0), isDragging: true);
+    } else {
+      final vol = (volume.value - delta / sensitivity).toPrecision(2);
+      if (volume.value != vol) {
+        volume.value = vol.clamp(0.0, 1.0);
+        volumeIndicator.value = true;
+        Future.microtask(
+            () => VolumeController.instance.setVolume(volume.value));
+      }
+    }
+  }
+
+  void onVerticalDragEnd(BuildContext context, DragEndDetails details) {
+    if (settings.enableSwipeControls) {
+      _controlsTimer?.cancel();
+      _hideVolumeIndicatorAfterDelay();
+      _hideBrightnessIndicatorAfterDelay();
+
+      if (_wasControlsVisible && !showControls.value) {
+        toggleControls(val: true);
+      }
+
+      _resetAutoHideTimer();
+    }
   }
 
   Future<void> setVolume(double value, {bool isDragging = false}) async {
@@ -1110,19 +1121,6 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
     }
   }
 
-  void toggleShowControls() {
-    showControls.toggle();
-    if (showControls.value) {
-      Future.delayed(const Duration(milliseconds: 50), () {
-      pauseFocusNode.requestFocus();
-    });
-      _resetAutoHideTimer();
-    } else {
-      pauseFocusNode.unfocus();
-      _cancelAutoHideTimer();
-    }
-  }
-
   void addOnlineSub(OnlineSubtitle sub) {
     externalSubs.value.insert(
         0,
@@ -1134,36 +1132,11 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
 
   void navigator(bool forward) {
     if (forward) {
-      if (playerSettings.autoSkipFiller) {
-        final targetEpisode = _getNextNonFillerEpisode();
-        if (targetEpisode != null) {
-          changeEpisode(targetEpisode);
-        } else if (hasNextEpisode) {
-          changeEpisode(nextEpisode!);
-        }
-      } else {
-        changeEpisode(nextEpisode!);
-      }
-    } else if (hasPreviousEpisode) {
+      changeEpisode(nextEpisode!);
+    } else if (hasNextEpisode) {
       changeEpisode(previousEpisode!);
     }
     onUserInteraction();
-  }
-
-  Episode? _getNextNonFillerEpisode() {
-    final currentIndex = currentEpisodeIndex;
-    int skippedCount = 0;
-    for (int i = currentIndex + 1; i < episodeList.length; i++) {
-      final episode = episodeList[i];
-      if (episode.filler != true) {
-        if (skippedCount > 0) {
-          snackBar('Skipped $skippedCount filler episode${skippedCount > 1 ? 's' : ''}');
-        }
-        return episode;
-      }
-      skippedCount++;
-    }
-    return nextEpisode;
   }
 
   void updateNavigatorState() {
@@ -1204,7 +1177,7 @@ class PlayerController extends GetxController with WidgetsBindingObserver {
   void toggleVideoFit() {
     videoFit.value =
         BoxFit.values[(videoFit.value.index + 1) % BoxFit.values.length];
-    NyantvToast.show(
+    AnymexToast.show(
         message: videoFit.value.name.capitalizeFirst ?? '',
         duration: const Duration(milliseconds: 700));
   }

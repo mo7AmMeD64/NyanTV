@@ -1,4 +1,3 @@
-// lib/models/player/player_adaptor.dart
 import 'package:hive/hive.dart';
 
 part 'player_adaptor.g.dart';
@@ -29,6 +28,8 @@ class PlayerSettings {
   double bottomMargin;
   @HiveField(11)
   bool transculentControls;
+  @HiveField(12)
+  bool defaultPortraitMode;
   @HiveField(13)
   int playerStyle;
   @HiveField(14)
@@ -39,14 +40,12 @@ class PlayerSettings {
   bool autoSkipED;
   @HiveField(17)
   bool autoSkipOnce;
+  @HiveField(18)
+  bool enableSwipeControls;
   @HiveField(19)
   int markAsCompleted;
   @HiveField(20)
   bool transitionSubtitle;
-  @HiveField(21)
-  bool autoSkipFiller;
-  @HiveField(22)
-  bool autoSkipRecap;
 
   PlayerSettings(
       {this.speed = 1.0,
@@ -54,7 +53,7 @@ class PlayerSettings {
       this.subtitleSize = 16,
       this.subtitleColor = "White",
       this.subtitleFont = 'Poppins',
-      this.subtitleBackgroundColor = "Clear",
+      this.subtitleBackgroundColor = "Black",
       this.subtitleOutlineColor = "Black",
       this.showSubtitle = true,
       this.skipDuration = 85,
@@ -62,12 +61,12 @@ class PlayerSettings {
       this.bottomMargin = 5,
       this.playerStyle = 0,
       this.transculentControls = false,
+      this.defaultPortraitMode = false,
       this.subtitleOutlineWidth = 1,
       this.autoSkipED = false,
       this.autoSkipOP = false,
       this.autoSkipOnce = false,
+      this.enableSwipeControls = true,
       this.markAsCompleted = 90,
-      this.transitionSubtitle = true,
-      this.autoSkipFiller = false,
-      this.autoSkipRecap = false});
+      this.transitionSubtitle = true});
 }

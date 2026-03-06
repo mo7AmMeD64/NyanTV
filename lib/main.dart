@@ -1,45 +1,41 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'package:device_info_plus/device_info_plus.dart';
+// NEU: Import für Geräte-Erkennung
+import 'package:device_info_plus/device_info_plus.dart'; 
 
-import 'package:nyantv/controllers/cacher/cache_controller.dart';
-import 'package:nyantv/controllers/discord/discord_rpc.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/services/mal/mal_service.dart';
-import 'package:nyantv/controllers/services/simkl/simkl_service.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/screens/witcher/witcher_home.dart';
-import 'package:nyantv/screens/witcher/witcher_search.dart';
-import 'package:nyantv/controllers/services/anilist/anilist_auth.dart';
-import 'package:nyantv/controllers/ui/greeting.dart';
-import 'package:nyantv/controllers/theme.dart';
-import 'package:nyantv/models/player/player_adaptor.dart';
-import 'package:nyantv/models/ui/ui_adaptor.dart';
-import 'package:nyantv/models/Offline/Hive/custom_list.dart';
-import 'package:nyantv/models/Offline/Hive/offline_media.dart';
-import 'package:nyantv/models/Offline/Hive/chapter.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/models/Offline/Hive/offline_storage.dart';
-import 'package:nyantv/models/Offline/Hive/video.dart';
-import 'package:nyantv/screens/anime/home_page.dart';
-import 'package:nyantv/screens/library/my_library.dart';
-import 'package:nyantv/controllers/services/anilist/anilist_data.dart';
-import 'package:nyantv/screens/home_page.dart';
-import 'package:nyantv/screens/nyan_dvd.dart';
-import 'package:nyantv/utils/deeplink.dart';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/utils/register_protocol/register_protocol.dart';
-import 'package:nyantv/widgets/adaptive_wrapper.dart';
-import 'package:nyantv/widgets/animation/more_page_transitions.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/common/navbar.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_titlebar.dart';
-import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:nyantv/widgets/non_widgets/settings_sheet.dart';
-import 'package:nyantv/widgets/non_widgets/snackbar.dart';
+import 'package:anymex/controllers/cacher/cache_controller.dart';
+import 'package:anymex/controllers/discord/discord_rpc.dart';
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/controllers/services/anilist/anilist_auth.dart';
+import 'package:anymex/controllers/ui/greeting.dart';
+import 'package:anymex/controllers/theme.dart';
+import 'package:anymex/models/player/player_adaptor.dart';
+import 'package:anymex/models/ui/ui_adaptor.dart';
+import 'package:anymex/models/Offline/Hive/custom_list.dart';
+import 'package:anymex/models/Offline/Hive/offline_media.dart';
+import 'package:anymex/models/Offline/Hive/chapter.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/models/Offline/Hive/offline_storage.dart';
+import 'package:anymex/models/Offline/Hive/video.dart';
+import 'package:anymex/screens/anime/home_page.dart';
+import 'package:anymex/screens/library/my_library.dart';
+import 'package:anymex/controllers/services/anilist/anilist_data.dart';
+import 'package:anymex/screens/home_page.dart';
+import 'package:anymex/utils/deeplink.dart';
+import 'package:anymex/utils/logger.dart';
+import 'package:anymex/utils/register_protocol/register_protocol.dart';
+import 'package:anymex/widgets/adaptive_wrapper.dart';
+import 'package:anymex/widgets/animation/more_page_transitions.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/common/navbar.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_titlebar.dart';
+import 'package:anymex/widgets/helper/platform_builder.dart';
+import 'package:anymex/widgets/non_widgets/settings_sheet.dart';
+import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:app_links/app_links.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -50,81 +46,18 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:iconly/iconly.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:isar_community/isar.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:nyantv/controllers/tv/tv_watch_next_service.dart';
 
 WebViewEnvironment? webViewEnvironment;
 late Isar isar;
+// NEU: Globale Variable für TV-Status
 bool isAndroidTV = false;
-
-final _isInExcludedScreen = false.obs;
-final _isInDVDMode = false.obs;
-final RxBool isWelcomeDialogOpen = false.obs;
-Timer? _autoIdleTimer;
-
-bool get isInDVDMode => _isInDVDMode.value;
-
-DateTime? _lastBackPress;
-
-void handleAppBack() {
-  if (isWelcomeDialogOpen.value) return;
-
-  if (!Get.key.currentState!.canPop()) {
-    final now = DateTime.now();
-    if (_lastBackPress == null ||
-        now.difference(_lastBackPress!) > const Duration(milliseconds: 900)) {
-      _lastBackPress = now;
-      snackBar('Press back again to exit', duration: 900);
-    } else {
-      _lastBackPress = null;
-      if (Platform.isAndroid) {
-        const MethodChannel('app/back').invokeMethod('exitApp');
-      } else {
-        SystemNavigator.pop();
-      }
-    }
-  } else {
-    Get.back();
-  }
-}
-
-void setExcludedScreen(bool excluded) {
-  _isInExcludedScreen.value = excluded;
-}
-
-void setDVDMode(bool enabled) {
-  _isInDVDMode.value = enabled;
-}
-
-void _resetAutoIdleTimer() {
-  _autoIdleTimer?.cancel();
-
-  try {
-    final settings = Get.find<Settings>();
-    final idleMinutes = settings.autoIdleMinutes;
-
-    if (idleMinutes <= 0) return;
-    if (_isInExcludedScreen.value) return;
-
-    _autoIdleTimer = Timer(Duration(minutes: idleMinutes), () {
-      Logger.i('Auto-idle timer triggered! Going to DVD mode...');
-      if (!_isInExcludedScreen.value) {
-        setDVDMode(true);
-        Get.to(() => const InitialisingScreen(
-              dvdMode: true,
-              child: FilterScreen(),
-            ));
-      }
-    });
-  } catch (e) {
-    Logger.e('Auto-idle error: $e');
-  }
-}
 
 class MyHttpoverrides extends HttpOverrides {
   @override
@@ -147,30 +80,31 @@ class MyCustomScrollBehavior extends MaterialScrollBehavior {
 void main(List<String> args) async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
+
     MediaKit.ensureInitialized();
+
     await Logger.init();
     await dotenv.load(fileName: ".env");
 
+    // NEU: TV-Erkennung
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
-      isAndroidTV =
-          androidInfo.systemFeatures.contains('android.software.leanback');
+      // Überprüft, ob das System "leanback" (TV UI) hat
+      isAndroidTV = androidInfo.systemFeatures.contains('android.software.leanback');
     }
 
     if (Platform.isWindows) {
-      ['dar', 'nyantv', 'sugoireads', 'mangayomi']
+      ['dar', 'anymex', 'sugoireads', 'mangayomi']
           .forEach(registerProtocolHandler);
     }
-
+    initDeepLinkListener();
     HttpOverrides.global = MyHttpoverrides();
     await initializeHive();
-    _initializeGetxController(); // ← zuerst Controller
-    initDeepLinkListener(); // ← dann Deep Link (Get.find ist jetzt sicher)
+    _initializeGetxController();
     initializeDateFormatting();
-
     if (!Platform.isAndroid && !Platform.isIOS) {
       await windowManager.ensureInitialized();
-      await NyantvTitleBar.initialize();
+      await AnymexTitleBar.initialize();
     } else {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -195,7 +129,7 @@ void main(List<String> args) async {
     Logger.e("CRASH: $error");
     if (error.toString().contains('PathAccessException: lock failed')) {
       Hive.deleteFromDisk();
-      await Hive.initFlutter('NyanTV');
+      await Hive.initFlutter('AnymeX');
       Hive.deleteFromDisk();
     }
     Logger.e("STACK: $stackTrace");
@@ -224,7 +158,7 @@ void initDeepLinkListener() async {
 }
 
 Future<void> initializeHive() async {
-  await Hive.initFlutter('NyanTV');
+  await Hive.initFlutter('AnymeX');
   Hive.registerAdapter(VideoAdapter());
   Hive.registerAdapter(TrackAdapter());
   Hive.registerAdapter(UISettingsAdapter());
@@ -246,39 +180,13 @@ void _initializeGetxController() async {
   Get.put(OfflineStorageController());
   Get.put(AnilistAuth());
   Get.put(AnilistData());
-  Get.put(SimklService());
-  Get.put(MalService());
   Get.put(DiscordRPCController());
   Get.put(SourceController());
   Get.put(Settings());
   Get.put(ServiceHandler());
   Get.put(GreetingController());
   Get.lazyPut(() => CacheController());
-  if (Platform.isAndroid && isAndroidTV) {
-    Get.put(TvWatchNextService());
-    const MethodChannel('app/back').setMethodCallHandler((call) async {
-      if (call.method == 'onBack') handleAppBack();
-    });
-  }
-}
-
-class UIScaleBypass extends InheritedWidget {
-  final bool bypassScale;
-
-  const UIScaleBypass({
-    super.key,
-    required this.bypassScale,
-    required super.child,
-  });
-
-  static UIScaleBypass? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<UIScaleBypass>();
-  }
-
-  @override
-  bool updateShouldNotify(UIScaleBypass oldWidget) {
-    return bypassScale != oldWidget.bypassScale;
-  }
+  // DownloadManagerBinding.initializeDownloadManager();
 }
 
 class MainApp extends StatelessWidget {
@@ -292,112 +200,70 @@ class MainApp extends StatelessWidget {
       shortcuts: <LogicalKeySet, Intent>{
         LogicalKeySet(LogicalKeyboardKey.select): const ActivateIntent(),
       },
-      child: Listener(
-        onPointerDown: (_) => _resetAutoIdleTimer(),
-        onPointerMove: (_) => _resetAutoIdleTimer(),
-        onPointerHover: (_) => _resetAutoIdleTimer(),
-        child: KeyboardListener(
-          focusNode: FocusNode(),
-          onKeyEvent: (KeyEvent event) async {
-            _resetAutoIdleTimer();
-
-            if (event is KeyDownEvent) {
-              if (event.logicalKey == LogicalKeyboardKey.escape) {
-                handleAppBack();
-              } else if (!Platform.isAndroid &&
-                  !Platform.isIOS &&
-                  event.logicalKey == LogicalKeyboardKey.f11) {
+      child: KeyboardListener(
+        focusNode: FocusNode(),
+        onKeyEvent: (KeyEvent event) async {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.escape) {
+              if (Get.currentRoute == '/' || Get.currentRoute == '') {
+              } else {
+                 Navigator.pop(Get.context!);
+              }
+            } else if (event.logicalKey == LogicalKeyboardKey.f11) {
+              bool isFullScreen = await windowManager.isFullScreen();
+              AnymexTitleBar.setFullScreen(!isFullScreen);
+            } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+              final isAltPressed = HardwareKeyboard.instance.logicalKeysPressed
+                      .contains(LogicalKeyboardKey.altLeft) ||
+                  HardwareKeyboard.instance.logicalKeysPressed
+                      .contains(LogicalKeyboardKey.altRight);
+              if (isAltPressed) {
                 bool isFullScreen = await windowManager.isFullScreen();
-                NyantvTitleBar.setFullScreen(!isFullScreen);
-              } else if (!Platform.isAndroid &&
-                  !Platform.isIOS &&
-                  event.logicalKey == LogicalKeyboardKey.enter) {
-                final isAltPressed = HardwareKeyboard
-                        .instance.logicalKeysPressed
-                        .contains(LogicalKeyboardKey.altLeft) ||
-                    HardwareKeyboard.instance.logicalKeysPressed
-                        .contains(LogicalKeyboardKey.altRight);
-                if (isAltPressed) {
-                  bool isFullScreen = await windowManager.isFullScreen();
-                  NyantvTitleBar.setFullScreen(!isFullScreen);
-                }
+                AnymexTitleBar.setFullScreen(!isFullScreen);
               }
             }
-          },
-          child: GetMaterialApp(
-            defaultTransition: Transition.noTransition,
-            transitionDuration: Duration.zero,
-            scrollBehavior: MyCustomScrollBehavior(),
-            debugShowCheckedModeBanner: false,
-            title: "NyanTV",
-            theme: theme.lightTheme,
-            darkTheme: theme.darkTheme,
-            themeMode: theme.isSystemMode
-                ? ThemeMode.system
-                : theme.isLightMode
-                    ? ThemeMode.light
-                    : ThemeMode.dark,
-            home: const InitialisingScreen(child: FilterScreen()),
-            builder: (context, child) {
-              if (PlatformDispatcher.instance.views.length > 1) {
-                return child!;
-              }
+          }
+        },
+        child: GetMaterialApp(
+          scrollBehavior: MyCustomScrollBehavior(),
+          debugShowCheckedModeBanner: false,
+          title: "AnymeX",
+          theme: theme.lightTheme,
+          darkTheme: theme.darkTheme,
+          themeMode: theme.isSystemMode
+              ? ThemeMode.system
+              : theme.isLightMode
+                  ? ThemeMode.light
+                  : ThemeMode.dark,
+          home: const FilterScreen(),
+          builder: (context, child) {
+            if (PlatformDispatcher.instance.views.length > 1) {
+              return child!;
+            }
+            final isDesktop = Platform.isWindows;
 
-              Widget finalChild = GetBuilder<Settings>(
-                init: Get.find<Settings>(),
-                builder: (settings) {
-                  final scale = settings.uiScale;
-
-                  if (scale <= 0.0 || scale > 3.0 || scale == 1.0) {
-                    return UIScaleBypass(
-                      bypassScale: false,
-                      child: child!,
-                    );
-                  }
-
-                  final originalSize = MediaQuery.of(context).size;
-                  final scaledSize = Size(
-                    originalSize.width / scale,
-                    originalSize.height / scale,
-                  );
-
-                  return UIScaleBypass(
-                    bypassScale: true,
-                    child: MediaQuery(
-                      data: MediaQuery.of(context).copyWith(
-                        size: scaledSize,
-                        padding: EdgeInsets.zero,
-                        viewInsets: EdgeInsets.zero,
-                        viewPadding: EdgeInsets.zero,
-                      ),
-                      child: Transform.scale(
-                        scale: scale,
-                        alignment: Alignment.topLeft,
-                        child: OverflowBox(
-                          minWidth: 0,
-                          maxWidth: double.infinity,
-                          minHeight: 0,
-                          maxHeight: double.infinity,
-                          alignment: Alignment.topLeft,
-                          child: SizedBox(
-                            width: scaledSize.width,
-                            height: scaledSize.height,
-                            child: child!,
-                          ),
-                        ),
-                      ),
+            if (isDesktop) {
+              return Stack(
+                children: [
+                  child!,
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.transparent,
+                      child: AnymexTitleBar.titleBar(),
                     ),
-                  );
-                },
+                  ),
+                ],
               );
-
-              return finalChild;
-            },
-            enableLog: true,
-            logWriterCallback: (text, {isError = false}) async {
-              Logger.d(text);
-            },
-          ),
+            }
+            return child!;
+          },
+          enableLog: true,
+          logWriterCallback: (text, {isError = false}) async {
+            Logger.d(text);
+          },
         ),
       ),
     );
@@ -414,31 +280,26 @@ class FilterScreen extends StatefulWidget {
 class _FilterScreenState extends State<FilterScreen> {
   int _selectedIndex = 1;
   int _mobileSelectedIndex = 0;
-  bool _firstLoad = true;
-
-  @override
-  void initState() {
-    super.initState();
-    setExcludedScreen(false);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _resetAutoIdleTimer();
-    });
-  }
 
   void _onItemTapped(int index) {
     setState(() {
-      _firstLoad = false;
       _selectedIndex = index;
     });
   }
 
   void _onMobileItemTapped(int index) {
     setState(() {
-      _firstLoad = false;
       _mobileSelectedIndex = index;
     });
   }
+
+  final routes = [
+    const SizedBox.shrink(),
+    const HomePage(),
+    const AnimeHomePage(),
+    const MyLibrary(),
+    const ExtensionScreen(disableGlow: true),
+  ];
 
   final mobileRoutes = [
     const HomePage(),
@@ -446,34 +307,8 @@ class _FilterScreenState extends State<FilterScreen> {
     const MyLibrary()
   ];
 
-  final Map<int, Widget> _cachedRoutes = {};
-
-  Widget _buildRoute(int index) {
-    if (_cachedRoutes.containsKey(index)) return _cachedRoutes[index]!;
-
-    final Widget route = switch (index) {
-      1 => const HomePage(),
-      2 => const AnimeHomePage(),
-      3 => const MyLibrary(),
-      4 => const WitcherHome(),
-      _ => const SizedBox.shrink(),
-    };
-
-    _cachedRoutes[index] = route;
-    return route;
-  }
-
-  Widget _buildRouteFresh(int index) => switch (index) {
-        1 => const HomePage(),
-        2 => const AnimeHomePage(),
-        3 => const MyLibrary(),
-        4 => const WitcherHome(),
-        _ => const SizedBox.shrink(),
-      };
-
   @override
   void dispose() {
-    _autoIdleTimer?.cancel();
     Logger.dispose();
     super.dispose();
   }
@@ -481,21 +316,14 @@ class _FilterScreenState extends State<FilterScreen> {
   @override
   Widget build(BuildContext context) {
     final authService = Get.find<ServiceHandler>();
-    final isSimkl =
-        Get.find<ServiceHandler>().serviceType.value == ServicesType.simkl;
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) handleAppBack();
-      },
-      child: Glow(
-        child: PlatformBuilder(
-          strictMode: false,
-          desktopBuilder: _buildDesktopLayout(context, authService, isSimkl),
-          androidBuilder: isAndroidTV
-              ? _buildDesktopLayout(context, authService, isSimkl)
-              : _buildAndroidLayout(isSimkl),
-        ),
+    final isSimkl = false;
+    return Glow(
+      child: PlatformBuilder(
+        strictMode: false,
+        desktopBuilder: _buildDesktopLayout(context, authService, isSimkl),
+        androidBuilder: isAndroidTV 
+            ? _buildDesktopLayout(context, authService, isSimkl) 
+            : _buildAndroidLayout(isSimkl),
       ),
     );
   }
@@ -510,44 +338,76 @@ class _FilterScreenState extends State<FilterScreen> {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Sidebar(
-            selectedIndex: _selectedIndex,
-            authService: authService,
-            onItemTapped: _onItemTapped,
-          ),
-          Expanded(
-            child: GetBuilder<Settings>(
-              builder: (s) {
-                if (s.navigationMode == 2) {
-                  return IndexedStack(
-                    index: _selectedIndex,
-                    children: [
-                      const SizedBox.shrink(),
-                      ExcludeFocus(
-                          excluding: _selectedIndex != 1,
-                          child: const HomePage()),
-                      ExcludeFocus(
-                          excluding: _selectedIndex != 2,
-                          child: const AnimeHomePage()),
-                      ExcludeFocus(
-                          excluding: _selectedIndex != 3,
-                          child: const MyLibrary()),
-                      ExcludeFocus(
-                          excluding: _selectedIndex != 4,
-                          child: const WitcherHome()),
+          Obx(() => SizedBox(
+              width: 120,
+              child: SuperListView(
+                children: [
+                  ResponsiveNavBar(
+                    isDesktop: true,
+                    currentIndex: _selectedIndex,
+                    margin: const EdgeInsets.fromLTRB(20, 30, 15, 10),
+                    items: [
+                      NavItem(
+                          unselectedIcon: IconlyBold.profile,
+                          selectedIcon: IconlyBold.profile,
+                          onTap: (index) {
+                            return SettingsSheet.show(context);
+                          },
+                          label: 'Profile',
+                          altIcon: CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainer
+                                  .withValues(alpha: 0.3),
+                              child: authService.isLoggedIn.value
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(59),
+                                      child: CachedNetworkImage(
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(IconlyBold.profile),
+                                          imageUrl: authService
+                                                  .profileData.value.avatar ??
+                                              ''),
+                                    )
+                                  : const Icon((IconlyBold.profile)))),
+                      NavItem(
+                        unselectedIcon: IconlyLight.home,
+                        selectedIcon: IconlyBold.home,
+                        onTap: _onItemTapped,
+                        label: 'Home',
+                      ),
+                      NavItem(
+                        unselectedIcon: Icons.movie_filter_outlined,
+                        selectedIcon: Icons.movie_filter_rounded,
+                        onTap: _onItemTapped,
+                        label: 'Anime',
+                      ),
+                      NavItem(
+                        unselectedIcon: HugeIcons.strokeRoundedLibrary,
+                        selectedIcon: HugeIcons.strokeRoundedLibrary,
+                        onTap: _onItemTapped,
+                        label: 'Library',
+                      ),
+                      if (sourceController.shouldShowExtensions.value)
+                        NavItem(
+                          unselectedIcon: Icons.extension_outlined,
+                          selectedIcon: Icons.extension_rounded,
+                          onTap: _onItemTapped,
+                          label: "Extensions",
+                        ),
                     ],
-                  );
-                }
-                return SmoothPageEntrance(
+                  ),
+                ],
+              ))),
+          Expanded(
+              child: SmoothPageEntrance(
                   style: PageEntranceStyle.slideUpGentle,
                   key: Key(_selectedIndex.toString()),
-                  child: s.navigationMode == 1
-                      ? _buildRoute(_selectedIndex) // Hybrid
-                      : _buildRouteFresh(_selectedIndex), // Legacy
-                );
-              },
-            ),
-          ),
+                  child: routes[_selectedIndex])),
         ],
       ),
     );
@@ -555,12 +415,10 @@ class _FilterScreenState extends State<FilterScreen> {
 
   Scaffold _buildAndroidLayout(bool isSimkl) {
     return Scaffold(
-        body: _firstLoad
-            ? mobileRoutes[_mobileSelectedIndex]
-            : SmoothPageEntrance(
-                style: PageEntranceStyle.slideUpGentle,
-                key: Key(_mobileSelectedIndex.toString()),
-                child: mobileRoutes[_mobileSelectedIndex]),
+        body: SmoothPageEntrance(
+            style: PageEntranceStyle.slideUpGentle,
+            key: Key(_mobileSelectedIndex.toString()),
+            child: mobileRoutes[_mobileSelectedIndex]),
         extendBody: true,
         bottomNavigationBar: ResponsiveNavBar(
           isDesktop: false,
@@ -587,81 +445,5 @@ class _FilterScreenState extends State<FilterScreen> {
             ),
           ],
         ));
-  }
-}
-
-class _Sidebar extends StatelessWidget {
-  final int selectedIndex;
-  final ServiceHandler authService;
-  final void Function(int) onItemTapped;
-
-  const _Sidebar({
-    required this.selectedIndex,
-    required this.authService,
-    required this.onItemTapped,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 120,
-      child: SuperListView(
-        children: [
-          ResponsiveNavBar(
-            isDesktop: true,
-            currentIndex: selectedIndex,
-            margin: const EdgeInsets.fromLTRB(20, 30, 15, 10),
-            items: [
-              NavItem(
-                unselectedIcon: IconlyBold.profile,
-                selectedIcon: IconlyBold.profile,
-                onTap: (_) => SettingsSheet.show(context),
-                label: 'Profile',
-                altIcon: CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainer
-                      .withValues(alpha: 0.3),
-                  child: Obx(() => authService.isLoggedIn.value
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(59),
-                          child: CachedNetworkImage(
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) =>
-                                  const Icon(IconlyBold.profile),
-                              imageUrl:
-                                  authService.profileData.value.avatar ?? ''),
-                        )
-                      : const Icon(IconlyBold.profile)),
-                ),
-              ),
-              NavItem(
-                  unselectedIcon: IconlyLight.home,
-                  selectedIcon: IconlyBold.home,
-                  onTap: onItemTapped,
-                  label: 'Home'),
-              NavItem(
-                  unselectedIcon: Icons.movie_filter_outlined,
-                  selectedIcon: Icons.movie_filter_rounded,
-                  onTap: onItemTapped,
-                  label: 'Anime'),
-              NavItem(
-                  unselectedIcon: HugeIcons.strokeRoundedLibrary,
-                  selectedIcon: HugeIcons.strokeRoundedLibrary,
-                  onTap: onItemTapped,
-                  label: 'Library'),
-              NavItem(
-                  unselectedIcon: Icons.live_tv_outlined,
-                  selectedIcon: Icons.live_tv_rounded,
-                  onTap: onItemTapped,
-                  label: "مشاهدة"),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 }

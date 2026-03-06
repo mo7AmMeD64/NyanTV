@@ -1,8 +1,7 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
+import 'package:nyantv/stubs/extension_stubs.dart';
 
-import 'package:nyantv/main.dart' show isar;
-    hide isar;
+import 'package:anymex/main.dart' show isar;
 import 'package:isar_community/isar.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -30,7 +29,7 @@ class StorageProvider {
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       return dir;
     } else {
-      String dbDir = path.join(dir.path, 'NyanTV', 'databases');
+      String dbDir = path.join(dir.path, 'AnymeX', 'databases');
       await Directory(dbDir).create(recursive: true);
       return Directory(dbDir);
     }
@@ -46,13 +45,13 @@ class StorageProvider {
 
     isar = Isar.openSync(
       [
-        // // MSourceSchema,
-        // // SourcePreferenceSchema,
-        // // SourcePreferenceStringValueSchema,
+        // MSourceSchema,
+        // SourcePreferenceSchema,
+        // SourcePreferenceStringValueSchema,
         BridgeSettingsSchema
       ],
       directory: dir!.path,
-      name: 'NyanTV',
+      name: 'AnymeX',
       inspector: false,
     );
 

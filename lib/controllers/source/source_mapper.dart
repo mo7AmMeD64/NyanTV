@@ -1,8 +1,8 @@
+import 'package:anymex/utils/logger.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Media/media.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Media/media.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import 'package:get/get.dart';
 
@@ -63,7 +63,7 @@ Future<Media?> mapMedia(
   String? savedTitle,
 }) async {
   final sourceController = Get.find<SourceController>();
-  const type = ItemType.anime;
+  final type = ItemType.anime;
 
   String englishTitle = animeId[0].split("*").first;
   String romajiTitle = animeId[1] == '??' ? englishTitle : animeId[1];

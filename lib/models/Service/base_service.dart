@@ -1,5 +1,5 @@
-import 'package:nyantv/controllers/service_handler/params.dart';
-import 'package:nyantv/models/Media/media.dart';
+import 'package:anymex/controllers/service_handler/params.dart';
+import 'package:anymex/models/Media/media.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

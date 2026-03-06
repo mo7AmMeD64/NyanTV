@@ -1,8 +1,8 @@
-import 'package:nyantv/controllers/services/widgets/widgets_builders.dart';
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/controllers/services/widgets/widgets_builders.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -59,14 +59,6 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
       _focusNode = FocusNode(
         onKeyEvent: (node, event) {
           if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.escape ||
-                event.logicalKey == LogicalKeyboardKey.goBack) {
-              if (_focusNode.hasFocus) {
-                _focusNode.unfocus();
-                return KeyEventResult.handled;
-              }
-            }
-            
             if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
               _focusNode.focusInDirection(TraversalDirection.left);
               return KeyEventResult.skipRemainingHandlers;
@@ -167,7 +159,7 @@ class TappableSearchBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20),
       decoration: BoxDecoration(boxShadow: [lightGlowingShadow(context)]),
       clipBehavior: Clip.antiAlias,
-      child: NyantvOnTap(
+      child: AnymexOnTap(
         onTap: onSubmitted,
         scale: 1,
         margin: 0,
@@ -189,6 +181,20 @@ class TappableSearchBar extends StatelessWidget {
             ),
             child: Row(
               children: [
+                // const SizedBox(width: 12),
+                // Expanded(
+                //   child: AnymexText(
+                //     text: hintText,
+                //     color: Theme.of(context).hintColor,
+                //     size: 16,
+                //   ),
+                // ),
+                // if (suffixWidget != null) suffixWidget!,
+                // if (!disableIcons)
+                //   IconButton(
+                //     icon: suffixIconWidget ?? Icon(suffixIcon),
+                //     onPressed: null,
+                //   ),
                 buildChip(chipLabel),
                 const SizedBox(width: 10),
                 Icon(

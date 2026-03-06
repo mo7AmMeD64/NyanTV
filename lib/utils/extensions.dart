@@ -1,5 +1,5 @@
+import 'package:anymex/controllers/source/source_controller.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
 import 'package:get/get.dart';
 
 class Extensions {

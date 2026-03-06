@@ -1,4 +1,4 @@
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
 import 'package:checkmark/checkmark.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -59,7 +59,7 @@ class ListTileWithCheckMark extends StatelessWidget {
         ],
       ),
     );
-    return NyantvOnTap(
+    return AnymexOnTap(
       onTap: onTap,
       child: InkWell(
         borderRadius: br,

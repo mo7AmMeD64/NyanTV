@@ -1,8 +1,8 @@
+import 'package:anymex/controllers/offline/offline_storage_controller.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Offline/Hive/custom_list.dart';
-import 'package:nyantv/widgets/common/search_bar.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Offline/Hive/custom_list.dart';
+import 'package:anymex/widgets/common/search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';

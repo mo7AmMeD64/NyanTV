@@ -1,10 +1,10 @@
+import 'package:anymex/models/Media/media.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/widgets/common/big_carousel.dart';
-import 'package:nyantv/widgets/common/future_reusable_carousel.dart';
-import 'package:nyantv/widgets/common/reusable_carousel.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/widgets/common/big_carousel.dart';
+import 'package:anymex/widgets/common/future_reusable_carousel.dart';
+import 'package:anymex/widgets/common/reusable_carousel.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -41,7 +41,7 @@ Container buildChip(String label) {
     ),
     child: FittedBox(
       fit: BoxFit.scaleDown,
-      child: NyantvText(
+      child: AnymexText(
         text: label,
         variant: TextVariant.bold,
         color: Get.theme.colorScheme.onPrimary,
@@ -55,7 +55,7 @@ Widget buildBigCarousel(List<Media> data, bool isManga, {CarouselType? type}) {
   return BigCarousel(
       data: data,
       carouselType:
-          type ?? (isManga ? CarouselType.anime : CarouselType.anime));
+          type ?? (isManga ? CarouselType.manga : CarouselType.anime));
 }
 
 

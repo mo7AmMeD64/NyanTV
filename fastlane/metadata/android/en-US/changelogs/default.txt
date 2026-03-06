@@ -1,23 +1,22 @@
 ### 🌟 Features
--   auto-skip recap and skip recap button and colored segments - migrate to aniskip v2
--   skip opening and ending button
+-   optimized list editor
+-   discord rpc support for all platforms
+-   opt out option for tracking media
+-   opt out for subtitle transition
 
 ### 🔧 Bug Fixes & Improvements
--   snapping too early and subtitle background fallback to clear
--   library watch history dpad duplicated input and myanime list searchbar not showing
--   apply new style on all card types
--   watch state being overwritten with 0 seconds
+-   fixed a grey screen error on home page
+-   fixed volume not being update realtime
+-   fixed an issue where series was showing up as manga
+-   fixed extension settings button not working
+-   fixed dropdown barrier
+-   fixed header on platforms other than windows
 
 ### 🎨 Style Changes
--   auto-hide skip button after 15s
--   always show rating, even on own lists such as continue watching
-
-### 🚀 Performance Improvements
--   remove redundant header animation and blur on anime home page
--   smoother page transitions
+-   option for having transparent image as bg
+-   new page transition
 
 ### 🧹 Chores & Documentation
--   aaand increase the build size again for the sake of performance
--   reduce build size and add v8 architecture
+-   bump version to v3.0.3 patch release
 
  

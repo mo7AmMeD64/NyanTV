@@ -1,16 +1,14 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:convert';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/models/Media/media.dart';
+import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/utils/logger.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Media/media.dart';
 import 'package:get/get.dart';
 
 final cacheController = Get.find<CacheController>();
 
 class CacheController extends GetxController {
   RxList<String> cachedAnilistData = <String>[].obs;
-  RxList<String> cachedMalData = <String>[].obs;
-  RxList<String> cachedSimklData = <String>[].obs;
   RxList<String> cachedExtensionData = <String>[].obs;
 
   RxString detailsData = ''.obs;
@@ -69,13 +67,11 @@ class CacheController extends GetxController {
     switch (service.value) {
       case ServicesType.anilist:
         return Media.fromJson(parsedMap);
-      case ServicesType.mal:
-        return Media.fromFullMAL(parsedMap);
-      case ServicesType.simkl:
-        return Media.fromSimkl(parsedMap, true);
       default:
         parsedMap['status'] = parseStatusToInt(parsedMap['status']);
-        return Media.froDMedia(DMedia.fromJson(parsedMap), ItemType.anime);
+        return Media.froDMedia(
+            DMedia.fromJson(parsedMap),
+            ItemType.anime);
     }
   }
 
@@ -84,10 +80,6 @@ class CacheController extends GetxController {
     switch (service.value) {
       case ServicesType.anilist:
         return cachedAnilistData;
-      case ServicesType.mal:
-        return cachedMalData;
-      case ServicesType.simkl:
-        return cachedSimklData;
       default:
         return cachedExtensionData;
     }

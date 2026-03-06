@@ -1,18 +1,15 @@
+import 'package:anymex/utils/logger.dart';
 import 'package:nyantv/stubs/extension_stubs.dart';
-// lib/controllers/offline/offline_storage_controller.dart
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Offline/Hive/chapter.dart';
-import 'package:nyantv/models/Offline/Hive/custom_list.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Offline/Hive/chapter.dart';
+import 'package:anymex/models/Offline/Hive/custom_list.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
 import 'package:get/get.dart';
-import 'package:nyantv/models/Offline/Hive/offline_media.dart';
+import 'package:anymex/models/Offline/Hive/offline_media.dart';
 import 'package:hive/hive.dart';
-import 'dart:io';
-import 'package:nyantv/models/Offline/Hive/offline_storage.dart';
-import 'package:nyantv/controllers/tv/tv_watch_next_service.dart';
+import 'package:anymex/models/Offline/Hive/offline_storage.dart';
 
 class OfflineStorageController extends GetxController {
   var animeLibrary = <OfflineMedia>[].obs;
@@ -22,7 +19,6 @@ class OfflineStorageController extends GetxController {
   late Box storage;
 
   bool _isUpdating = false;
-  TvWatchNextService? _tvWatchNext;
 
   @override
   Future<void> onInit() async {
@@ -33,20 +29,6 @@ class OfflineStorageController extends GetxController {
       _loadLibraries();
     } catch (e) {
       Logger.i('Error opening Hive box: $e');
-      await Hive.deleteBoxFromDisk('offlineStorage');
-      _offlineStorageBox = await Hive.openBox<OfflineStorage>('offlineStorage');
-      storage = await Hive.openBox('storage');
-      _loadLibraries();
-    }
-    
-    // Try to get TvWatchNextService if it exists (only on Android TV)
-    if (Platform.isAndroid) {
-      try {
-        _tvWatchNext = Get.find<TvWatchNextService>();
-        Logger.i('TvWatchNextService connected to OfflineStorageController');
-      } catch (e) {
-        Logger.i('TvWatchNextService not available (not Android TV)');
-      }
     }
   }
 
@@ -57,14 +39,8 @@ class OfflineStorageController extends GetxController {
         _offlineStorageBox.get('storage') ?? OfflineStorage();
 
     animeLibrary.assignAll(offlineStorage.animeLibrary ?? []);
-
-    final savedLists = offlineStorage.animeCustomList;
-    if (savedLists != null && savedLists.isNotEmpty) {
-      animeCustomLists.value.assignAll(savedLists);
-    } else {
-      animeCustomLists.value.assignAll([CustomList(listName: 'Default', mediaIds: [])]);
-      _saveLibraries();
-    }
+    animeCustomLists.value
+        .assignAll(offlineStorage.animeCustomList ?? [CustomList()]);
 
     _refreshListData();
   }
@@ -188,6 +164,7 @@ class OfflineStorageController extends GetxController {
       final afterLength = targetList.mediaIds!.length;
 
       animeLibrary.removeWhere((media) => media.id == mediaId);
+
 
       if (beforeLength != afterLength) {
         _refreshListData();
@@ -324,9 +301,6 @@ class OfflineStorageController extends GetxController {
     if (!_isUpdating) {
       _refreshListData();
     }
-    
-    // Update TV Watch Next
-    _updateTvWatchNext();
   }
 
   void addOrUpdateWatchedEpisode(String animeId, Episode episode) {
@@ -352,17 +326,6 @@ class OfflineStorageController extends GetxController {
           'Anime with ID: $animeId not found. Unable to add/update episode.');
     }
     _saveLibraries();
-    
-    // Update TV Watch Next
-    _updateTvWatchNext();
-  }
-  
-  void _updateTvWatchNext() {
-    if (_tvWatchNext != null && !_isUpdating) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        _tvWatchNext!.updateWatchNext();
-      });
-    }
   }
 
   OfflineMedia _createOfflineMedia(
@@ -391,30 +354,37 @@ class OfflineStorageController extends GetxController {
         popularity: original.popularity,
         format: original.format,
         aired: original.aired,
+        totalChapters: original.totalChapters,
         genres: original.genres,
         studios: original.studios,
+        chapters: chapters,
         episodes: episodes,
         currentEpisode: currentEpisode,
+        currentChapter: currentChapter,
         watchedEpisodes: episodes ?? [],
+        readChapters: chapters ?? [],
         serviceIndex: handler.serviceType.value.index);
   }
 
-void _saveLibraries() {
-  final updatedStorage = OfflineStorage(
-      animeLibrary: animeLibrary.toList(),
-      animeCustomList: animeCustomLists.value);
+  void _saveLibraries() {
+    if (_isUpdating) return;
 
-  try {
-    _offlineStorageBox.put('storage', updatedStorage);
-    Logger.i("Anime Successfully Saved!");
-  } catch (e) {
-    Logger.i('Error saving libraries: $e');
+    final updatedStorage = OfflineStorage(
+        animeLibrary: animeLibrary.toList(),
+        animeCustomList: animeCustomLists.value);
+
+    try {
+      _offlineStorageBox.put('storage', updatedStorage);
+      Logger.i("Anime Successfully Saved!");
+    } catch (e) {
+      Logger.i('Error saving libraries: $e');
+    }
   }
-}
 
   OfflineMedia? getAnimeById(String id) {
     return animeLibrary.firstWhereOrNull((anime) => anime.id == id);
   }
+
 
   Episode? getWatchedEpisode(String anilistId, String episodeOrChapterNumber) {
     OfflineMedia? anime = getAnimeById(anilistId);
@@ -433,6 +403,10 @@ void _saveLibraries() {
     }
     return null;
   }
+
+
+
+
 
   void clearCache() {
     _offlineStorageBox.clear();

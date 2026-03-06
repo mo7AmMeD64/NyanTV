@@ -23,7 +23,7 @@ class PlayerSettingsAdapter extends TypeAdapter<PlayerSettings> {
         subtitleColor: fields[4] != null ? fields[4] as String : "White",
         subtitleFont: fields[5] != null ? fields[5] as String : "Poppins",
         subtitleBackgroundColor:
-            fields[6] != null ? fields[6] as String : "Clear",
+            fields[6] != null ? fields[6] as String : "Black",
         subtitleOutlineColor: fields[7] != null ? fields[7] as String : "Black",
         showSubtitle: fields[2] != null ? fields[2] as bool : true,
         skipDuration: fields[8] != null ? fields[8] as int : 85,
@@ -31,14 +31,14 @@ class PlayerSettingsAdapter extends TypeAdapter<PlayerSettings> {
         bottomMargin: fields[10] != null ? fields[10] as double : 5.0,
         transculentControls: fields[11] != null ? fields[11] as bool : false,
         playerStyle: fields[13] != null ? fields[13] as int : 0,
+        defaultPortraitMode: fields[12] != null ? fields[12] as bool : false,
         subtitleOutlineWidth: fields[14] != null ? fields[14] as int : 1,
         autoSkipOP: fields[15] ?? false,
         autoSkipED: fields[16] ?? false,
         autoSkipOnce: fields[17] ?? false,
+        enableSwipeControls: fields[18] ?? true,
         markAsCompleted: fields[19] ?? 90,
-        transitionSubtitle: fields[20] ?? true,
-        autoSkipFiller: fields[21] ?? false,
-        autoSkipRecap: fields[22] ?? false);
+        transitionSubtitle: fields[20] ?? true);
   }
 
   @override
@@ -69,6 +69,8 @@ class PlayerSettingsAdapter extends TypeAdapter<PlayerSettings> {
       ..write(obj.bottomMargin)
       ..writeByte(11)
       ..write(obj.transculentControls)
+      ..writeByte(12)
+      ..write(obj.defaultPortraitMode)
       ..writeByte(13)
       ..write(obj.playerStyle)
       ..writeByte(14)
@@ -79,14 +81,12 @@ class PlayerSettingsAdapter extends TypeAdapter<PlayerSettings> {
       ..write(obj.autoSkipED)
       ..writeByte(17)
       ..write(obj.autoSkipOnce)
+      ..writeByte(18)
+      ..write(obj.enableSwipeControls)
       ..writeByte(19)
       ..write(obj.markAsCompleted)
       ..writeByte(20)
-      ..write(obj.transitionSubtitle)
-      ..writeByte(21)
-      ..write(obj.autoSkipFiller)
-      ..writeByte(22)
-      ..write(obj.autoSkipRecap);
+      ..write(obj.transitionSubtitle);
   }
 
   @override

@@ -1,4 +1,4 @@
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,7 +8,6 @@ class ControlButton extends StatefulWidget {
   final String? tooltip;
   final bool compact;
   final bool isPrimary;
-  final bool showFocus;
 
   const ControlButton({
     super.key,
@@ -17,7 +16,6 @@ class ControlButton extends StatefulWidget {
     this.tooltip,
     this.compact = false,
     this.isPrimary = false,
-    this.showFocus = false,
   });
 
   @override
@@ -72,9 +70,8 @@ class _ControlButtonState extends State<ControlButton>
   Widget build(BuildContext context) {
     final size = widget.compact ? 36.0 : (widget.isPrimary ? 48.0 : 44.0);
     final iconSize = widget.compact ? 20.0 : (widget.isPrimary ? 26.0 : 24.0);
-    final hasFocus = widget.showFocus && Focus.of(context).hasFocus;
 
-    Widget button = NyantvOnTap(
+    Widget button = AnymexOnTap(
       onTapDown: (_) => _handleTapDown(),
       onTapUp: (_) => _handleTapUp(),
       onTapCancel: _handleTapCancel,
@@ -105,37 +102,30 @@ class _ControlButtonState extends State<ControlButton>
                   borderRadius: BorderRadius.circular(
                       widget.compact ? 12 : (widget.isPrimary ? 18 : 16)),
                   border: Border.all(
-                    color: hasFocus
-                        ? context.theme.colorScheme.primary // FOKUS-FARBE
-                        : widget.isPrimary
-                            ? (_isHovered
-                                ? context.theme.colorScheme.primary.withOpacity(0.4)
-                                : context.theme.colorScheme.primary.withOpacity(0.2))
-                            : (_isHovered
-                                ? context.theme.colorScheme.primary.withOpacity(0.3)
-                                : context.theme.colorScheme.outline.withOpacity(0.1)),
-                    width: hasFocus ? 2.0 : (_isHovered ? 1.0 : 0.5), // Dickerer Rand bei Fokus
+                    color: widget.isPrimary
+                        ? (_isHovered
+                            ? context.theme.colorScheme.primary.withOpacity(0.4)
+                            : context.theme.colorScheme.primary
+                                .withOpacity(0.2))
+                        : (_isHovered
+                            ? context.theme.colorScheme.primary.withOpacity(0.3)
+                            : context.theme.colorScheme.outline
+                                .withOpacity(0.1)),
+                    width: _isHovered ? 1.0 : 0.5,
                   ),
-                  boxShadow: hasFocus
+                  boxShadow: _isHovered
                       ? [
                           BoxShadow(
-                            color: context.theme.colorScheme.primary.withOpacity(0.3),
-                            blurRadius: widget.isPrimary ? 15 : 12,
-                            spreadRadius: 1.0,
+                            color: widget.isPrimary
+                                ? context.theme.colorScheme.primary
+                                    .withOpacity(0.3)
+                                : context.theme.colorScheme.primary
+                                    .withOpacity(0.2),
+                            blurRadius: widget.isPrimary ? 12 : 8,
                             offset: const Offset(0, 2),
                           ),
                         ]
-                      : _isHovered
-                          ? [
-                              BoxShadow(
-                                color: widget.isPrimary
-                                    ? context.theme.colorScheme.primary.withOpacity(0.3)
-                                    : context.theme.colorScheme.primary.withOpacity(0.2),
-                                blurRadius: widget.isPrimary ? 12 : 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
+                      : null,
                 ),
                 child: Center(
                   child: AnimatedContainer(
@@ -144,10 +134,13 @@ class _ControlButtonState extends State<ControlButton>
                       widget.icon,
                       size: iconSize,
                       color: enabled
-                          ? (hasFocus || widget.isPrimary || _isHovered
+                          ? (widget.isPrimary
                               ? context.theme.colorScheme.primary
-                              : context.theme.colorScheme.onSurface)
-                          : context.theme.colorScheme.onSurface.withOpacity(0.5),
+                              : (_isHovered
+                                  ? context.theme.colorScheme.primary
+                                  : context.theme.colorScheme.onSurface))
+                          : context.theme.colorScheme.onSurface
+                              .withOpacity(0.5),
                     ),
                   ),
                 ),

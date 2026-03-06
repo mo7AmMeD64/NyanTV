@@ -1,27 +1,24 @@
-import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member
-// lib/screens/anime/widgets/episode_section.dart
+
 import 'dart:async';
-import 'package:nyantv/controllers/settings/settings.dart';
-import 'package:nyantv/utils/function.dart';
-import 'package:nyantv/utils/logger.dart';
-import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:nyantv/controllers/services/jikan.dart';
-import 'package:nyantv/models/Media/media.dart';
-import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:nyantv/screens/anime/widgets/episode_list_builder.dart';
-import 'package:nyantv/screens/anime/widgets/wrongtitle_modal.dart';
-import 'package:nyantv/widgets/common/no_source.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_dropdown.dart';
-import 'package:nyantv/widgets/header.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_textspan.dart';
+import 'package:nyantv/stubs/extension_stubs.dart';
+import 'package:anymex/controllers/settings/settings.dart';
+import 'package:anymex/utils/function.dart';
+import 'package:anymex/utils/logger.dart';
+import 'package:anymex/controllers/source/source_controller.dart';
+import 'package:anymex/controllers/service_handler/service_handler.dart';
+import 'package:anymex/models/Media/media.dart';
+import 'package:anymex/models/Offline/Hive/episode.dart';
+import 'package:anymex/screens/anime/widgets/episode_list_builder.dart';
+import 'package:anymex/screens/anime/widgets/wrongtitle_modal.dart';
+import 'package:anymex/widgets/common/no_source.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_dropdown.dart';
+import 'package:anymex/widgets/header.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/custom_widgets/custom_textspan.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/gestures.dart';
-import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
+import 'package:anymex/widgets/custom_widgets/anymex_progress.dart';
 import 'package:get/get.dart';
 
 class EpisodeSection extends StatefulWidget {
@@ -57,72 +54,13 @@ class _EpisodeSectionState extends State<EpisodeSection> {
   final RxInt _requestCounter = 0.obs;
   final Rx<Future<List<Episode>>?> _episodeFuture =
       Rx<Future<List<Episode>>?>(null);
-  Worker? _episodeListListener;
-  bool _fillerFetched = false;
-  final FocusNode _sourceDropdownFocusNode = FocusNode();
-  final FocusNode _sourceSettingsFocusNode = FocusNode();
-  final GlobalKey _sourceDropdownKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     if (widget.episodeList != null && widget.episodeList!.isNotEmpty) {
       _episodeFuture.value = Future.value(widget.episodeList!);
-      _fetchFillerInfo();
     }
-   
-    if (widget.episodeList != null) {
-      _episodeListListener = ever(widget.episodeList!, (episodes) {
-        if (episodes.isNotEmpty && !_fillerFetched) {
-          _fetchFillerInfo();
-        }
-      });      
-    }
-
-    _sourceDropdownFocusNode.addListener(() => setState(() {}));
-    _sourceSettingsFocusNode.addListener(() => setState(() {}));
-
-  }
-
-  @override
-  void dispose() {
-    _episodeListListener?.dispose();
-    _sourceDropdownFocusNode.dispose();
-    _sourceSettingsFocusNode.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchFillerInfo() async {
-    if (_fillerFetched) return;
-    
-    if (widget.episodeList != null && widget.episodeList!.isNotEmpty) {
-      if (widget.episodeList!.any((ep) => ep.filler == true)) {
-        _fillerFetched = true;
-        return;
-      }
-    }
-    
-    final malId = widget.anilistData?.idMal;
-    if (malId == null) return;
-
-    _fillerFetched = true;
-
-    try {
-      final fillerMap = await JikanService.getFillerEpisodes(malId.toString());
-      
-      if (fillerMap.isNotEmpty && widget.episodeList != null) {
-        bool updated = false;
-        
-        for (var ep in widget.episodeList!) {
-          if (fillerMap.containsKey(ep.number)) {
-             ep.filler = true;
-             updated = true;
-          }
-        }
-
-        if (updated && mounted) setState(() {});
-      }
-    } catch (_) {}
   }
 
   Future<List<Episode>> _fetchEpisodes(int requestId) async {
@@ -133,12 +71,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
         throw Exception('Request cancelled');
       }
 
-      final episodes = widget.episodeList?.value ?? [];
-      if (episodes.isNotEmpty) {
-        _fetchFillerInfo();
-      }
-
-      return episodes;
+      return widget.episodeList?.value ?? [];
     } catch (e) {
       if (_requestCounter.value == requestId) {
         widget.episodeError.value = true;
@@ -188,16 +121,13 @@ class _EpisodeSectionState extends State<EpisodeSection> {
             ),
           ]
         : sourceController.installedExtensions.map<DropdownItem>((source) {
-            final isMangayomi = source.extensionType == ExtensionType.mangayomi;
             return DropdownItem(
               value: '${source.name} (${source.lang?.toUpperCase()})',
               text: source.name?.toUpperCase() ?? 'Unknown Source',
               subtitle: source.lang?.toUpperCase() ?? 'Unknown',
               leadingIcon: NetworkSizedImage(
                 radius: 16,
-                imageUrl: isMangayomi
-                    ? "https://raw.githubusercontent.com/kodjodevf/mangayomi/main/assets/app_icons/icon-red.png"
-                    : 'https://aniyomi.org/img/logo-128px.png',
+                imageUrl: 'https://aniyomi.org/img/logo-128px.png',
                 height: 24,
                 width: 24,
               ),
@@ -210,17 +140,13 @@ class _EpisodeSectionState extends State<EpisodeSection> {
     } else {
       final activeSource = sourceController.activeSource.value;
       if (activeSource != null) {
-        final isMangayomi =
-            activeSource.extensionType == ExtensionType.mangayomi;
         selectedItem = DropdownItem(
           value: '${activeSource.name} (${activeSource.lang?.toUpperCase()})',
           text: activeSource.name?.toUpperCase() ?? 'Unknown Source',
           subtitle: activeSource.lang?.toUpperCase() ?? 'Unknown',
           leadingIcon: NetworkSizedImage(
             radius: 12,
-            imageUrl: isMangayomi
-                ? "https://raw.githubusercontent.com/kodjodevf/mangayomi/main/assets/app_icons/icon-red.png"
-                : 'https://aniyomi.org/img/logo-128px.png',
+            imageUrl: 'https://aniyomi.org/img/logo-128px.png',
             height: 20,
             width: 20,
           ),
@@ -228,110 +154,14 @@ class _EpisodeSectionState extends State<EpisodeSection> {
       }
     }
 
-    return Row(
-      children: [
-        Expanded(
-          child: Focus(
-            focusNode: _sourceDropdownFocusNode,
-            onKeyEvent: (node, event) {
-              if (event is KeyDownEvent) {
-                if (event.logicalKey == LogicalKeyboardKey.select ||
-                    event.logicalKey == LogicalKeyboardKey.enter) {
-                  final ctx = _sourceDropdownKey.currentContext;
-                  if (ctx != null) {
-                    final RenderBox box =
-                        ctx.findRenderObject() as RenderBox;
-                    final Offset pos =
-                        box.localToGlobal(box.size.center(Offset.zero));
-                    GestureBinding.instance.handlePointerEvent(
-                        PointerDownEvent(position: pos));
-                    Future.delayed(const Duration(milliseconds: 50), () {
-                      GestureBinding.instance.handlePointerEvent(
-                          PointerUpEvent(position: pos));
-                    });
-                  }
-                  return KeyEventResult.handled;
-                } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                  _sourceSettingsFocusNode.requestFocus();
-                  return KeyEventResult.handled;
-                }
-              }
-              return KeyEventResult.ignored;
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: _sourceDropdownFocusNode.hasFocus
-                    ? Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      )
-                    : Border.all(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .outline
-                            .withOpacity(0.3),
-                        width: 1,
-                      ),
-              ),
-              child: NyantvDropdown(
-                key: _sourceDropdownKey,
-                items: items,
-                selectedItem: selectedItem,
-                label: "SELECT SOURCE",
-                icon: Icons.extension_rounded,
-                onChanged: (DropdownItem item) =>
-                    handleSourceChange(item.value),
-              ),
-            ),
-          ),
-        ),
-
-        if (sourceController.installedExtensions.isNotEmpty) ...[
-          const SizedBox(width: 8),
-
-          Focus(
-            focusNode: _sourceSettingsFocusNode,
-            onKeyEvent: (node, event) {
-              if (event is KeyDownEvent) {
-                if (event.logicalKey == LogicalKeyboardKey.select ||
-                    event.logicalKey == LogicalKeyboardKey.enter) {
-                  openSourcePreferences(context);
-                  return KeyEventResult.handled;
-                } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                  _sourceDropdownFocusNode.requestFocus();
-                  return KeyEventResult.handled;
-                }
-              }
-              return KeyEventResult.ignored;
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest
-                    .withOpacity(0.4),
-                border: _sourceSettingsFocusNode.hasFocus
-                    ? Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2,
-                      )
-                    : null,
-              ),
-              child: IconButton(
-                onPressed: () => openSourcePreferences(context),
-                icon: Icon(
-                  Icons.settings_outlined,
-                  color: _sourceSettingsFocusNode.hasFocus
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ],
+    return AnymexDropdown(
+      items: items,
+      selectedItem: selectedItem,
+      label: "SELECT SOURCE",
+      icon: Icons.extension_rounded,
+      onChanged: (DropdownItem item) => handleSourceChange(item.value),
+      actionIcon: Icons.settings_outlined,
+      onActionPressed: () => openSourcePreferences(context),
     );
   }
 
@@ -351,7 +181,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
             return const SizedBox(
               height: 300,
               child: Center(
-                child: NyantvText(
+                child: AnymexText(
                   text:
                       "Looks like even the episodes are avoiding your taste in shows\n:(",
                   size: 20,
@@ -365,7 +195,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SizedBox(
               height: 500,
-              child: Center(child: NyantvProgressIndicator()),
+              child: Center(child: AnymexProgressIndicator()),
             );
           }
 
@@ -373,7 +203,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
             if (widget.episodeList?.isEmpty ?? true) {
               return const SizedBox(
                 height: 500,
-                child: Center(child: NyantvProgressIndicator()),
+                child: Center(child: AnymexProgressIndicator()),
               );
             }
           }
@@ -397,6 +227,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (serviceHandler.serviceType.value != ServicesType.extensions) ...[
+            // Title Section
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -421,12 +252,12 @@ class _EpisodeSectionState extends State<EpisodeSection> {
               child: Row(
                 children: [
                   Expanded(
-                    child: NyantvTextSpans(
+                    child: AnymexTextSpans(
                       spans: [
                         if (!widget.searchedTitle.value.contains('Searching') &&
                             !widget.searchedTitle.value
                                 .contains('No Match Found'))
-                          NyantvTextSpan(
+                          AnymexTextSpan(
                             text: "Found: ",
                             size: 14,
                             color: Theme.of(context)
@@ -434,7 +265,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
                                 .onSurface
                                 .withOpacity(0.6),
                           ),
-                        NyantvTextSpan(
+                        AnymexTextSpan(
                           text: widget.searchedTitle.value,
                           variant: TextVariant.semiBold,
                           size: 14,
@@ -447,7 +278,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  NyantvOnTap(
+                  AnymexOnTap(
                     onTap: () {
                       showWrongTitleModal(
                         context,
@@ -496,7 +327,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
                             color: Theme.of(context).colorScheme.primary,
                           ),
                           const SizedBox(width: 6),
-                          NyantvText(
+                          AnymexText(
                             text: "Wrong Title?",
                             size: 12,
                             color: Theme.of(context).colorScheme.primary,
@@ -509,6 +340,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
               ),
             ),
             const SizedBox(height: 20),
+            // Source Selector
             Obx(() => Row(
                   children: [
                     Expanded(child: buildSourceDropdown()),
@@ -516,13 +348,14 @@ class _EpisodeSectionState extends State<EpisodeSection> {
                 )),
           ],
           const SizedBox(height: 20),
+          // Episode List
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const NyantvText(
+                  const AnymexText(
                     text: "Episodes",
                     variant: TextVariant.bold,
                     size: 18,
@@ -531,7 +364,7 @@ class _EpisodeSectionState extends State<EpisodeSection> {
                     if (widget.showAnify.value) {
                       return Row(
                         children: [
-                          const NyantvText(
+                          const AnymexText(
                             text: "Anify / Kitsu",
                             variant: TextVariant.semiBold,
                             size: 16,

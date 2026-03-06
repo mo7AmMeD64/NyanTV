@@ -1,8 +1,8 @@
-import 'package:nyantv/widgets/common/glow.dart';
-import 'package:nyantv/widgets/common/slider_semantics.dart';
-import 'package:nyantv/widgets/helper/tv_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_icon_wrapper.dart';
-import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
+import 'package:anymex/widgets/common/glow.dart';
+import 'package:anymex/widgets/common/slider_semantics.dart';
+import 'package:anymex/widgets/helper/tv_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_icon_wrapper.dart';
+import 'package:anymex/widgets/custom_widgets/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconly/iconly.dart';
@@ -32,13 +32,13 @@ class CustomSwitchTile extends StatelessWidget {
     if (disabled) {
       return Opacity(
         opacity: 0.4,
-        child: NyantvOnTap(
+        child: AnymexOnTap(
           onTap: () {},
           child: Padding(
             padding: padding,
             child: Row(
               children: [
-                NyantvIcon(icon,
+                AnymexIcon(icon,
                     size: 30, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 20),
                 Expanded(
@@ -85,7 +85,7 @@ class CustomSwitchTile extends StatelessWidget {
         ),
       );
     }
-    return NyantvOnTap(
+    return AnymexOnTap(
       onTap: () {
         onChanged.call(!switchValue);
       },
@@ -93,7 +93,7 @@ class CustomSwitchTile extends StatelessWidget {
         padding: padding,
         child: Row(
           children: [
-            NyantvIcon(icon,
+            AnymexIcon(icon,
                 size: 30, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 20),
             Expanded(
@@ -167,7 +167,7 @@ class CustomTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NyantvOnTap(
+    return AnymexOnTap(
       onTap: onTap,
       child: InkWell(
         onTap: onTap,
@@ -177,7 +177,7 @@ class CustomTile extends StatelessWidget {
           child: Row(
             children: [
               if (prefix == null)
-                NyantvIcon(icon,
+                AnymexIcon(icon,
                     size: 30, color: Theme.of(context).colorScheme.primary)
               else
                 prefix!,
@@ -224,7 +224,7 @@ class CustomTile extends StatelessWidget {
   }
 }
 
-class CustomSliderTile extends StatefulWidget {
+class CustomSliderTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String description;
@@ -235,7 +235,6 @@ class CustomSliderTile extends StatefulWidget {
   final double? divisions;
   final Function(double value) onChanged;
   final Function(double value)? onChangedEnd;
-  final bool showOffWhenZero;
 
   const CustomSliderTile({
     super.key,
@@ -249,28 +248,22 @@ class CustomSliderTile extends StatefulWidget {
     required this.max,
     this.divisions,
     this.min = 0.0,
-    this.showOffWhenZero = false,
   });
 
   @override
-  State<CustomSliderTile> createState() => _CustomSliderTileState();
-}
-
-class _CustomSliderTileState extends State<CustomSliderTile> {
-  @override
   Widget build(BuildContext context) {
-    return NyantvOnTapAdv(
+    return AnymexOnTapAdv(
       onKeyEvent: (p0, e) {
         if (e is KeyDownEvent) {
-          double step = (widget.max - widget.min) / (widget.divisions ?? (widget.max - widget.min));
+          double step = (max - min) / (divisions ?? (max - min));
 
           if (e.logicalKey == LogicalKeyboardKey.arrowRight) {
-            double newValue = (widget.sliderValue + step).clamp(widget.min, widget.max);
-            widget.onChanged(newValue);
+            double newValue = (sliderValue + step).clamp(min, max);
+            onChanged(newValue);
             return KeyEventResult.handled;
           } else if (e.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            double newValue = (widget.sliderValue - step).clamp(widget.min, widget.max);
-            widget.onChanged(newValue);
+            double newValue = (sliderValue - step).clamp(min, max);
+            onChanged(newValue);
             return KeyEventResult.handled;
           }
         } else if (e is KeyUpEvent) {
@@ -284,7 +277,7 @@ class _CustomSliderTileState extends State<CustomSliderTile> {
           children: [
             Row(
               children: [
-                NyantvIcon(widget.icon,
+                AnymexIcon(icon,
                     size: 30, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(width: 20),
                 Expanded(
@@ -292,7 +285,7 @@ class _CustomSliderTileState extends State<CustomSliderTile> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.title,
+                        title,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -301,7 +294,7 @@ class _CustomSliderTileState extends State<CustomSliderTile> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        widget.description,
+                        description,
                         style: TextStyle(
                           fontSize: 14,
                           color: Theme.of(context)
@@ -320,12 +313,10 @@ class _CustomSliderTileState extends State<CustomSliderTile> {
               padding: const EdgeInsets.symmetric(horizontal: 10.0),
               child: Row(
                 children: [
-                  NyantvText(
-                    text: widget.showOffWhenZero && widget.sliderValue == 0
-                        ? "Off"
-                        : (widget.sliderValue % 1 == 0
-                            ? widget.sliderValue.toInt().toString()
-                            : widget.sliderValue.toStringAsFixed(1)),
+                  AnymexText(
+                    text: sliderValue % 1 == 0
+                        ? sliderValue.toInt().toString()
+                        : sliderValue.toStringAsFixed(1),
                     variant: TextVariant.semiBold,
                   ),
                   const SizedBox(width: 10),
@@ -333,15 +324,15 @@ class _CustomSliderTileState extends State<CustomSliderTile> {
                     child: CustomSlider(
                       focusNode: FocusNode(
                           canRequestFocus: false, skipTraversal: true),
-                      value: double.parse(widget.sliderValue.toStringAsFixed(1)),
-                      onChanged: widget.onChanged,
-                      max: widget.max,
-                      min: widget.min,
-                      label: widget.label ?? widget.sliderValue.toStringAsFixed(1),
-                      onDragEnd: widget.onChangedEnd,
+                      value: double.parse(sliderValue.toStringAsFixed(1)),
+                      onChanged: onChanged,
+                      max: max,
+                      min: min,
+                      label: label ?? sliderValue.toStringAsFixed(1),
+                      onDragEnd: onChangedEnd,
                       glowBlurMultiplier: 1,
                       glowSpreadMultiplier: 1,
-                      divisions: widget.divisions?.toInt() ?? (widget.max * 10).toInt(),
+                      divisions: divisions?.toInt() ?? (max * 10).toInt(),
                       customValueIndicatorSize: RoundedSliderValueIndicator(
                           Theme.of(context).colorScheme,
                           width: 40,
@@ -350,10 +341,10 @@ class _CustomSliderTileState extends State<CustomSliderTile> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  NyantvText(
-                    text: widget.max % 1 == 0
-                        ? widget.max.toInt().toString()
-                        : widget.max.toStringAsFixed(1),
+                  AnymexText(
+                    text: max % 1 == 0
+                        ? max.toInt().toString()
+                        : max.toStringAsFixed(1),
                     variant: TextVariant.semiBold,
                   )
                 ],
@@ -367,7 +358,7 @@ class _CustomSliderTileState extends State<CustomSliderTile> {
 }
 
 extension TVSupport on Widget {
-  NyantvOnTap tvSupport() {
-    return NyantvOnTap(child: this);
+  AnymexOnTap tvSupport() {
+    return AnymexOnTap(child: this);
   }
 }

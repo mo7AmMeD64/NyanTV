@@ -1,8 +1,8 @@
 import 'dart:math' show Random;
-import 'package:nyantv/controllers/settings/methods.dart';
-import 'package:nyantv/models/Media/character.dart';
-import 'package:nyantv/widgets/animation/slide_scale.dart';
-import 'package:nyantv/widgets/header.dart';
+import 'package:anymex/controllers/settings/methods.dart';
+import 'package:anymex/models/Media/character.dart';
+import 'package:anymex/widgets/animation/slide_scale.dart';
+import 'package:anymex/widgets/header.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -48,100 +48,78 @@ class CharactersCarousel extends StatelessWidget {
                 finalScale: 1.0,
                 initialOffset: const Offset(1.0, 0.0),
                 duration: const Duration(milliseconds: 200),
-                child: Focus(
-                  canRequestFocus: true,
-                  child: Builder(
-                    builder: (context) {
-                      final hasFocus = Focus.of(context).hasFocus;
-                      return AbsorbPointer(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          constraints: BoxConstraints(maxWidth: isDesktop ? 150 : 108),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12.multiplyRoundness()),
-                            border: Border.all(
-                              color: hasFocus
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Colors.transparent,
-                              width: 2,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 5),
+                  constraints: BoxConstraints(maxWidth: isDesktop ? 150 : 108),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        children: [
+                          Hero(
+                            tag: tag,
+                            child: NetworkSizedImage(
+                              imageUrl: itemData.image ??
+                                  'https://s4.anilist.co/file/anilistcdn/character/large/default.jpg',
+                              radius: 12.multiplyRoundness(),
+                              height: isDesktop ? 210 : 160,
+                              width: double.infinity,
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Stack(
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.fromLTRB(10, 4, 5, 2),
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                ),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainer,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Hero(
-                                    tag: tag,
-                                    child: NetworkSizedImage(
-                                      imageUrl: itemData.image ??
-                                          'https://s4.anilist.co/file/anilistcdn/character/large/default.jpg',
-                                      radius: 12.multiplyRoundness(),
-                                      height: isDesktop ? 210 : 160,
-                                      width: double.infinity,
-                                    ),
+                                  Icon(
+                                    Iconsax.heart5,
+                                    size: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      padding: const EdgeInsets.fromLTRB(10, 4, 5, 2),
-                                      decoration: BoxDecoration(
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(12),
-                                          bottomRight: Radius.circular(12),
-                                        ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    itemData.favourites.toString(),
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontFamily: "Poppins-Bold",
+                                        fontStyle: FontStyle.italic,
                                         color: Theme.of(context)
                                             .colorScheme
-                                            .surfaceContainer,
-                                      ),
-                                      clipBehavior: Clip.antiAlias,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Iconsax.heart5,
-                                            size: 16,
-                                            color:
-                                                Theme.of(context).colorScheme.primary,
-                                          ),
-                                          const SizedBox(width: 3),
-                                          Text(
-                                            itemData.favourites.toString(),
-                                            style: TextStyle(
-                                                fontSize: 12,
-                                                fontFamily: "Poppins-Bold",
-                                                fontStyle: FontStyle.italic,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .inverseSurface
-                                                    .withOpacity(0.9)),
-                                          ),
-                                          const SizedBox(width: 3),
-                                        ],
-                                      ),
-                                    ),
-                                  )
+                                            .inverseSurface
+                                            .withOpacity(0.9)),
+                                  ),
+                                  const SizedBox(width: 3),
                                 ],
                               ),
-                              const SizedBox(height: 10),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: Text(
-                                  itemData.name ?? '??',
-                                  maxLines: 2,
-                                  style: TextStyle(
-                                      fontSize: isDesktop ? 14 : 12,
-                                      fontFamily: "Poppins-SemiBold"),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        itemData.name ?? '??',
+                        maxLines: 2,
+                        style: TextStyle(
+                            fontSize: isDesktop ? 14 : 12,
+                            fontFamily: "Poppins-SemiBold"),
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    ],
                   ),
                 ),
               );
@@ -178,114 +156,92 @@ class CharactersCarousel extends StatelessWidget {
                   finalScale: 1.0,
                   initialOffset: const Offset(1.0, 0.0),
                   duration: const Duration(milliseconds: 200),
-                  child: Focus(
-                    canRequestFocus: true,
-                    child: Builder(
-                      builder: (context) {
-                        final hasFocus = Focus.of(context).hasFocus;
-                        return AbsorbPointer(
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 10),
-                            constraints:
-                                BoxConstraints(maxWidth: isDesktop ? 150 : 108),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16.multiplyRoundness()),
-                              border: Border.all(
-                                color: hasFocus
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Colors.transparent,
-                                width: 2,
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 10),
+                    constraints:
+                        BoxConstraints(maxWidth: isDesktop ? 150 : 108),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius:
+                              BorderRadius.circular(16.multiplyRoundness()),
+                          child: Stack(
+                            children: [
+                              Hero(
+                                tag: tag,
+                                child: NetworkSizedImage(
+                                  imageUrl: itemData?.image ??
+                                      'https://s4.anilist.co/file/anilistcdn/character/large/default.jpg',
+                                  radius: 0,
+                                  height: isDesktop ? 210 : 160,
+                                  width: double.infinity,
+                                ),
                               ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius:
-                                      BorderRadius.circular(16.multiplyRoundness()),
-                                  child: Stack(
-                                    children: [
-                                      Hero(
-                                        tag: tag,
-                                        child: NetworkSizedImage(
-                                          imageUrl: itemData?.image ??
-                                              'https://s4.anilist.co/file/anilistcdn/character/large/default.jpg',
-                                          radius: 0,
-                                          height: isDesktop ? 210 : 160,
-                                          width: double.infinity,
-                                        ),
+                              if (itemData != null)
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(10, 4, 5, 2),
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(12),
+                                        bottomRight: Radius.circular(12),
                                       ),
-                                      if (itemData != null)
-                                        Positioned(
-                                          bottom: 0,
-                                          right: 0,
-                                          child: Container(
-                                            padding:
-                                                const EdgeInsets.fromLTRB(10, 4, 5, 2),
-                                            decoration: BoxDecoration(
-                                              borderRadius: const BorderRadius.only(
-                                                topLeft: Radius.circular(12),
-                                                bottomRight: Radius.circular(12),
-                                              ),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainer,
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Iconsax.microphone5,
+                                          size: 16,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary,
+                                        ),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          characterName ?? '',
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              fontFamily: "Poppins-Bold",
+                                              fontStyle: FontStyle.italic,
                                               color: Theme.of(context)
                                                   .colorScheme
-                                                  .surfaceContainer,
-                                            ),
-                                            clipBehavior: Clip.antiAlias,
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Icon(
-                                                  Iconsax.microphone5,
-                                                  size: 16,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .primary,
-                                                ),
-                                                const SizedBox(width: 3),
-                                                Text(
-                                                  characterName ?? '',
-                                                  style: TextStyle(
-                                                      fontSize: 12,
-                                                      fontFamily: "Poppins-Bold",
-                                                      fontStyle: FontStyle.italic,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .inverseSurface
-                                                          .withOpacity(0.9)),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.right,
-                                                ),
-                                                const SizedBox(width: 3),
-                                              ],
-                                            ),
-                                          ),
+                                                  .inverseSurface
+                                                  .withOpacity(0.9)),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.right,
                                         ),
-                                    ],
+                                        const SizedBox(width: 3),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 10),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: Text(
-                                    itemData?.name ?? 'No Voice Actor',
-                                    maxLines: 2,
-                                    style: TextStyle(
-                                        fontSize: isDesktop ? 14 : 12,
-                                        fontFamily: "Poppins-SemiBold"),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          itemData?.name ?? 'No Voice Actor',
+                          maxLines: 2,
+                          style: TextStyle(
+                              fontSize: isDesktop ? 14 : 12,
+                              fontFamily: "Poppins-SemiBold"),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                 );
