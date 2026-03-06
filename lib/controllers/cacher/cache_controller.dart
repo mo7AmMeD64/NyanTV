@@ -1,7 +1,7 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:convert';
 import 'package:nyantv/utils/logger.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:nyantv/models/Media/media.dart';
 import 'package:get/get.dart';
 

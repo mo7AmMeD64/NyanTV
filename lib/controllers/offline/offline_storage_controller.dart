@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // lib/controllers/offline/offline_storage_controller.dart
 import 'package:nyantv/utils/logger.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
@@ -6,7 +7,6 @@ import 'package:nyantv/models/Media/media.dart';
 import 'package:nyantv/models/Offline/Hive/chapter.dart';
 import 'package:nyantv/models/Offline/Hive/custom_list.dart';
 import 'package:nyantv/models/Offline/Hive/episode.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:get/get.dart';
 import 'package:nyantv/models/Offline/Hive/offline_media.dart';
 import 'package:hive/hive.dart';

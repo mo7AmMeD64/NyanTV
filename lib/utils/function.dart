@@ -1,7 +1,7 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
 
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:nyantv/models/Media/media.dart';
 import 'package:nyantv/models/Anilist/anilist_media_user.dart';
 import 'package:nyantv/models/Media/relation.dart';

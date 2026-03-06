@@ -1,5 +1,5 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:flutter/material.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:nyantv/controllers/settings/methods.dart';
 import 'package:nyantv/models/Media/media.dart';
 import 'package:nyantv/models/Offline/Hive/offline_media.dart';

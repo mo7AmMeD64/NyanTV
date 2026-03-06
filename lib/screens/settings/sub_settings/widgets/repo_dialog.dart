@@ -1,10 +1,9 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
 
 import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:dartotsu_extension_bridge/ExtensionManager.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 class GitHubRepoDialog extends StatefulWidget {

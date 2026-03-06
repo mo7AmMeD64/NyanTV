@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'dart:convert';
@@ -20,7 +21,6 @@ import 'package:nyantv/widgets/common/big_carousel.dart';
 import 'package:nyantv/widgets/common/reusable_carousel.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';

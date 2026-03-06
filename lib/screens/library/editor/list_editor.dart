@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: deprecated_member_use
 import 'dart:ui';
 import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
@@ -5,7 +6,6 @@ import 'package:nyantv/models/Offline/Hive/offline_media.dart';
 import 'package:nyantv/widgets/common/glow.dart';
 import 'package:nyantv/widgets/header.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';

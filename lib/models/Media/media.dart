@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/models/Anilist/anilist_media_user.dart';
 import 'package:nyantv/models/Media/character.dart';
@@ -5,7 +6,6 @@ import 'package:nyantv/models/Media/relation.dart';
 import 'package:nyantv/models/Offline/Hive/chapter.dart';
 import 'package:nyantv/models/Offline/Hive/offline_media.dart';
 import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 
 String? _parseDate(dynamic value) {
   if (value == null) return null;

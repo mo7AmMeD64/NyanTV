@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:convert';
 import 'package:nyantv/utils/logger.dart';
 import 'dart:math' show Random;
@@ -19,7 +20,6 @@ import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/widgets/common/reusable_carousel.dart';
 import 'package:nyantv/utils/string_extensions.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';

@@ -1,6 +1,6 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:nyantv/widgets/AlertDialogBuilder.dart';
 import 'package:nyantv/widgets/common/glow.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

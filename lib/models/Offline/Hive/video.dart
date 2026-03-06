@@ -1,4 +1,4 @@
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart' as d;
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:hive/hive.dart';
 part 'video.g.dart';
 

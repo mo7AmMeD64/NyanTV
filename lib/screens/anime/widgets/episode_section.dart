@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member
 // lib/screens/anime/widgets/episode_section.dart
 import 'dart:async';
@@ -18,11 +19,9 @@ import 'package:nyantv/widgets/header.dart';
 import 'package:nyantv/widgets/helper/tv_wrapper.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_textspan.dart';
-import 'package:dartotsu_extension_bridge/ExtensionManager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
 import 'package:get/get.dart';
 

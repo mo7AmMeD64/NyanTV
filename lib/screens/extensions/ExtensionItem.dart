@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'package:nyantv/screens/extensions/ExtensionSettings/ExtensionSettings.dart';
@@ -12,7 +13,6 @@ import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
 import 'package:nyantv/widgets/header.dart';
 import 'package:nyantv/widgets/helper/tv_wrapper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:flutter/material.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
 import 'package:get/get.dart';

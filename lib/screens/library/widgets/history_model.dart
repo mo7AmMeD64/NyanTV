@@ -1,9 +1,9 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';
 import 'package:nyantv/models/Offline/Hive/offline_media.dart';
 import 'package:nyantv/screens/anime/watch_page.dart';
 import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

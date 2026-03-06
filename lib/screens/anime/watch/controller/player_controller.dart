@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // lib/screens/anime/watch/controller/player_controller.dart
 import 'dart:async';
 import 'dart:io';
@@ -21,8 +22,6 @@ import 'package:nyantv/utils/string_extensions.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_titlebar.dart';
 import 'package:nyantv/widgets/non_widgets/nyantv_toast.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
-import 'package:dartotsu_extension_bridge/ExtensionManager.dart';
-import 'package:dartotsu_extension_bridge/Models/DEpisode.dart' as d;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';

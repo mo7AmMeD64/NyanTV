@@ -1,12 +1,11 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:nyantv/models/Media/media.dart';
 import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/widgets/common/big_carousel.dart';
 import 'package:nyantv/widgets/common/future_reusable_carousel.dart';
 import 'package:nyantv/widgets/common/reusable_carousel.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:flutter/material.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:get/get.dart';
 
 Widget buildSection(String title, List<dynamic> data,

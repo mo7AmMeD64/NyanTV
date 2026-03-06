@@ -1,7 +1,7 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
 
 import 'package:nyantv/controllers/source/source_controller.dart';
-import 'package:dartotsu_extension_bridge/ExtensionManager.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

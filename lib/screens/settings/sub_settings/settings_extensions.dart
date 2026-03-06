@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
 import 'package:nyantv/controllers/settings/settings.dart';
 import 'package:nyantv/screens/settings/sub_settings/widgets/repo_dialog.dart';
@@ -5,9 +6,7 @@ import 'package:nyantv/widgets/common/custom_tiles.dart';
 import 'package:nyantv/widgets/common/glow.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_expansion_tile.dart';
 import 'package:nyantv/widgets/helper/platform_builder.dart';
-import 'package:dartotsu_extension_bridge/ExtensionManager.dart';
 import 'package:flutter/material.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
 

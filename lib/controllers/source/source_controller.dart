@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: unnecessary_null_comparison, invalid_use_of_protected_member
 
 import 'package:nyantv/screens/search/source_search_page.dart';
@@ -16,12 +17,9 @@ import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/utils/storage_provider.dart';
 import 'package:nyantv/widgets/common/search_bar.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
-import 'package:dartotsu_extension_bridge/Aniyomi/AniyomiExtensions.dart';
-import 'package:dartotsu_extension_bridge/Mangayomi/MangayomiExtensions.dart';
 import 'package:flutter/material.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';
 import 'package:get/get.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:hive/hive.dart';
 
 final sourceController = Get.put(SourceController());

@@ -1,4 +1,4 @@
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';
 import 'package:nyantv/widgets/common/search_bar.dart';
 import 'package:nyantv/widgets/header.dart';

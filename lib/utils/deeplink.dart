@@ -1,7 +1,6 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:io';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
-import 'package:dartotsu_extension_bridge/ExtensionManager.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:nyantv/controllers/offline/offline_storage_controller.dart';
 import 'package:nyantv/screens/anime/watch_page.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';
@@ -10,7 +9,6 @@ import 'extensions.dart';
 import 'package:nyantv/utils/logger.dart';
 import 'package:nyantv/models/Media/media.dart' as nyantv;
 import 'package:nyantv/models/Offline/Hive/video.dart' as model;
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart' as d;
 import 'package:nyantv/screens/anime/details_page.dart';
 import 'package:nyantv/main.dart';
 

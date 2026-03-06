@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 // ignore_for_file: invalid_use_of_protected_member
 // lib/screens/anime/watch_page.dart
 import 'dart:async';
@@ -31,7 +32,6 @@ import 'package:nyantv/widgets/custom_widgets/custom_button.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_textspan.dart';
 import 'package:nyantv/widgets/non_widgets/snackbar.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart' as d;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:nyantv/widgets/custom_widgets/nyantv_progress.dart';

@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'dart:convert';
 import 'package:nyantv/utils/logger.dart';
 import 'dart:math' show min;
@@ -5,7 +6,6 @@ import 'package:nyantv/controllers/cacher/cache_controller.dart';
 import 'package:nyantv/controllers/service_handler/params.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/controllers/services/anilist/kitsu.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:nyantv/controllers/services/anilist/anilist_auth.dart';
 import 'package:nyantv/controllers/services/anilist/anilist_queries.dart';
 import 'package:nyantv/controllers/services/widgets/widgets_builders.dart';

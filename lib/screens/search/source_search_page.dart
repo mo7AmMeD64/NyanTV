@@ -1,3 +1,4 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
 import 'package:nyantv/controllers/source/source_controller.dart';
 import 'package:nyantv/utils/extension_utils.dart';
@@ -5,7 +6,6 @@ import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/widgets/common/glow.dart';
 import 'package:nyantv/widgets/common/future_reusable_carousel.dart';
 import 'package:nyantv/widgets/common/search_bar.dart';
-import 'package:dartotsu_extension_bridge/dartotsu_extension_bridge.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

@@ -1,8 +1,8 @@
+import 'package:nyantv/stubs/extension_stubs.dart';
 import 'package:nyantv/models/models_convertor/carousel/carousel_data.dart';
 import 'package:nyantv/utils/function.dart';
 import 'package:nyantv/widgets/custom_widgets/custom_text.dart';
 import 'package:nyantv/controllers/service_handler/service_handler.dart';
-import 'package:dartotsu_extension_bridge/Models/Source.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
