@@ -147,7 +147,6 @@ class AnimeStats extends StatelessWidget {
                       ServicesType.anilist) {
                     navigate(() => SearchPage(
                           searchTerm: '',
-                          isManga: false,
                           initialFilters: {
                             'genres': [e]
                           },

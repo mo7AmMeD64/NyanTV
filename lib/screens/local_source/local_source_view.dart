@@ -493,7 +493,7 @@ class _WatchOfflineState extends State<WatchOffline> {
   Widget _buildSearchResultTile(ThemeData theme, DMedia? searchResult) {
     String title = searchResult?.title ?? 'Unknown Title';
     String poster = searchResult?.cover ?? '';
-    Map<String, dynamic> otherData = jsonDecode(searchResult?.author ?? '');
+    Map<String, dynamic> otherData = jsonDecode(searchResult?.title ?? '');
 
     return GestureDetector(
       onTap: () async => await controller.onSearchResultTap(searchResult),

@@ -177,15 +177,15 @@ List<CarouselData> convertData(List<dynamic> data,
   return data.map<CarouselData>((e) {
     switch (variant) {
       case DataVariant.extension:
-        return (e as DMedia).toCarouselData(variant: variant);
+        return (e as DMedia).toCarouselData();
       case DataVariant.offline:
-        return (e as OfflineMedia).toCarouselData(variant: variant);
+        return (e as OfflineMedia).toCarouselData();
       case DataVariant.relation:
-        return (e as Relation).toCarouselData(variant: variant);
+        return (e as Relation).toCarouselData();
       case DataVariant.anilist:
-        return (e as TrackedMedia).toCarouselData(variant: variant);
+        return (e as TrackedMedia).toCarouselData();
       default:
-        return (e as Media).toCarouselData(variant: variant);
+        return (e as Media).toCarouselData();
     }
   }).toList();
 }

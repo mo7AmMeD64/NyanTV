@@ -62,7 +62,7 @@ class MalService extends GetxController implements BaseService, OnlineService {
   }
 
   Widget buildSectionIfNotEmpty(String title, RxList<Media> list,
-      {bool isManga = false}) {
+      {) {
     return list.isEmpty
         ? const NyantvProgressIndicator()
         : buildSection(title, list,
@@ -496,7 +496,7 @@ class MalService extends GetxController implements BaseService, OnlineService {
   Rx<TrackedMedia> currentMedia = TrackedMedia().obs;
 
   @override
-  void setCurrentMedia(String id, {bool isManga = false}) {
+  void setCurrentMedia(String id, {) {
     final offlineStorage = Get.find<OfflineStorageController>();
     final savedAnime = offlineStorage.getAnimeById(id);
     final number = savedAnime?.currentEpisode?.number.toInt() ?? 0;

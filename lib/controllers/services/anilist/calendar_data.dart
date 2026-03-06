@@ -12,7 +12,7 @@ Future<void> fetchCalendarData(RxList<Media> callbackData,
   int currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   int startTime = currentTime - 86400;
   int endTime = currentTime + (86400 * 6);
-  final isMAL = serviceHandler.serviceType.value == ServicesType.mal;
+  final isMAL = serviceHandler.serviceType.value == ServicesType./*mal*/;
 
   const String query = '''
     query (\$page: Int, \$startTime: Int, \$endTime: Int) {

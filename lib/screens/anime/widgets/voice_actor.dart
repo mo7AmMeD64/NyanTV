@@ -9,7 +9,7 @@ import 'package:super_sliver_list/super_sliver_list.dart';
 
 class CharactersCarousel extends StatelessWidget {
   final List<Character> characters;
-  final bool isManga;
+  final
   const CharactersCarousel(
       {super.key, required this.characters, this.isManga = false});
 

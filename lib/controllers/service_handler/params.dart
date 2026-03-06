@@ -1,6 +1,5 @@
 class SearchParams {
   String query;
-  bool isManga;
   Map<String, dynamic>? filters;
   dynamic args;
 
@@ -14,7 +13,6 @@ class SearchParams {
 
 class FetchDetailsParams {
   dynamic id;
-  bool isManga;
 
   FetchDetailsParams({
     required this.id,

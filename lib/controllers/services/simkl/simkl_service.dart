@@ -219,8 +219,7 @@ class SimklService extends GetxController
           //   onSubmitted: () {
           //     // navigate(() => const SearchPage(
           //     //       searchTerm: "",
-          //     //       isManga: false,
-          //     //     ));
+          //     //       //     //     ));
           //     searchTypeSheet(context, "");
           //   },
           //   chipLabel: ("MOVIES"),
@@ -371,7 +370,7 @@ class SimklService extends GetxController
   Rx<TrackedMedia> currentMedia = TrackedMedia().obs;
 
   @override
-  void setCurrentMedia(String id, {bool isManga = false}) {
+  void setCurrentMedia(String id, {) {
     final isMovie = id.split('*').last == "MOVIE";
     if (!isMovie) {
       currentMedia.value =

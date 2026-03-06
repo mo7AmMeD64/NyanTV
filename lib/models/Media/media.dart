@@ -148,7 +148,7 @@ class Media {
     );
   }
 
-  factory Media.fromSmallJson(Map<String, dynamic> json, bool isManga,
+  factory Media.fromSmallJson(Map<String, dynamic> json,
       {bool isMal = false}) {
     return Media(
       id: (isMal ? json['idMal']?.toString() : json['id'].toString()) ?? '',

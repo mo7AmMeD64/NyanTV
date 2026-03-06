@@ -1,6 +1,6 @@
+import 'package:anymex/stubs/extension_stubs.dart';
 // controllers/watch_offline_controller.dart
 import 'package:anymex/utils/logger.dart';
-import 'package:anymex/stubs/extension_stubs.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:anymex/controllers/settings/settings.dart';
@@ -40,7 +40,7 @@ class LocalSourceController extends GetxController
   final RxBool hasSelectedDirectory = false.obs;
   final RxMap<String, Uint8List?> thumbnailCache = <String, Uint8List?>{}.obs;
   final Rx<ViewMode> viewMode = ViewMode.local.obs;
-  final Rxn<d.Source> selectedSource = Rxn();
+  final Rxn<Source> selectedSource = Rxn();
 
   final supportsDownloads = false.obs;
 
@@ -540,7 +540,7 @@ class LocalSourceController extends GetxController
   }
 
   RxBool isSearching = false.obs;
-  RxList<d.DMedia?> searchResults = <d.DMedia?>[].obs;
+  RxList<DMedia?> searchResults = <DMedia?>[].obs;
 
   Future<void> search(String query) async {
     selectedVideos.value = [];
@@ -558,7 +558,7 @@ class LocalSourceController extends GetxController
     isSearching.value = false;
   }
 
-  Future<void> onSearchResultTap(d.DMedia? searchResult) async {
+  Future<void> onSearchResultTap(DMedia? searchResult) async {
     isLoadingMedia.value = true;
     final supportsTmdb = searchResult!.url!.contains('tmdb');
     if (supportsTmdb) {

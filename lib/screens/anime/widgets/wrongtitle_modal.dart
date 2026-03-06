@@ -12,7 +12,7 @@ class WrongTitleModal extends StatefulWidget {
   const WrongTitleModal(
       {super.key,
       required this.initialText,
-      required this.onTap});
+      required this.onTap};
   final String initialText;
   final Function(DMedia) onTap;
 
@@ -57,10 +57,10 @@ class _WrongTitleModalState extends State<WrongTitleModal> {
                 onSubmitted: (value) {
                   setState(() {
                     searchFuture = performSearch();
-                  });
+                  };
                 },
-              ),
-            ),
+              ,
+            ,
             const SizedBox(height: 16),
             Expanded(
               child: FutureBuilder<List<DMedia?>?>(
@@ -71,24 +71,24 @@ class _WrongTitleModalState extends State<WrongTitleModal> {
                   } else if (snapshot.hasError) {
                     return Center(
                       child: Text('Error: ${snapshot.error}'),
-                    );
+                    ;
                   } else if (snapshot.hasData && snapshot.data != null) {
                     final results = snapshot.data ?? [];
 
                     if (results.isEmpty) {
                       return const Center(
                         child: Text('No results found.'),
-                      );
+                      ;
                     }
 
                     return GridView.builder(
                       padding: const EdgeInsets.all(20),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: getResponsiveCrossAxisCount(context,
-                              maxColumns: 5, baseColumns: 3),
+                              maxColumns: 5, baseColumns: 3,
                           crossAxisSpacing: 20,
                           mainAxisSpacing: 20,
-                          mainAxisExtent: 210),
+                          mainAxisExtent: 210,
                       itemCount: results.length,
                       itemBuilder: (context, index) {
                         final item = results[index];
@@ -100,7 +100,7 @@ class _WrongTitleModalState extends State<WrongTitleModal> {
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
-                            ),
+                            ,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -110,43 +110,43 @@ class _WrongTitleModalState extends State<WrongTitleModal> {
                                     height: 140,
                                     radius: 12,
                                     width: double.infinity,
-                                  ),
-                                ),
+                                  ,
+                                ,
                                 const SizedBox(height: 10),
                                 Text(
                                   item.title ?? '??',
                                   maxLines: 3,
-                                )
+                                
                               ],
-                            ),
-                          ),
-                        );
+                            ,
+                          ,
+                        ;
                       },
-                    );
+                    ;
                   } else {
                     return const Center(
                       child: Text('No data available.'),
-                    );
+                    ;
                   }
                 },
-              ),
-            ),
+              ,
+            ,
           ],
-        ),
-      );
+        ,
+      ;
     }
   }
 }
 
 Future<void> showWrongTitleModal(
-    BuildContext context, String initialText, Function(DMedia) onTap) {
+    BuildContext context, String initialText, Function(DMedia) onTap {
   return showModalBottomSheet(
     context: context,
     backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
     isScrollControlled: true,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12.0),
-    ),
+    ,
     builder: (context) {
       final isDesktop = MediaQuery.of(context).size.width > 600;
       return SizedBox(
@@ -156,10 +156,10 @@ Future<void> showWrongTitleModal(
         child: Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
+          ,
           child: WrongTitleModal(initialText: initialText, onTap: onTap),
-        ),
-      );
+        ,
+      ;
     },
-  );
+  ;
 }

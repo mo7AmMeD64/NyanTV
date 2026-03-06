@@ -6,8 +6,7 @@ import 'package:anymex/widgets/non_widgets/snackbar.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
-Future<List<Media>> getAiRecommendations(
-  bool isManga,
+Future<List<Media>> getAiRecommendations(,
   int page, {
   bool isAdult = false,
   String? username,

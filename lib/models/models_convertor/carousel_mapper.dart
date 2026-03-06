@@ -1,5 +1,4 @@
 import 'package:anymex/controllers/service_handler/service_handler.dart';
-import 'package:anymex/stubs/extension_stubs.dart';
 import 'package:anymex/models/Anilist/anilist_media_user.dart';
 import 'package:anymex/models/Media/media.dart';
 import 'package:anymex/models/Media/relation.dart';

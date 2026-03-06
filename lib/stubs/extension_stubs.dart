@@ -1,4 +1,4 @@
-// ignore_for_file: unused_element
+// ignore_for_file: unused_element, dead_code
 import 'package:flutter/widgets.dart';
 
 enum ExtensionType {
@@ -25,21 +25,22 @@ class Source {
 }
 
 class DMedia {
-  final String? url;
-  final String? title;
-  final String? cover;
-  final String? description;
-  final dynamic genre;
-  final ItemType? itemType;
-  final List<DEpisode>? episodes;
-  const DMedia({this.url, this.title, this.cover, this.description,
-    this.genre, this.itemType, this.episodes});
+  String? url;
+  String? title;
+  String? cover;
+  String? description;
+  dynamic genre;
+  String? author;
+  ItemType? itemType;
+  List<DEpisode>? episodes;
+  DMedia({this.url, this.title, this.cover, this.description,
+    this.genre, this.author, this.itemType, this.episodes});
   static DMedia fromJson(Map<String, dynamic> json) => DMedia(
     url: json['url']?.toString(), title: json['title']?.toString(),
     cover: json['cover']?.toString());
   DMedia withUrl(String newUrl) => DMedia(url: newUrl, title: title,
     cover: cover, description: description, genre: genre,
-    itemType: itemType, episodes: episodes);
+    author: author, itemType: itemType, episodes: episodes);
 }
 
 class DEpisode {
@@ -48,20 +49,6 @@ class DEpisode {
   final double? episodeNum;
   final int? episodeNumber;
   const DEpisode({this.name, this.url, this.episodeNum, this.episodeNumber});
-}
-
-class Track {
-  final String? url;
-  final String? label;
-  final String? lang;
-  const Track({this.url, this.label, this.lang});
-}
-
-class BottomSheetItem {
-  final String title;
-  final dynamic icon;
-  final VoidCallback? onTap;
-  const BottomSheetItem({required this.title, this.icon, this.onTap});
 }
 
 class SourcePreference {
@@ -83,7 +70,7 @@ class SourcePreferenceStringValueSchema {}
 class BridgeSettingsSchema {}
 
 class DartotsuExtensionBridge {
-  DartotsuExtensionBridge([dynamic isar]);
+  DartotsuExtensionBridge([dynamic a, dynamic b]);
   Future<void> init() async {}
 }
 

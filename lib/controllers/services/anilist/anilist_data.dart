@@ -528,8 +528,8 @@ averageScore
   Rx<TrackedMedia> get currentMedia => anilistAuth.currentMedia;
 
   @override
-  void setCurrentMedia(String id, {bool isManga = false}) =>
-      anilistAuth.setCurrentMedia(id, isManga: false);
+  void setCurrentMedia(String id, {) =>
+      anilistAuth.setCurrentMedia(id);
 
 
   @override

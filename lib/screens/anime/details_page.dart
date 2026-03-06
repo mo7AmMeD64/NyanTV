@@ -236,7 +236,7 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
     try {
       episodeError.value = false;
       final episodeFuture = await sourceController.activeSource.value!.methods
-          .getDetail(DMedia.withUrl(media.id));
+          .getDetail(DMedia(url: media.id));
 
       // if (episodeFuture == null) {
       //   episodeError.value = true;
@@ -780,7 +780,6 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       builder: (BuildContext context) {
         return ListEditorModal(
           animeStatus: animeStatus,
-          isManga: false,
           animeScore: animeScore,
           animeProgress: animeProgress,
           currentAnime: currentAnime,

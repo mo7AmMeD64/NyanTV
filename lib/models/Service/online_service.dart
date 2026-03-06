@@ -13,7 +13,7 @@ abstract class OnlineService {
   Future<void> login();
   Future<void> logout();
   Future<void> refresh();
-  void setCurrentMedia(String id, {bool isManga = false});
+  void setCurrentMedia(String id, {);
   Future<void> updateListEntry(UpdateListEntryParams params);
   Future<void> deleteListEntry(String listId, {bool isAnime = true});
 }

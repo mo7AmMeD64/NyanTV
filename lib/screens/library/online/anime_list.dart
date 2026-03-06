@@ -178,7 +178,7 @@ class AnimeListContent extends StatelessWidget {
       itemCount: filteredAnimeList.length,
       itemBuilder: (context, index) {
         final item = filteredAnimeList[index];
-        return GridAnimeCard(data: item, isManga: false);
+        return GridAnimeCard(data: item);
       },
     );
   }

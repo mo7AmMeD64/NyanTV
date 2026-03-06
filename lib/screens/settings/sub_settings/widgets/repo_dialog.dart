@@ -44,7 +44,7 @@ class _GitHubRepoDialogState extends State<GitHubRepoDialog> {
       setState(() {
         _controller.text = widget.type == ItemType.anime
             ? sourceController.activeAnimeRepo
-            : sourceController.activeNovelRepo;
+            : null;
       });
     });
   }

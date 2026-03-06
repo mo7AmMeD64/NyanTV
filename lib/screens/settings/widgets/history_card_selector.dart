@@ -75,7 +75,6 @@ class _HistoryCardSelectorState extends State<HistoryCardSelector> {
       progress: 243034,
       totalProgress: 1420061,
       progressTitle: 'Sabito and Makomo',
-      isManga: false,
       calculatedProgress: 0.1711433522926128,
       progressText: '19:37 left',
       date: '2025-03-13');

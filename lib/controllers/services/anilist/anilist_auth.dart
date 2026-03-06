@@ -438,7 +438,7 @@ class AnilistAuth extends GetxController {
       );
 
       if (malId != null) {
-        serviceHandler.malService.updateListEntry(UpdateListEntryParams(
+        null.updateListEntry(UpdateListEntryParams(
             listId: malId,
             score: score,
             status: status,
@@ -524,7 +524,7 @@ class AnilistAuth extends GetxController {
         .firstWhere((el) => el.id == id, orElse: () => TrackedMedia());
   }
 
-  void setCurrentMedia(String id, {bool isManga = false}) {
+  void setCurrentMedia(String id, {) {
     final savedAnime = offlineStorage.getAnimeById(id);
     final number = savedAnime?.currentEpisode?.number.toInt() ?? 0;
     currentMedia.value = animeList.value.firstWhere((el) => el.id == id,

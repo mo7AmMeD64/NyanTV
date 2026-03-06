@@ -46,7 +46,7 @@ class DetailResult {
   }
 
   factory DetailResult.froDMedia(DMedia m) {
-    final anime = m..episodes = m.episodes!.reversed.toList();
+    final anime = m../*episodes*/= m.episodes!.reversed.toList();
     final Map<String, List<DEpisode>> seasonMap = {};
 
     final regex = RegExp(r'S(\d+)\s*·\s*E(\d+)', caseSensitive: false);

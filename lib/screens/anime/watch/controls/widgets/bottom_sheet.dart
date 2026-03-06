@@ -1,5 +1,5 @@
 import 'package:anymex/models/Offline/Hive/video.dart';
-import 'package:anymex/stubs/extension_stubs.dart';
+import 'package:anymex/stubs/extension_stubs.dart' hide Track;
 import 'package:anymex/screens/anime/watch/controller/player_controller.dart';
 import 'package:anymex/screens/anime/widgets/episode/normal_episode.dart';
 import 'package:expressive_loading_indicator/expressive_loading_indicator.dart';
@@ -683,7 +683,7 @@ class PlayerBottomSheets {
       title: 'Episodes',
       isExpanded: true,
       content: ScrollablePositionedList.separated(
-        initialScrollIndex: selectedEpisode.value.number.toInt() - 1,
+        initialScrollIndex: (int.tryParse(selectedEpisode.value.number.toString()) ?? 0) - 1,
         separatorBuilder: (context, i) => const SizedBox(height: 8),
         itemCount: episodes.length,
         itemBuilder: (context, index) {
